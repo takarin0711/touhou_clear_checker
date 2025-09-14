@@ -1,26 +1,28 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from presentation.api.v1.games import router as games_router
+from presentation.api.v1.clear_status import router as clear_status_router
+from infrastructure.database.connection import engine, Base
 
 app = FastAPI(title="Touhou Clear Checker API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=["http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+Base.metadata.create_all(bind=engine)
+
+app.include_router(games_router)
+app.include_router(clear_status_router)
+
 @app.get("/")
 async def root():
     return {"message": "Touhou Clear Checker API"}
 
-@app.get("/api/games")
-async def get_games():
-    # TODO: データベースから東方ゲーム一覧を取得
-    return {"games": []}
-
-@app.get("/api/clear-status")
-async def get_clear_status():
-    # TODO: クリア状況を取得
-    return {"clear_status": []}
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

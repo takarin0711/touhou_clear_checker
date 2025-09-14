@@ -14,8 +14,11 @@
 
 ## 開発環境
 - フロントエンド：React 18.2.0, axios
-- バックエンド：FastAPI, uvicorn
+- バックエンド：FastAPI, uvicorn, SQLAlchemy, SQLite
 - パッケージマネージャー：npm (frontend), pip (backend)
+- **重要**: Python 3.13でのバージョン互換性問題あり
+  - FastAPI==0.95.2, pydantic==1.10.13使用
+  - 必要に応じてPython 3.11以下での動作推奨
 
 ## よく使用するコマンド
 
