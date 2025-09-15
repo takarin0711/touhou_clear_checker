@@ -23,7 +23,7 @@
 
 /**
  * @typedef {Object} GameType
- * @property {string} MAIN_SERIES - 通常シリーズ
+ * @property {string} MAIN_SERIES - 本編STG
  * @property {string} FIGHTING - 格闘ゲーム
  * @property {string} PHOTOGRAPHY - 撮影STG
  * @property {string} MIXED - 格闘+STG要素
@@ -37,7 +37,7 @@ export const GAME_TYPES = {
 };
 
 export const GAME_TYPE_LABELS = {
-  [GAME_TYPES.MAIN_SERIES]: '通常シリーズ',
+  [GAME_TYPES.MAIN_SERIES]: '本編STG',
   [GAME_TYPES.FIGHTING]: '格闘ゲーム',
   [GAME_TYPES.PHOTOGRAPHY]: '撮影STG',
   [GAME_TYPES.MIXED]: '格闘+STG',

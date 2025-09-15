@@ -26,7 +26,7 @@ class Game:
             # 番外編は難易度制限なし（将来的に個別制御）
             return list(Difficulty)
         
-        # 通常シリーズの難易度制限
+        # 本編STGの難易度制限
         base_difficulties = [
             Difficulty.EASY,
             Difficulty.NORMAL, 

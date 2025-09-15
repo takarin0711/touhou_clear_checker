@@ -38,7 +38,7 @@ export const gameApi = {
   },
 
   /**
-   * 通常シリーズのゲーム一覧取得
+   * 本編STGのゲーム一覧取得
    * @returns {Promise<import('../../../types/game').Game[]>}
    */
   getMainSeriesGames: async () => {

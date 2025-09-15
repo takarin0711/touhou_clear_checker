@@ -71,7 +71,7 @@ class Difficulty(Enum):
 ### ゲームタイプ（GameType）
 ```python
 class GameType(Enum):
-    MAIN_SERIES = "main_series"  # 通常シリーズ（第6作〜第19作）
+    MAIN_SERIES = "main_series"  # 本編STG（第6作〜第19作）
     FIGHTING = "fighting"        # 格闘ゲーム（.5作系）
     PHOTOGRAPHY = "photography"  # 撮影STG（文花帖系）
     MIXED = "mixed"             # 格闘+STG要素
@@ -85,7 +85,7 @@ INSERT INTO users (username, email, hashed_password, is_admin) VALUES
 ('admin', 'admin@example.com', '$bcrypt_hash$', TRUE);
 ```
 
-### 通常シリーズゲーム（第6作〜第20作）
+### 本編STGゲーム（第6作〜第20作）
 ```sql
 INSERT INTO games (title, series_number, release_year, game_type) VALUES
 ('東方紅魔郷', 6.0, 2002, 'main_series'),
@@ -117,7 +117,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
 ## マイグレーション
 - **初期作成**: `scripts/migrate_database.py`
 - **管理者権限追加**: `scripts/add_admin_flag.py`
-- **通常シリーズデータ追加**: `scripts/add_main_series_games.py`
+- **本編STGデータ追加**: `scripts/add_main_series_games.py`
 
 ## セキュリティ考慮事項
 - パスワードはbcryptでハッシュ化
@@ -142,7 +142,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
 - ダブルスポイラー（12.5作）
 - 秘封ナイトメアダイアリー（16.5作）
 
-※ 妖精大戦争（12.8作）は難易度体系が通常シリーズと同じため、main_seriesに分類
+※ 妖精大戦争（12.8作）は難易度体系が本編STGと同じため、main_seriesに分類
 ```
 
 ### 番外編対応時の拡張案
@@ -158,7 +158,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
    ```
 
 3. **APIエンドポイント分離**
-   - `/api/v1/main-series/` - 通常シリーズ専用
+   - `/api/v1/main-series/` - 本編STG専用
    - `/api/v1/spinoffs/` - 番外編専用
 
 ## 今後の拡張予定
