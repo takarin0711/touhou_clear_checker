@@ -2,14 +2,15 @@
 
 ## システム構成
 ```
-[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: MySQL]
+[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: SQLite]
 ```
 
 ## 技術スタック
 - **フロントエンド**: React 18.2.0, axios, CSS
-- **バックエンド**: FastAPI, uvicorn, SQLAlchemy, Pydantic, mysql-connector-python
-- **データベース**: MySQL
-- **デプロイ**: 未定
+- **バックエンド**: FastAPI 0.68.0, uvicorn, SQLAlchemy 1.4.23, Pydantic 1.8.2
+- **認証**: JWT (python-jose), bcrypt, passlib
+- **データベース**: SQLite（開発環境）
+- **Python**: 3.9.6（3.13は互換性問題あり）
 
 ## アーキテクチャ（DDD/クリーンアーキテクチャ）
 ```
@@ -19,10 +20,12 @@ backend/
 │   ├── __init__.py
 │   ├── entities/           # エンティティ
 │   │   ├── __init__.py
-│   │   ├── game.py
-│   │   └── clear_status.py
-│   ├── repositories/       # リポジトリインターface
+│   │   ├── user.py         # ユーザーエンティティ
+│   │   ├── game.py         # ゲームエンティティ
+│   │   └── clear_status.py # クリア状況エンティティ
+│   ├── repositories/       # リポジトリインターフェース
 │   │   ├── __init__.py
+│   │   ├── user_repository.py
 │   │   ├── game_repository.py
 │   │   └── clear_status_repository.py
 │   └── value_objects/      # 値オブジェクト
@@ -32,57 +35,156 @@ backend/
 │   ├── __init__.py
 │   ├── services/          # アプリケーションサービス
 │   │   ├── __init__.py
-│   │   ├── game_service.py
-│   │   └── clear_status_service.py
+│   │   ├── user_service.py     # ユーザー管理サービス
+│   │   ├── game_service.py     # ゲーム管理サービス
+│   │   └── clear_status_service.py # クリア状況管理サービス
 │   └── dtos/              # データ転送オブジェクト
 │       ├── __init__.py
-│       ├── game_dto.py
-│       └── clear_status_dto.py
+│       ├── user_dto.py         # ユーザーDTO
+│       ├── game_dto.py         # ゲームDTO
+│       └── clear_status_dto.py # クリア状況DTO
 ├── infrastructure/        # インフラストラクチャ層
 │   ├── __init__.py
-│   ├── database/
+│   ├── database/         # データベース関連
 │   │   ├── __init__.py
-│   │   ├── connection.py  # DB接続設定
-│   │   ├── models/        # SQLAlchemyモデル
+│   │   ├── connection.py # SQLite接続設定
+│   │   ├── models/       # SQLAlchemyモデル
 │   │   │   ├── __init__.py
-│   │   │   ├── game_model.py
-│   │   │   └── clear_status_model.py
-│   │   └── repositories/  # リポジトリ実装
+│   │   │   ├── user_model.py      # ユーザーモデル
+│   │   │   ├── game_model.py      # ゲームモデル
+│   │   │   └── clear_status_model.py # クリア状況モデル
+│   │   └── repositories/ # リポジトリ実装
 │   │       ├── __init__.py
+│   │       ├── user_repository_impl.py
 │   │       ├── game_repository_impl.py
 │   │       └── clear_status_repository_impl.py
-└── presentation/          # プレゼンテーション層
+│   └── security/         # セキュリティ関連
+│       ├── __init__.py
+│       ├── auth_middleware.py  # JWT認証ミドルウェア
+│       ├── password_hasher.py  # パスワードハッシュ化
+│       └── jwt_handler.py      # JWTトークン処理
+├── presentation/          # プレゼンテーション層
+│   ├── __init__.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   ├── v1/
+│   │   │   ├── __init__.py
+│   │   │   ├── users.py       # ユーザーAPI（自分の情報のみ）
+│   │   │   ├── games.py       # ゲームAPI（読み取り専用）
+│   │   │   ├── clear_status.py # クリア状況API
+│   │   │   └── admin.py       # 管理者専用API
+│   │   └── dependencies.py    # 依存関係注入
+│   └── schemas/           # Pydanticスキーマ
+│       ├── __init__.py
+│       ├── user_schema.py     # ユーザースキーマ
+│       ├── game_schema.py     # ゲームスキーマ
+│       └── clear_status_schema.py # クリア状況スキーマ
+└── scripts/              # マイグレーション・ユーティリティ
     ├── __init__.py
-    ├── api/
-    │   ├── __init__.py
-    │   ├── v1/
-    │   │   ├── __init__.py
-    │   │   ├── games.py
-    │   │   └── clear_status.py
-    │   └── dependencies.py
-    └── schemas/           # Pydanticスキーマ
-        ├── __init__.py
-        ├── game_schema.py
-        └── clear_status_schema.py
+    ├── migrate_database.py    # 初期DB作成
+    └── add_admin_flag.py      # 管理者権限追加
 ```
 
 ## ディレクトリ構成
+
+### フロントエンド（Feature-Based Architecture）
+```
+frontend/
+├── src/
+│   ├── components/         # 再利用可能UIコンポーネント
+│   │   ├── common/        # Button, Input, Modal等
+│   │   └── layout/        # Header, Navigation等
+│   ├── features/          # 機能別モジュール（DDD的）
+│   │   ├── auth/          # 認証機能
+│   │   │   ├── components/    # LoginForm, RegisterForm等
+│   │   │   ├── hooks/         # カスタムフック
+│   │   │   └── services/      # authApi.js
+│   │   ├── games/         # ゲーム管理機能（実装予定）
+│   │   └── clearStatus/   # クリア状況機能（実装予定）
+│   ├── contexts/          # グローバル状態管理
+│   │   └── AuthContext.js # 認証状態管理
+│   ├── services/          # 共通API設定
+│   │   └── api.js         # Axios設定・トークン管理
+│   ├── types/             # 型定義（JSDoc）
+│   ├── utils/             # ユーティリティ関数
+│   └── App.js             # ルーティング・レイアウト
+├── package.json
+└── tailwind.config.js     # Tailwind CSS設定
+```
+
+### プロジェクト全体
 ```
 touhou_clear_checker/
-├── backend/               # 上記のDDD構成
-├── frontend/
-│   ├── src/
-│   │   ├── components/    # 再利用可能コンポーネント
-│   │   ├── pages/         # ページコンポーネント
-│   │   ├── services/      # API通信
-│   │   └── utils/         # ユーティリティ
-│   └── package.json
+├── backend/               # DDD/Clean Architecture
+├── frontend/              # Feature-Based + React Context
 └── .claude/              # Claude用ドキュメント
 ```
 
 ## APIエンドポイント設計
-- GET /api/games - ゲーム一覧取得
-- GET /api/clear-status - クリア状況取得
-- POST /api/clear-status - クリア記録追加
-- PUT /api/clear-status/{id} - クリア記録更新
-- DELETE /api/clear-status/{id} - クリア記録削除
+
+### 公開API（認証不要）
+- `POST /api/v1/users/register` - ユーザー登録
+- `POST /api/v1/users/login` - ログイン
+
+### 一般ユーザーAPI（認証必要）
+- `GET /api/v1/users/me` - 自分の情報取得
+- `PUT /api/v1/users/me` - 自分の情報更新
+- `DELETE /api/v1/users/me` - 自分のアカウント削除
+- `GET /api/v1/games/` - ゲーム一覧取得
+- `GET /api/v1/games/{id}` - ゲーム詳細取得
+- `GET/POST/PUT/DELETE /api/v1/clear-status/` - クリア状況管理
+
+### 管理者専用API（管理者権限必要）
+- `GET /api/v1/admin/users/` - 全ユーザー一覧
+- `PUT /api/v1/admin/users/{id}` - 任意ユーザー更新
+- `DELETE /api/v1/admin/users/{id}` - 任意ユーザー削除
+- `POST/PUT/DELETE /api/v1/admin/games/` - ゲーム作品管理
+
+## 権限システム
+- **一般ユーザー**: 自分の情報とクリア状況のみ管理可能
+- **管理者**: 全ユーザー管理 + ゲーム作品管理権限
+
+## フロントエンド状態管理
+
+### 認証状態（AuthContext）
+```javascript
+const authState = {
+  user: User | null,           // 現在のユーザー
+  token: string | null,        // JWTトークン
+  isLoading: boolean,          // ローディング状態
+  error: string | null,        // エラーメッセージ
+  // メソッド
+  login: (credentials) => {},
+  register: (userData) => {},
+  logout: () => {},
+  checkAuth: () => {}
+}
+```
+
+### API通信
+- **Axios インターセプター**: 自動トークン付与・認証エラー処理
+- **LocalStorage**: トークン・ユーザー情報の永続化
+- **エラーハンドリング**: 401エラー時の自動ログアウト
+
+## 実装済み機能
+
+### フロントエンド
+✅ **認証システム**
+- ユーザー登録・ログイン
+- JWT認証・状態管理
+- 認証ガード・自動復元
+
+✅ **UIコンポーネント**
+- 再利用可能Button・Input
+- ログイン・登録フォーム
+- バリデーション・エラー表示
+
+✅ **レイアウト**
+- レスポンシブデザイン
+- ダッシュボード（認証後）
+- 管理者バッジ表示
+
+### 実装予定
+🔄 **ゲーム一覧表示機能**
+🔄 **クリア状況管理機能**
+🔄 **管理者画面**

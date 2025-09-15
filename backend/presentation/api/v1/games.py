@@ -1,68 +1,46 @@
-from typing import List
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List, Optional
+from decimal import Decimal
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from application.services.game_service import GameService
-from application.dtos.game_dto import CreateGameDto, UpdateGameDto
+from domain.value_objects.game_type import GameType
 from ..dependencies import get_game_service
-from ...schemas.game_schema import GameCreate, GameUpdate, GameResponse
+from ...schemas.game_schema import GameResponse
 
-router = APIRouter(prefix="/api/v1/games", tags=["games"])
+router = APIRouter()
 
 @router.get("/", response_model=List[GameResponse])
-async def get_games(game_service: GameService = Depends(get_game_service)):
-    games = game_service.get_all_games()
+async def get_games(
+    series_number: Optional[Decimal] = Query(None, description="シリーズ番号で検索"),
+    game_type: Optional[str] = Query(None, description="ゲームタイプで検索"),
+    game_service: GameService = Depends(get_game_service)
+):
+    """ゲーム一覧取得（検索パラメータ対応）"""
+    
+    # game_typeの文字列をEnumに変換
+    parsed_game_type = None
+    if game_type:
+        try:
+            parsed_game_type = GameType(game_type)
+        except ValueError:
+            raise HTTPException(
+                status_code=400, 
+                detail=f"Invalid game_type: {game_type}. Valid values: {[gt.value for gt in GameType]}"
+            )
+    
+    # フィルタリングされたゲーム一覧を取得
+    if series_number is not None or parsed_game_type is not None:
+        game_dtos = game_service.get_games_filtered(
+            series_number=series_number, 
+            game_type=parsed_game_type
+        )
+    else:
+        game_dtos = game_service.get_all_games()
+    
     return [GameResponse(
-        id=game.id,
-        title=game.title,
-        series_number=game.series_number,
-        release_year=game.release_year
-    ) for game in games]
+        id=dto.id,
+        title=dto.title,
+        series_number=dto.series_number,
+        release_year=dto.release_year,
+        game_type=dto.game_type if hasattr(dto, 'game_type') else 'main_series'
+    ) for dto in game_dtos]
 
-@router.get("/{game_id}", response_model=GameResponse)
-async def get_game(game_id: int, game_service: GameService = Depends(get_game_service)):
-    game = game_service.get_game_by_id(game_id)
-    if not game:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
-    return GameResponse(
-        id=game.id,
-        title=game.title,
-        series_number=game.series_number,
-        release_year=game.release_year
-    )
-
-@router.post("/", response_model=GameResponse, status_code=status.HTTP_201_CREATED)
-async def create_game(game_data: GameCreate, game_service: GameService = Depends(get_game_service)):
-    create_dto = CreateGameDto(
-        title=game_data.title,
-        series_number=game_data.series_number,
-        release_year=game_data.release_year
-    )
-    game = game_service.create_game(create_dto)
-    return GameResponse(
-        id=game.id,
-        title=game.title,
-        series_number=game.series_number,
-        release_year=game.release_year
-    )
-
-@router.put("/{game_id}", response_model=GameResponse)
-async def update_game(game_id: int, game_data: GameUpdate, game_service: GameService = Depends(get_game_service)):
-    update_dto = UpdateGameDto(
-        title=game_data.title,
-        series_number=game_data.series_number,
-        release_year=game_data.release_year
-    )
-    game = game_service.update_game(game_id, update_dto)
-    if not game:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
-    return GameResponse(
-        id=game.id,
-        title=game.title,
-        series_number=game.series_number,
-        release_year=game.release_year
-    )
-
-@router.delete("/{game_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_game(game_id: int, game_service: GameService = Depends(get_game_service)):
-    success = game_service.delete_game(game_id)
-    if not success:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")

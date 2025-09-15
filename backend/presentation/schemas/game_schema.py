@@ -1,10 +1,12 @@
 from pydantic import BaseModel
 from typing import Optional
+from decimal import Decimal
 
 class GameBase(BaseModel):
     title: str
-    series_number: int
+    series_number: Decimal
     release_year: int
+    game_type: str = "main_series"
 
 class GameCreate(GameBase):
     pass

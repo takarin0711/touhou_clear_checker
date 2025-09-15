@@ -21,6 +21,18 @@ class ClearStatusRepository(ABC):
         pass
     
     @abstractmethod
+    def find_by_user_id(self, user_id: int) -> List[ClearStatus]:
+        pass
+    
+    @abstractmethod
+    def find_by_user_and_game(self, user_id: int, game_id: int) -> List[ClearStatus]:
+        pass
+    
+    @abstractmethod
+    def find_by_user_game_and_difficulty(self, user_id: int, game_id: int, difficulty: Difficulty) -> Optional[ClearStatus]:
+        pass
+    
+    @abstractmethod
     def save(self, clear_status: ClearStatus) -> ClearStatus:
         pass
     

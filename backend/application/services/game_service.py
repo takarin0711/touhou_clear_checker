@@ -1,6 +1,8 @@
 from typing import List, Optional
+from decimal import Decimal
 from domain.entities.game import Game
 from domain.repositories.game_repository import GameRepository
+from domain.value_objects.game_type import GameType
 from ..dtos.game_dto import GameDto, CreateGameDto, UpdateGameDto
 
 class GameService:
@@ -9,6 +11,12 @@ class GameService:
     
     def get_all_games(self) -> List[GameDto]:
         games = self.game_repository.find_all()
+        return [self._to_dto(game) for game in games]
+    
+    def get_games_filtered(self, 
+                          series_number: Optional[Decimal] = None,
+                          game_type: Optional[GameType] = None) -> List[GameDto]:
+        games = self.game_repository.find_filtered(series_number=series_number, game_type=game_type)
         return [self._to_dto(game) for game in games]
     
     def get_game_by_id(self, game_id: int) -> Optional[GameDto]:
@@ -20,7 +28,8 @@ class GameService:
             id=None,
             title=create_dto.title,
             series_number=create_dto.series_number,
-            release_year=create_dto.release_year
+            release_year=create_dto.release_year,
+            game_type=GameType(create_dto.game_type) if create_dto.game_type else GameType.MAIN_SERIES
         )
         saved_game = self.game_repository.save(game)
         return self._to_dto(saved_game)
@@ -34,7 +43,8 @@ class GameService:
             id=game_id,
             title=update_dto.title,
             series_number=update_dto.series_number,
-            release_year=update_dto.release_year
+            release_year=update_dto.release_year,
+            game_type=GameType(update_dto.game_type) if update_dto.game_type else GameType.MAIN_SERIES
         )
         saved_game = self.game_repository.save(game)
         return self._to_dto(saved_game)
@@ -47,5 +57,6 @@ class GameService:
             id=game.id,
             title=game.title,
             series_number=game.series_number,
-            release_year=game.release_year
+            release_year=game.release_year,
+            game_type=game.game_type.value
         )

@@ -6,3 +6,4 @@ class Difficulty(Enum):
     HARD = "Hard"
     LUNATIC = "Lunatic"
     EXTRA = "Extra"
+    PHANTASM = "Phantasm"
