@@ -57,7 +57,7 @@ const GameCard = ({ game, onClick, className = '' }) => {
             onClick?.(game);
           }}
         >
-          詳細を見る →
+          クリア状況を編集 →
         </button>
       </div>
     </div>

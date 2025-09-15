@@ -13,7 +13,10 @@ const ClearStatusCard = ({
 }) => {
   const formatDate = (dateString) => {
     if (!dateString) return '';
-    return new Date(dateString).toLocaleDateString('ja-JP');
+    // 既に日付のみの場合とISO形式の場合の両方に対応
+    const dateOnly = dateString.includes('T') ? dateString.split('T')[0] : dateString;
+    const [year, month, day] = dateOnly.split('-');
+    return `${year}年${parseInt(month)}月${parseInt(day)}日`;
   };
 
   const formatScore = (score) => {

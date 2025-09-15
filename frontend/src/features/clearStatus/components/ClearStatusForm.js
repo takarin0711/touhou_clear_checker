@@ -8,6 +8,7 @@ import { DIFFICULTIES, DIFFICULTY_LABELS } from '../../../types/clearStatus';
  */
 const ClearStatusForm = ({ 
   gameId,
+  game,
   initialData = null,
   onSubmit,
   onCancel,
@@ -24,6 +25,33 @@ const ClearStatusForm = ({
     memo: ''
   });
 
+  // ゲーム固有の利用可能難易度を取得
+  const getAvailableDifficulties = (game) => {
+    if (!game) return [DIFFICULTIES.EASY, DIFFICULTIES.NORMAL, DIFFICULTIES.HARD, DIFFICULTIES.LUNATIC, DIFFICULTIES.EXTRA];
+    
+    // 基本難易度
+    const baseDifficulties = [
+      DIFFICULTIES.EASY,
+      DIFFICULTIES.NORMAL,
+      DIFFICULTIES.HARD,
+      DIFFICULTIES.LUNATIC
+    ];
+
+    // Extra難易度は獣王園（第19作）以外
+    if (game.series_number !== 19) {
+      baseDifficulties.push(DIFFICULTIES.EXTRA);
+    }
+
+    // Phantasm難易度は妖々夢（第7作）のみ
+    if (game.series_number === 7) {
+      baseDifficulties.push(DIFFICULTIES.PHANTASM);
+    }
+
+    return baseDifficulties;
+  };
+
+  const availableDifficulties = getAvailableDifficulties(game);
+
   // 初期データをフォームに設定
   useEffect(() => {
     if (initialData) {
@@ -31,7 +59,7 @@ const ClearStatusForm = ({
         difficulty: initialData.difficulty,
         is_cleared: initialData.is_cleared,
         cleared_at: initialData.cleared_at 
-          ? new Date(initialData.cleared_at).toISOString().split('T')[0] 
+          ? initialData.cleared_at.split('T')[0]
           : '',
         no_continue_clear: initialData.no_continue_clear,
         no_bomb_clear: initialData.no_bomb_clear,
@@ -81,7 +109,7 @@ const ClearStatusForm = ({
       game_id: gameId,
       difficulty: formData.difficulty,
       is_cleared: formData.is_cleared,
-      cleared_at: formData.cleared_at ? new Date(formData.cleared_at + 'T00:00:00').toISOString() : null,
+      cleared_at: formData.cleared_at || null,
       no_continue_clear: formData.no_continue_clear,
       no_bomb_clear: formData.no_bomb_clear,
       no_miss_clear: formData.no_miss_clear,
@@ -116,9 +144,9 @@ const ClearStatusForm = ({
           className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           disabled={loading}
         >
-          {Object.entries(DIFFICULTY_LABELS).map(([value, label]) => (
-            <option key={value} value={value}>
-              {label}
+          {availableDifficulties.map((difficulty) => (
+            <option key={difficulty} value={difficulty}>
+              {DIFFICULTY_LABELS[difficulty]}
             </option>
           ))}
         </select>
@@ -141,7 +169,7 @@ const ClearStatusForm = ({
 
       {/* クリア日 */}
       <Input
-        label={`クリア日${formData.is_cleared ? ' *' : ''}`}
+        label="クリア日"
         type="date"
         value={formData.cleared_at}
         onChange={(e) => handleInputChange('cleared_at', e.target.value)}

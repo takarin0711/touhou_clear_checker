@@ -62,36 +62,31 @@ const GameList = () => {
 
   if (error) {
     return (
-      <div className="w-full flex justify-center">
-        <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                エラーが発生しました
-              </h3>
-              <div className="mt-2 text-sm text-red-700">
-                {error}
-              </div>
-              <div className="mt-4">
-                <button
-                  onClick={() => window.location.reload()}
-                  className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
-                >
-                  再試行
-                </button>
-              </div>
+      <div className="bg-red-50 border border-red-200 rounded-md p-4">
+        <div className="flex">
+          <div className="ml-3">
+            <h3 className="text-sm font-medium text-red-800">
+              エラーが発生しました
+            </h3>
+            <div className="mt-2 text-sm text-red-700">
+              {error}
+            </div>
+            <div className="mt-4">
+              <button
+                onClick={() => window.location.reload()}
+                className="bg-red-100 px-3 py-2 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+              >
+                再試行
+              </button>
             </div>
           </div>
-        </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full flex justify-center">
-      <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8 py-8">
+    <div>
       {/* ページヘッダー */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">ゲーム一覧</h1>
@@ -100,12 +95,12 @@ const GameList = () => {
         </p>
       </div>
 
-      {/* フィルター */}
-      <GameFilter 
+      {/* TODO: フィルター機能は将来実装予定 */}
+      {/* <GameFilter 
         onFilterChange={handleFilterChange}
         filters={filters}
         loading={loading}
-      />
+      /> */}
 
       {/* ローディング状態 */}
       {loading && (
@@ -118,12 +113,12 @@ const GameList = () => {
       {/* ゲーム一覧 */}
       {!loading && (
         <>
-          {/* 結果数表示 */}
-          <div className="mb-4">
+          {/* TODO: 結果数表示は将来実装予定 */}
+          {/* <div className="mb-4">
             <p className="text-sm text-gray-600">
               {games.length} 件のゲームが見つかりました
             </p>
-          </div>
+          </div> */}
 
           {/* ゲームカードグリッド */}
           {games.length > 0 ? (
@@ -155,7 +150,6 @@ const GameList = () => {
           )}
         </>
       )}
-      </div>
     </div>
   );
 };

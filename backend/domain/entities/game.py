@@ -31,9 +31,12 @@ class Game:
             Difficulty.EASY,
             Difficulty.NORMAL, 
             Difficulty.HARD,
-            Difficulty.LUNATIC,
-            Difficulty.EXTRA
+            Difficulty.LUNATIC
         ]
+        
+        # Extra難易度は獣王園（第19作）以外
+        if self.series_number != Decimal('19'):
+            base_difficulties.append(Difficulty.EXTRA)
         
         # Phantasm難易度は妖々夢（第7作）のみ
         if self.series_number == Decimal('7'):

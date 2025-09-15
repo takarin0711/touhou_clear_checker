@@ -193,30 +193,113 @@ const validateForm = () => {
 - 機密情報のログ出力禁止
 - エラーメッセージの適切な抽象化
 
-## 次回実装予定
+## 実装済み機能
 
-### ゲーム一覧機能
+### 1. ゲーム一覧機能
 ```
 src/features/games/
 ├── components/
-│   ├── GameList.js       # ゲーム一覧表示
+│   ├── GameList.js       # ゲーム一覧表示（グリッドレイアウト）
 │   ├── GameCard.js       # ゲーム個別カード
-│   └── GameFilter.js     # 検索・フィルター
+│   ├── GameDetail.js     # ゲーム詳細・クリア状況管理画面
+│   └── GameFilter.js     # 検索・フィルター（将来実装予定）
 ├── hooks/
-│   └── useGames.js       # ゲーム一覧取得フック
+│   └── useGames.js       # ゲーム一覧取得・フィルター管理フック
 └── services/
     └── gameApi.js        # ゲームAPI通信
 ```
 
-### クリア状況管理機能
+**主要機能**:
+- 全ゲーム一覧表示（カードベース）
+- ゲーム詳細表示
+- 「クリア状況を編集」機能
+- レスポンシブデザイン
+
+### 2. クリア状況管理機能
 ```
 src/features/clearStatus/
 ├── components/
-│   ├── ClearForm.js      # クリア状況登録フォーム
-│   ├── ClearList.js      # クリア状況一覧
-│   └── DifficultyBadge.js # 難易度バッジ
+│   ├── ClearStatusSummary.js   # メイン画面クリア状況まとめ
+│   ├── ClearStatusForm.js      # クリア状況登録・編集フォーム
+│   ├── ClearStatusCard.js      # クリア状況個別カード
+│   ├── DifficultyBadge.js      # 難易度バッジ
+│   └── index.js                # コンポーネント集約
 ├── hooks/
-│   └── useClearStatus.js # クリア状況管理フック
+│   └── useClearStatus.js       # クリア状況管理フック
 └── services/
-    └── clearApi.js       # クリア状況API通信
+    └── clearStatusApi.js       # クリア状況API通信
+```
+
+**主要機能**:
+- **クリア状況まとめ表示**：全ゲームを俯瞰できるメイン画面
+- **ゲーム固有難易度制限**：妖々夢のPhantasm、獣王園のExtra制限など
+- **リアルタイム更新**：クリア状況変更時の自動反映
+- **詳細クリア条件**：ノーコンティニュー・ノーボム・ノーミス記録
+- **日付管理**：タイムゾーン問題解決済み
+
+### 3. 共通コンポーネント拡張
+**Badge** (`src/components/common/Badge.js`):
+```javascript
+<Badge 
+  variant="primary|secondary|success|warning|danger|purple"
+  size="small|medium|large"
+>
+  テキスト
+</Badge>
+```
+
+## 状態管理パターン（実装済み）
+
+### 1. リアルタイム更新システム
+```javascript
+// イベントベースの状態同期
+const emitClearStatusUpdate = () => {
+  window.dispatchEvent(new Event('clearStatusUpdated'));
+};
+
+// グローバルイベントリスナー
+useEffect(() => {
+  const handleUpdate = () => refetchClearStatuses();
+  window.addEventListener('clearStatusUpdated', handleUpdate);
+  return () => window.removeEventListener('clearStatusUpdated', handleUpdate);
+}, []);
+```
+
+### 2. カスタムフック活用
+```javascript
+// ゲーム管理
+const { games, loading, error, applyFilters } = useGames();
+
+// クリア状況管理  
+const { 
+  clearStatuses, 
+  createClearStatus, 
+  updateClearStatus,
+  deleteClearStatus,
+  refetch 
+} = useClearStatus(gameId);
+```
+
+## 次回実装予定
+
+### 管理者画面
+```
+src/features/admin/
+├── components/
+│   ├── AdminDashboard.js    # 管理者ダッシュボード
+│   ├── UserManagement.js    # ユーザー管理
+│   └── GameManagement.js    # ゲーム作品管理
+└── services/
+    └── adminApi.js          # 管理者API通信
+```
+
+### 統計・分析機能
+```
+src/features/analytics/
+├── components/
+│   ├── StatsDashboard.js    # 統計ダッシュボード
+│   ├── ProgressChart.js     # 進捗グラフ
+│   └── ClearRateChart.js    # クリア率グラフ
+└── hooks/
+    └── useStats.js          # 統計データ取得
 ```

@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './features/auth/components/AuthPage';
 import { GameList } from './features/games/components';
+import ClearStatusSummary from './features/clearStatus/components/ClearStatusSummary';
 import './App.css';
 
 /**
  * ゲーム一覧ページコンポーネント
  */
 const GameListPage = () => {
-  return <GameList />;
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <ClearStatusSummary />
+      <GameList />
+    </div>
+  );
 };
 
 /**
@@ -49,10 +55,8 @@ const MainApp = () => {
       </header>
 
       {/* メインコンテンツ */}
-      <main className="flex-1 w-full flex justify-center">
-        <div className="w-full">
-          <GameListPage />
-        </div>
+      <main className="flex-1 w-full" style={{ display: 'block' }}>
+        <GameListPage />
       </main>
     </div>
   );

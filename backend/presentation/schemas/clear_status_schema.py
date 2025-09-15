@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional
-from datetime import datetime
+from datetime import date
 from domain.value_objects.difficulty import Difficulty
 
 class ClearStatusBase(BaseModel):
@@ -8,7 +8,7 @@ class ClearStatusBase(BaseModel):
     user_id: int
     difficulty: Difficulty
     is_cleared: bool
-    cleared_at: Optional[datetime] = None
+    cleared_at: Optional[date] = None
     no_continue_clear: bool = False
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
@@ -20,7 +20,7 @@ class ClearStatusCreate(BaseModel):
     game_id: int
     difficulty: Difficulty
     is_cleared: bool = False
-    cleared_at: Optional[datetime] = None
+    cleared_at: Optional[date] = None
     no_continue_clear: bool = False
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
@@ -30,7 +30,7 @@ class ClearStatusCreate(BaseModel):
 
 class ClearStatusUpdate(BaseModel):
     is_cleared: bool
-    cleared_at: Optional[datetime] = None
+    cleared_at: Optional[date] = None
     no_continue_clear: bool = False
     no_bomb_clear: bool = False
     no_miss_clear: bool = False

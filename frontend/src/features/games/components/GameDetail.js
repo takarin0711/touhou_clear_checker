@@ -47,6 +47,11 @@ const GameDetail = ({ game, onBack }) => {
       : `第${seriesNumber}作`;
   };
 
+  // クリア状況更新イベントを発火
+  const emitClearStatusUpdate = () => {
+    window.dispatchEvent(new Event('clearStatusUpdated'));
+  };
+
   const getAvailableDifficulties = () => {
     // 妖々夢（シリーズ7）の場合のみPhantasmが利用可能
     const baseDifficulties = [
@@ -78,6 +83,7 @@ const GameDetail = ({ game, onBack }) => {
       if (result.success) {
         setShowForm(false);
         setEditingClearStatus(null);
+        emitClearStatusUpdate(); // クリア状況まとめを更新
       }
     } catch (error) {
       console.error('フォーム送信エラー:', error);
@@ -93,14 +99,17 @@ const GameDetail = ({ game, onBack }) => {
 
   const handleDeleteClearStatus = async (clearStatus) => {
     if (window.confirm('このクリア状況を削除しますか？')) {
-      await deleteClearStatus(clearStatus.id);
+      const result = await deleteClearStatus(clearStatus.id);
+      if (result.success) {
+        emitClearStatusUpdate(); // クリア状況まとめを更新
+      }
     }
   };
 
   const handleToggleClear = async (clearStatus) => {
     const updatedData = {
       is_cleared: !clearStatus.is_cleared,
-      cleared_at: !clearStatus.is_cleared ? new Date().toISOString() : null,
+      cleared_at: !clearStatus.is_cleared ? new Date().toISOString().split('T')[0] : null,
       no_continue_clear: clearStatus.no_continue_clear,
       no_bomb_clear: clearStatus.no_bomb_clear,
       no_miss_clear: clearStatus.no_miss_clear,
@@ -109,7 +118,10 @@ const GameDetail = ({ game, onBack }) => {
       clear_count: clearStatus.clear_count || 0
     };
     
-    await updateClearStatus(clearStatus.id, updatedData);
+    const result = await updateClearStatus(clearStatus.id, updatedData);
+    if (result.success) {
+      emitClearStatusUpdate(); // クリア状況まとめを更新
+    }
   };
 
   const handleAddNewClearStatus = () => {
@@ -197,6 +209,7 @@ const GameDetail = ({ game, onBack }) => {
             </h3>
             <ClearStatusForm
               gameId={game.id}
+              game={game}
               initialData={editingClearStatus}
               onSubmit={handleFormSubmit}
               onCancel={handleCancelForm}

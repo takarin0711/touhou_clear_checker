@@ -70,5 +70,5 @@ export const DIFFICULTY_COLORS = {
   [DIFFICULTIES.HARD]: 'orange',
   [DIFFICULTIES.LUNATIC]: 'red',
   [DIFFICULTIES.EXTRA]: 'purple',
-  [DIFFICULTIES.PHANTASM]: 'pink'
+  [DIFFICULTIES.PHANTASM]: 'purple'
 };

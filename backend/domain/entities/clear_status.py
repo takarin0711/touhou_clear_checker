@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from datetime import datetime
+from datetime import date
 from ..value_objects.difficulty import Difficulty
 
 @dataclass
@@ -10,7 +10,7 @@ class ClearStatus:
     user_id: int
     difficulty: Difficulty
     is_cleared: bool
-    cleared_at: Optional[datetime]
+    cleared_at: Optional[date]
     no_continue_clear: bool = False
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
@@ -32,7 +32,7 @@ class ClearStatus:
     
     def mark_as_cleared(self, no_continue: bool = False, no_bomb: bool = False, no_miss: bool = False, score: Optional[int] = None) -> None:
         self.is_cleared = True
-        self.cleared_at = datetime.now()
+        self.cleared_at = date.today()
         self.no_continue_clear = no_continue
         self.no_bomb_clear = no_bomb
         self.no_miss_clear = no_miss
