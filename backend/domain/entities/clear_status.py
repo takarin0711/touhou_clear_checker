@@ -15,6 +15,7 @@ class ClearStatus:
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
     
     def __post_init__(self):
@@ -22,7 +23,7 @@ class ClearStatus:
             raise ValueError("Game ID must be positive")
         if self.user_id <= 0:
             raise ValueError("User ID must be positive")
-        if self.is_cleared and not self.cleared_at:
+        if self.is_cleared and self.cleared_at is None:
             raise ValueError("Cleared at must be set when is_cleared is True")
         if self.score is not None and self.score < 0:
             raise ValueError("Score must be non-negative")

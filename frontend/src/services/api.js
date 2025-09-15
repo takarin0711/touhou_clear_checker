@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Axiosインスタンスの作成
 const api = axios.create({
-  baseURL: '/api/v1', // package.jsonのproxyにより localhost:8000 にリダイレクト
+  baseURL: 'http://localhost:8000/api/v1', // 直接バックエンドを指定
   headers: {
     'Content-Type': 'application/json',
   },

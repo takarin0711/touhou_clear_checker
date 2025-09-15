@@ -15,6 +15,7 @@ class ClearStatusDto:
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
 
 @dataclass
@@ -28,6 +29,7 @@ class CreateClearStatusDto:
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
 
 @dataclass
@@ -38,4 +40,5 @@ class UpdateClearStatusDto:
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0

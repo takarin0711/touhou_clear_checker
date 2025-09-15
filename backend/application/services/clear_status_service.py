@@ -40,6 +40,7 @@ class ClearStatusService:
             no_bomb_clear=create_dto.no_bomb_clear,
             no_miss_clear=create_dto.no_miss_clear,
             score=create_dto.score,
+            memo=create_dto.memo,
             clear_count=create_dto.clear_count
         )
         saved_clear_status = self.clear_status_repository.save(clear_status)
@@ -61,6 +62,7 @@ class ClearStatusService:
             no_bomb_clear=update_dto.no_bomb_clear,
             no_miss_clear=update_dto.no_miss_clear,
             score=update_dto.score,
+            memo=update_dto.memo,
             clear_count=update_dto.clear_count
         )
         saved_clear_status = self.clear_status_repository.save(clear_status)
@@ -97,5 +99,6 @@ class ClearStatusService:
             no_bomb_clear=clear_status.no_bomb_clear,
             no_miss_clear=clear_status.no_miss_clear,
             score=clear_status.score,
+            memo=clear_status.memo,
             clear_count=clear_status.clear_count
         )

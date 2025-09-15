@@ -15,6 +15,7 @@ class ClearStatusModel(Base):
     no_bomb_clear = Column(Boolean, default=False, nullable=False)
     no_miss_clear = Column(Boolean, default=False, nullable=False)
     score = Column(Integer, nullable=True)
+    memo = Column(String(1000), nullable=True)
     clear_count = Column(Integer, default=0, nullable=False)
     
     game = relationship("GameModel", backref="clear_statuses")

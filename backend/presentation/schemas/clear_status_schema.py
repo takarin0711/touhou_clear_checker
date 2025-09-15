@@ -13,11 +13,11 @@ class ClearStatusBase(BaseModel):
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
 
 class ClearStatusCreate(BaseModel):
     game_id: int
-    user_id: int
     difficulty: Difficulty
     is_cleared: bool = False
     cleared_at: Optional[datetime] = None
@@ -25,6 +25,7 @@ class ClearStatusCreate(BaseModel):
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
 
 class ClearStatusUpdate(BaseModel):
@@ -34,6 +35,7 @@ class ClearStatusUpdate(BaseModel):
     no_bomb_clear: bool = False
     no_miss_clear: bool = False
     score: Optional[int] = None
+    memo: Optional[str] = None
     clear_count: int = 0
 
 class ClearStatusResponse(ClearStatusBase):

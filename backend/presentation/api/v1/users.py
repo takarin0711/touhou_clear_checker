@@ -66,8 +66,26 @@ def login(
             username=form_data.username,
             password=form_data.password
         )
-        token_response = user_service.authenticate_user(login_dto)
-        return token_response
+        token_dto = user_service.authenticate_user(login_dto)
+        
+        # ユーザー情報を取得
+        user_response = user_service.get_user_by_username(form_data.username)
+        if not user_response:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        
+        return TokenResponse(
+            access_token=token_dto.access_token,
+            token_type=token_dto.token_type,
+            user=UserResponse(
+                id=user_response.id,
+                username=user_response.username,
+                email=user_response.email,
+                is_active=user_response.is_active,
+                is_admin=user_response.is_admin,
+                created_at=user_response.created_at,
+                updated_at=user_response.updated_at
+            )
+        )
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 

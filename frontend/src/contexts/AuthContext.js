@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { authApi } from '../features/auth/services/authApi';
 
 // 認証状態の管理
@@ -147,7 +147,7 @@ export const AuthProvider = ({ children }) => {
   /**
    * 認証状態の確認
    */
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const token = localStorage.getItem('auth_token');
     if (!token) {
       return false;
@@ -166,7 +166,7 @@ export const AuthProvider = ({ children }) => {
       logout();
       return false;
     }
-  };
+  }, []);
 
   const value = {
     user: state.user,

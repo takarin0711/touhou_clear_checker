@@ -38,7 +38,7 @@
 | difficulty | VARCHAR(50) | NOT NULL | 難易度 |
 | is_cleared | BOOLEAN | DEFAULT FALSE | 基本クリアフラグ |
 | cleared_at | DATETIME | NULL | クリア日時 |
-| no_continue_clear | BOOLEAN | DEFAULT FALSE | ノーコンテニュークリア |
+| no_continue_clear | BOOLEAN | DEFAULT FALSE | ノーコンティニュークリア |
 | no_bomb_clear | BOOLEAN | DEFAULT FALSE | ノーボムクリア |
 | no_miss_clear | BOOLEAN | DEFAULT FALSE | ノーミスクリア |
 | score | INTEGER | NULL | スコア |
