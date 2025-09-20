@@ -33,8 +33,8 @@ const getDifficultyColorClasses = (difficulty) => {
   const colorMap = {
     'green': 'bg-green-100 text-green-800 border-green-200',
     'blue': 'bg-blue-100 text-blue-800 border-blue-200',
-    'orange': 'bg-orange-100 text-orange-800 border-orange-200',
     'red': 'bg-red-100 text-red-800 border-red-200',
+    'pink': 'bg-pink-100 text-pink-800 border-pink-200',
     'purple': 'bg-purple-100 text-purple-800 border-purple-200'
   };
   

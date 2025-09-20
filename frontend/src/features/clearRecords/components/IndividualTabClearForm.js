@@ -192,12 +192,12 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                       : 'border-transparent text-blue-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50';
                   case 'Hard':
                     return activeTab === diff 
-                      ? 'border-yellow-500 text-yellow-600 bg-yellow-50' 
-                      : 'border-transparent text-yellow-600 hover:text-yellow-700 hover:border-yellow-300 hover:bg-yellow-50';
-                  case 'Lunatic':
-                    return activeTab === diff 
                       ? 'border-red-500 text-red-600 bg-red-50' 
                       : 'border-transparent text-red-600 hover:text-red-700 hover:border-red-300 hover:bg-red-50';
+                  case 'Lunatic':
+                    return activeTab === diff 
+                      ? 'border-pink-500 text-pink-600 bg-pink-50' 
+                      : 'border-transparent text-pink-600 hover:text-pink-700 hover:border-pink-300 hover:bg-pink-50';
                   case 'Extra':
                   case 'Phantasm':
                     return activeTab === diff 

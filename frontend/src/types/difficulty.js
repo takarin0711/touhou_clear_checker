@@ -32,8 +32,8 @@ export const DIFFICULTY_LABELS = {
 export const DIFFICULTY_COLORS = {
   [DIFFICULTIES.EASY]: 'green',
   [DIFFICULTIES.NORMAL]: 'blue',
-  [DIFFICULTIES.HARD]: 'orange',
-  [DIFFICULTIES.LUNATIC]: 'red',
+  [DIFFICULTIES.HARD]: 'red',
+  [DIFFICULTIES.LUNATIC]: 'pink',
   [DIFFICULTIES.EXTRA]: 'purple',
   [DIFFICULTIES.PHANTASM]: 'purple'
 };
