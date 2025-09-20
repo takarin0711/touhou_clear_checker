@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './features/auth/components/AuthPage';
 import { GameList } from './features/games/components';
 import ClearStatusSummary from './features/clearStatus/components/ClearStatusSummary';
+import MockupViewer from './components/mockups/MockupViewer';
 import './App.css';
 
 /**
@@ -22,6 +23,7 @@ const GameListPage = () => {
  */
 const MainApp = () => {
   const { user, logout } = useAuth();
+  const [currentView, setCurrentView] = useState('main'); // 'main' | 'mockup'
 
   return (
     <div className="w-full min-h-screen bg-gray-50 flex flex-col">
@@ -30,10 +32,19 @@ const MainApp = () => {
         <div className="w-full flex justify-center">
           <div className="max-w-7xl w-full px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-4">
-              <h1 className="text-xl font-semibold text-gray-900">
-                東方クリアチェッカー
-              </h1>
+              <div className="flex items-center space-x-3">
+                <img src="/logo.png" alt="東方クリアチェッカー" className="h-8 w-8" />
+                <h1 className="text-xl font-semibold text-gray-900">
+                  東方クリアチェッカー
+                </h1>
+              </div>
               <div className="flex items-center space-x-4">
+                <button
+                  onClick={() => setCurrentView(currentView === 'main' ? 'mockup' : 'main')}
+                  className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full hover:bg-blue-200 transition-colors"
+                >
+                  {currentView === 'main' ? '🎨 UIモック' : '📋 メイン'}
+                </button>
                 <span className="text-sm text-gray-700">
                   こんにちは、{user?.username}さん
                   {user?.is_admin && (
@@ -56,7 +67,7 @@ const MainApp = () => {
 
       {/* メインコンテンツ */}
       <main className="flex-1 w-full" style={{ display: 'block' }}>
-        <GameListPage />
+        {currentView === 'main' ? <GameListPage /> : <MockupViewer />}
       </main>
     </div>
   );

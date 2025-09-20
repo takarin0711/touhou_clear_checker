@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
-import { DIFFICULTIES, DIFFICULTY_LABELS } from '../../../types/clearStatus';
+import { DIFFICULTIES, DIFFICULTY_LABELS, getDifficultyOrderForGame } from '../../../types/clearStatus';
 
 /**
  * クリア状況編集フォームコンポーネント
@@ -27,27 +27,7 @@ const ClearStatusForm = ({
 
   // ゲーム固有の利用可能難易度を取得
   const getAvailableDifficulties = (game) => {
-    if (!game) return [DIFFICULTIES.EASY, DIFFICULTIES.NORMAL, DIFFICULTIES.HARD, DIFFICULTIES.LUNATIC, DIFFICULTIES.EXTRA];
-    
-    // 基本難易度
-    const baseDifficulties = [
-      DIFFICULTIES.EASY,
-      DIFFICULTIES.NORMAL,
-      DIFFICULTIES.HARD,
-      DIFFICULTIES.LUNATIC
-    ];
-
-    // Extra難易度は獣王園（第19作）以外
-    if (game.series_number !== 19) {
-      baseDifficulties.push(DIFFICULTIES.EXTRA);
-    }
-
-    // Phantasm難易度は妖々夢（第7作）のみ
-    if (game.series_number === 7) {
-      baseDifficulties.push(DIFFICULTIES.PHANTASM);
-    }
-
-    return baseDifficulties;
+    return getDifficultyOrderForGame(game);
   };
 
   const availableDifficulties = getAvailableDifficulties(game);

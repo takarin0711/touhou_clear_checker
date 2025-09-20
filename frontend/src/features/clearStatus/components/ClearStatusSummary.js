@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useClearStatus } from '../hooks/useClearStatus';
 import { useGames } from '../../games/hooks/useGames';
-import { DIFFICULTIES, DIFFICULTY_LABELS } from '../../../types/clearStatus';
+import { DIFFICULTIES, DIFFICULTY_LABELS, getDifficultyOrderForGame } from '../../../types/clearStatus';
 
 /**
  * クリア状況まとめコンポーネント
@@ -47,25 +47,7 @@ const ClearStatusSummary = () => {
   const selectedGame = selectedGameId ? games.find(g => g.id === selectedGameId) : null;
 
   const getAvailableDifficulties = (game) => {
-    // 基本難易度
-    const baseDifficulties = [
-      DIFFICULTIES.EASY,
-      DIFFICULTIES.NORMAL,
-      DIFFICULTIES.HARD,
-      DIFFICULTIES.LUNATIC
-    ];
-
-    // Extra難易度は獣王園（第19作）以外
-    if (game.series_number !== 19) {
-      baseDifficulties.push(DIFFICULTIES.EXTRA);
-    }
-
-    // Phantasm難易度は妖々夢（第7作）のみ
-    if (game.series_number === 7) {
-      baseDifficulties.push(DIFFICULTIES.PHANTASM);
-    }
-
-    return baseDifficulties;
+    return getDifficultyOrderForGame(game);
   };
 
   const getClearStatusForDifficulty = (gameId, difficulty) => {

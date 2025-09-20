@@ -14,9 +14,12 @@ const AuthPage = ({ onAuthSuccess }) => {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h1 className="text-center text-3xl font-extrabold text-gray-900 mb-8">
-          東方クリアチェッカー
-        </h1>
+        <div className="flex items-center justify-center space-x-3 mb-8">
+          <img src="/logo.png" alt="東方クリアチェッカー" className="h-10 w-10" />
+          <h1 className="text-3xl font-extrabold text-gray-900">
+            東方クリアチェッカー
+          </h1>
+        </div>
         
         {isLogin ? (
           <LoginForm 

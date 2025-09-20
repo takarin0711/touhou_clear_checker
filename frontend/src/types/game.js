@@ -34,6 +34,7 @@ export const GAME_TYPES = {
   FIGHTING: 'fighting',
   PHOTOGRAPHY: 'photography',
   MIXED: 'mixed',
+  VERSUS: 'versus',
 };
 
 export const GAME_TYPE_LABELS = {
@@ -41,6 +42,7 @@ export const GAME_TYPE_LABELS = {
   [GAME_TYPES.FIGHTING]: '格闘ゲーム',
   [GAME_TYPES.PHOTOGRAPHY]: '撮影STG',
   [GAME_TYPES.MIXED]: '格闘+STG',
+  [GAME_TYPES.VERSUS]: '対戦型STG',
 };
 
 export {};

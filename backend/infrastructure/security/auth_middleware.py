@@ -1,5 +1,6 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
 from jose import JWTError
 from sqlalchemy.orm import Session
 from infrastructure.security.jwt_handler import JWTHandler
@@ -54,3 +55,30 @@ def get_current_admin_user(current_user: User = Depends(get_current_active_user)
             detail="Admin privileges required"
         )
     return current_user
+
+
+optional_security = HTTPBearer(auto_error=False)
+
+def get_optional_current_user(
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security), 
+    db: Session = Depends(get_db)
+) -> Optional[User]:
+    """認証をオプションにしたユーザー取得（読み取り専用エンドポイント用）"""
+    if credentials is None:
+        return None
+    
+    try:
+        token_data = jwt_handler.verify_token(credentials.credentials)
+        username = token_data.username
+        if username is None:
+            return None
+    except JWTError:
+        return None
+    
+    user_repository = UserRepositoryImpl(db)
+    user = user_repository.get_by_username(username)
+    
+    if user is None or not user.is_active:
+        return None
+    
+    return user

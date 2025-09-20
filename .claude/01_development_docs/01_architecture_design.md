@@ -12,7 +12,7 @@
 - **データベース**: SQLite（開発環境）
 - **Python**: 3.9.6（3.13は互換性問題あり）
 
-## アーキテクチャ（DDD/クリーンアーキテクチャ）
+## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
 ```
 backend/
 ├── main.py                  # FastAPIアプリのエントリーポイント
@@ -85,9 +85,7 @@ backend/
     └── add_admin_flag.py      # 管理者権限追加
 ```
 
-## ディレクトリ構成
-
-### フロントエンド（Feature-Based Architecture）
+## フロントエンドアーキテクチャ（Feature-Based Architecture）
 ```
 frontend/
 ├── src/
@@ -112,7 +110,7 @@ frontend/
 └── tailwind.config.js     # Tailwind CSS設定
 ```
 
-### プロジェクト全体
+## プロジェクト全体構成
 ```
 touhou_clear_checker/
 ├── backend/               # DDD/Clean Architecture

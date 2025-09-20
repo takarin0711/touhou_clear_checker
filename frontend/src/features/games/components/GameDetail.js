@@ -2,17 +2,21 @@ import React, { useState } from 'react';
 import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
 import { GAME_TYPE_LABELS } from '../../../types/game';
-import { DIFFICULTIES } from '../../../types/clearStatus';
+import { DIFFICULTIES, getDifficultyOrderForGame } from '../../../types/clearStatus';
 import { useClearStatus } from '../../clearStatus/hooks/useClearStatus';
 import ClearStatusCard from '../../clearStatus/components/ClearStatusCard';
 import ClearStatusForm from '../../clearStatus/components/ClearStatusForm';
+import IndividualTabClearForm from '../../clearStatus/components/IndividualTabClearForm';
 import DifficultyBadge from '../../clearStatus/components/DifficultyBadge';
+import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
+import { useGameCharacters } from '../hooks/useGameCharacters';
 
 /**
  * ゲーム詳細コンポーネント
  */
 const GameDetail = ({ game, onBack }) => {
   const [showForm, setShowForm] = useState(false);
+  const [showIndividualForm, setShowIndividualForm] = useState(false);
   const [editingClearStatus, setEditingClearStatus] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
 
@@ -26,6 +30,12 @@ const GameDetail = ({ game, onBack }) => {
     getClearStatusByGameAndDifficulty
   } = useClearStatus(game.id);
 
+  const {
+    characters,
+    loading: charactersLoading,
+    error: charactersError
+  } = useGameCharacters(game.id);
+
   const getBadgeVariant = (gameType) => {
     switch (gameType) {
       case 'main_series':
@@ -36,6 +46,8 @@ const GameDetail = ({ game, onBack }) => {
         return 'warning';
       case 'mixed':
         return 'purple';
+      case 'versus':
+        return 'success';
       default:
         return 'default';
     }
@@ -53,20 +65,17 @@ const GameDetail = ({ game, onBack }) => {
   };
 
   const getAvailableDifficulties = () => {
-    // 妖々夢（シリーズ7）の場合のみPhantasmが利用可能
-    const baseDifficulties = [
-      DIFFICULTIES.EASY,
-      DIFFICULTIES.NORMAL,
-      DIFFICULTIES.HARD,
-      DIFFICULTIES.LUNATIC,
-      DIFFICULTIES.EXTRA
-    ];
-
-    if (game.series_number === 7) {
-      baseDifficulties.push(DIFFICULTIES.PHANTASM);
+    // 紺珠伝の場合は両モードの難易度を統合表示
+    if (isModeAvailableForGame(game?.id)) {
+      const legacyDifficulties = getDifficultyOrderForGame(game, GAME_MODES.LEGACY);
+      const pointdeviceDifficulties = getDifficultyOrderForGame(game, GAME_MODES.POINTDEVICE);
+      
+      // 重複を除いてマージ（Legacy + Pointdevice の難易度を全て表示）
+      const allDifficulties = [...new Set([...pointdeviceDifficulties, ...legacyDifficulties])];
+      return allDifficulties;
     }
-
-    return baseDifficulties;
+    
+    return getDifficultyOrderForGame(game);
   };
 
   const handleFormSubmit = async (formData) => {
@@ -129,9 +138,22 @@ const GameDetail = ({ game, onBack }) => {
     setShowForm(true);
   };
 
+  const handleAddIndividualClearStatus = () => {
+    setShowIndividualForm(true);
+  };
+
   const handleCancelForm = () => {
     setShowForm(false);
     setEditingClearStatus(null);
+  };
+
+  const handleCancelIndividualForm = () => {
+    setShowIndividualForm(false);
+  };
+
+  const handleIndividualFormSuccess = () => {
+    setShowIndividualForm(false);
+    emitClearStatusUpdate(); // クリア状況まとめを更新
   };
 
   return (
@@ -157,26 +179,42 @@ const GameDetail = ({ game, onBack }) => {
           </Badge>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
           <div>
             <span className="font-medium">シリーズ:</span> {getSeriesDisplay(game.series_number)}
-          </div>
-          <div>
-            <span className="font-medium">シリーズ番号:</span> {game.series_number}
           </div>
           <div>
             <span className="font-medium">リリース年:</span> {game.release_year}年
           </div>
         </div>
 
-        {/* 利用可能な難易度 */}
+        {/* 難易度一覧 */}
         <div className="mt-4">
-          <span className="text-sm font-medium text-gray-700">利用可能な難易度:</span>
+          <span className="text-sm font-medium text-gray-700">難易度一覧:</span>
           <div className="flex flex-wrap gap-2 mt-2">
             {getAvailableDifficulties().map(difficulty => (
-              <DifficultyBadge key={difficulty} difficulty={difficulty} />
+              <div key={difficulty} className="flex items-center">
+                <DifficultyBadge difficulty={difficulty} />
+                {/* 紺珠伝のExtraはLegacyモードのみの注釈 */}
+                {isModeAvailableForGame(game?.id) && difficulty === 'Extra' && (
+                  <span className="ml-1 text-xs text-gray-500">(Legacy)</span>
+                )}
+              </div>
             ))}
           </div>
+          
+          {/* 紺珠伝用のモード説明 */}
+          {isModeAvailableForGame(game?.id) && (
+            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800 font-medium mb-1">
+                紺珠伝では2つのモードが利用可能です：
+              </p>
+              <div className="text-xs text-blue-700 space-y-1">
+                <div>• <span className="font-medium">Legacy Mode</span>: 従来システム（Extra対応）</div>
+                <div>• <span className="font-medium">Pointdevice Mode</span>: チェックポイント制（Easy～Lunatic）</div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -185,11 +223,11 @@ const GameDetail = ({ game, onBack }) => {
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold text-gray-900">クリア状況</h2>
           <Button
-            onClick={handleAddNewClearStatus}
+            onClick={handleAddIndividualClearStatus}
             variant="primary"
             size="medium"
           >
-            新しいクリア状況を追加
+            クリア記録
           </Button>
         </div>
 
@@ -201,7 +239,7 @@ const GameDetail = ({ game, onBack }) => {
           </div>
         )}
 
-        {/* フォーム表示 */}
+        {/* 個別追加フォーム表示 */}
         {showForm && (
           <div className="mb-6 p-6 bg-gray-50 rounded-lg">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
@@ -214,6 +252,17 @@ const GameDetail = ({ game, onBack }) => {
               onSubmit={handleFormSubmit}
               onCancel={handleCancelForm}
               loading={formLoading}
+            />
+          </div>
+        )}
+
+        {/* 機体別条件登録フォーム表示 */}
+        {showIndividualForm && (
+          <div className="mb-6">
+            <IndividualTabClearForm
+              game={game}
+              onClose={handleCancelIndividualForm}
+              onSuccess={handleIndividualFormSuccess}
             />
           </div>
         )}

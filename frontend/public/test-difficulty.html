@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>獣王園 Extra難易度テスト</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .game-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 10px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .difficulty {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+        }
+        .Easy { background-color: #22c55e; }
+        .Normal { background-color: #3b82f6; }
+        .Hard { background-color: #f97316; }
+        .Lunatic { background-color: #ef4444; }
+        .Extra { background-color: #8b5cf6; }
+        .Phantasm { background-color: #8b5cf6; }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background-color: #dcfce7; border: 1px solid #22c55e; }
+        .error { background-color: #fef2f2; border: 1px solid #ef4444; }
+    </style>
+</head>
+<body>
+    <h1>獣王園 Extra難易度表示テスト</h1>
+    <p>実装されたgetDifficultyOrderForGame関数が正しく動作するかテストします。</p>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        // 難易度定数
+        const DIFFICULTIES = {
+            EASY: 'Easy',
+            NORMAL: 'Normal',
+            HARD: 'Hard',
+            LUNATIC: 'Lunatic',
+            EXTRA: 'Extra',
+            PHANTASM: 'Phantasm'
+        };
+
+        // getDifficultyOrderForGame関数
+        const getDifficultyOrderForGame = (game) => {
+            if (!game) return [DIFFICULTIES.EASY, DIFFICULTIES.NORMAL, DIFFICULTIES.HARD, DIFFICULTIES.LUNATIC, DIFFICULTIES.EXTRA];
+            
+            // 基本難易度を構築
+            let difficulties = [
+                DIFFICULTIES.EASY,
+                DIFFICULTIES.NORMAL,
+                DIFFICULTIES.HARD,
+                DIFFICULTIES.LUNATIC
+            ];
+            
+            // Extra難易度は獣王園（シリーズ番号19）以外で追加
+            if (game.series_number !== 19) {
+                difficulties.push(DIFFICULTIES.EXTRA);
+            }
+            
+            // Phantasm難易度は妖々夢（シリーズ番号7）のみで追加
+            if (game.series_number === 7) {
+                difficulties.push(DIFFICULTIES.PHANTASM);
+            }
+            
+            return difficulties;
+        };
+
+        // テスト用ゲームデータ
+        const testGames = [
+            {
+                id: 1,
+                title: '東方紅魔郷',
+                series_number: 6,
+                release_year: 2002,
+                game_type: 'main_series'
+            },
+            {
+                id: 2,
+                title: '東方妖々夢', 
+                series_number: 7,
+                release_year: 2003,
+                game_type: 'main_series'
+            },
+            {
+                id: 3,
+                title: '東方獣王園',
+                series_number: 19,
+                release_year: 2023,
+                game_type: 'main_series'
+            }
+        ];
+
+        // 難易度バッジを生成
+        function createDifficultyBadge(difficulty) {
+            const badge = document.createElement('span');
+            badge.className = `difficulty ${difficulty}`;
+            badge.textContent = difficulty;
+            return badge;
+        }
+
+        // テスト結果を表示
+        function displayTestResults() {
+            const resultsContainer = document.getElementById('test-results');
+            
+            testGames.forEach(game => {
+                const gameCard = document.createElement('div');
+                gameCard.className = 'game-card';
+                
+                const title = document.createElement('h3');
+                title.textContent = `${game.title} (シリーズ番号: ${game.series_number})`;
+                gameCard.appendChild(title);
+                
+                const difficulties = getDifficultyOrderForGame(game);
+                
+                const difficultiesLabel = document.createElement('p');
+                difficultiesLabel.textContent = '利用可能な難易度:';
+                gameCard.appendChild(difficultiesLabel);
+                
+                const difficultiesContainer = document.createElement('div');
+                difficultiesContainer.style.margin = '10px 0';
+                difficulties.forEach(difficulty => {
+                    difficultiesContainer.appendChild(createDifficultyBadge(difficulty));
+                });
+                gameCard.appendChild(difficultiesContainer);
+                
+                // テスト結果の判定
+                const hasExtra = difficulties.includes(DIFFICULTIES.EXTRA);
+                const hasPhantasm = difficulties.includes(DIFFICULTIES.PHANTASM);
+                
+                const testResult = document.createElement('div');
+                testResult.className = 'test-result';
+                
+                let resultText = '';
+                let isSuccess = false;
+                
+                if (game.series_number === 19) {
+                    if (!hasExtra) {
+                        resultText = '✅ 獣王園でExtra難易度が正しく除外されています';
+                        isSuccess = true;
+                    } else {
+                        resultText = '❌ 獣王園でExtra難易度が除外されていません';
+                        isSuccess = false;
+                    }
+                } else if (game.series_number === 7) {
+                    if (hasExtra && hasPhantasm) {
+                        resultText = '✅ 妖々夢でExtra・Phantasm難易度が正しく含まれています';
+                        isSuccess = true;
+                    } else {
+                        resultText = '❌ 妖々夢で難易度設定に問題があります';
+                        isSuccess = false;
+                    }
+                } else {
+                    if (hasExtra && !hasPhantasm) {
+                        resultText = '✅ 通常作品でExtra難易度のみが正しく含まれています';
+                        isSuccess = true;
+                    } else {
+                        resultText = '❌ 通常作品で難易度設定に問題があります';
+                        isSuccess = false;
+                    }
+                }
+                
+                testResult.className += isSuccess ? ' success' : ' error';
+                testResult.textContent = resultText;
+                gameCard.appendChild(testResult);
+                
+                resultsContainer.appendChild(gameCard);
+            });
+        }
+
+        // ページ読み込み時にテストを実行
+        document.addEventListener('DOMContentLoaded', displayTestResults);
+    </script>
+</body>
+</html>

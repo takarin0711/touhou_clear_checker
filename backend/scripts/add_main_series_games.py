@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-東方プロジェクト本編STG（第6作〜第19作）の初期データ追加スクリプト
+東方プロジェクト通常シリーズ（第6作〜）の初期データ追加スクリプト
 """
 
 import sys
@@ -8,12 +8,12 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from sqlalchemy import create_engine, text
-from infrastructure.database.connection import DATABASE_URL
+from infrastructure.database.connection import get_database_url
 
 def add_main_series_games():
-    """本編STGのゲームデータを追加"""
+    """通常シリーズのゲームデータを追加"""
     
-    # 本編STGのゲームデータ（難易度体系が同じ作品を含む）
+    # 通常シリーズのゲームデータ（難易度体系が同じ作品を含む）
     main_series_games = [
         (6.0, "東方紅魔郷", 2002),
         (7.0, "東方妖々夢", 2003),
@@ -22,7 +22,7 @@ def add_main_series_games():
         (10.0, "東方風神録", 2007),
         (11.0, "東方地霊殿", 2008),
         (12.0, "東方星蓮船", 2009),
-        (12.8, "妖精大戦争", 2010),  # 難易度体系が本編STGと同じ
+        (12.8, "妖精大戦争", 2010),  # 難易度体系が通常シリーズと同じ
         (13.0, "東方神霊廟", 2011),
         (14.0, "東方輝針城", 2013),
         (15.0, "東方紺珠伝", 2015),
@@ -33,7 +33,8 @@ def add_main_series_games():
         (20.0, "東方錦上京", 2025),
     ]
     
-    engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
+    database_url = get_database_url()
+    engine = create_engine(database_url)
     
     try:
         with engine.begin() as connection:
@@ -99,7 +100,7 @@ def add_main_series_games():
                     }
                 )
             
-            print(f"本編STG{len(main_series_games)}作品のデータを追加しました。")
+            print(f"通常シリーズ{len(main_series_games)}作品のデータを追加しました。")
             
     except Exception as e:
         print(f"エラーが発生しました: {e}")

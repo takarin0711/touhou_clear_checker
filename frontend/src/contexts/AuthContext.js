@@ -163,6 +163,7 @@ export const AuthProvider = ({ children }) => {
       return true;
     } catch (error) {
       console.error('認証確認エラー:', error);
+      // バックエンドが動いていない場合はログアウトして続行
       logout();
       return false;
     }
