@@ -202,29 +202,84 @@ const GameDetail = ({ game, onBack }) => {
         {!recordsLoading && (
           <div className="space-y-4">
             {clearRecords.length > 0 ? (
-              <div className="space-y-2">
-                {clearRecords.map((record) => (
-                  <div key={record.id} className="bg-gray-50 p-3 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <span className="font-medium">{record.character_name}</span>
-                        <span className="text-sm text-gray-600">{record.difficulty}</span>
-                        {record.mode !== 'normal' && (
-                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
-                            {record.mode}
+              <div className="space-y-6">
+                {(() => {
+                  // 難易度とモードでグルーピング
+                  const groupedRecords = clearRecords.reduce((groups, record) => {
+                    // 紺珠伝の場合はモードも考慮
+                    const groupKey = isModeAvailableForGame(game?.id) 
+                      ? `${record.difficulty}_${record.mode || 'normal'}`
+                      : record.difficulty;
+                    
+                    if (!groups[groupKey]) {
+                      groups[groupKey] = {
+                        difficulty: record.difficulty,
+                        mode: record.mode || 'normal',
+                        records: []
+                      };
+                    }
+                    groups[groupKey].records.push(record);
+                    return groups;
+                  }, {});
+
+                  // 難易度順でソート
+                  const availableDifficulties = getAvailableDifficulties();
+                  const sortedGroups = Object.values(groupedRecords).sort((a, b) => {
+                    const diffIndexA = availableDifficulties.indexOf(a.difficulty);
+                    const diffIndexB = availableDifficulties.indexOf(b.difficulty);
+                    
+                    if (diffIndexA !== diffIndexB) {
+                      return diffIndexA - diffIndexB;
+                    }
+                    
+                    // 同じ難易度の場合、モード順でソート（完全無欠→レガシー）
+                    if (a.mode === 'normal' && b.mode === 'legacy') return -1;
+                    if (a.mode === 'legacy' && b.mode === 'normal') return 1;
+                    return 0;
+                  });
+
+                  return sortedGroups.map((group, groupIndex) => (
+                    <div key={`${group.difficulty}_${group.mode}`} className="border border-gray-200 rounded-lg overflow-hidden">
+                      {/* グループヘッダー */}
+                      <div className={`px-4 py-3 font-medium text-sm ${getDifficultyColorClasses(group.difficulty)}`}>
+                        <div className="flex items-center space-x-3">
+                          <span>{group.difficulty}</span>
+                          {isModeAvailableForGame(game?.id) && (
+                            <span className="text-xs px-2 py-1 bg-white bg-opacity-70 rounded-full">
+                              {group.mode === 'legacy' ? 'レガシーモード' : '完全無欠モード'}
+                            </span>
+                          )}
+                          <span className="text-xs opacity-75">
+                            ({group.records.length}件)
                           </span>
-                        )}
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2 text-sm">
-                        {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
-                        {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
-                        {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
-                        {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
-                        {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
+                      
+                      {/* グループ内のレコード */}
+                      <div className="bg-white">
+                        {group.records.map((record, recordIndex) => (
+                          <div 
+                            key={record.id} 
+                            className={`p-3 border-b border-gray-100 last:border-b-0 ${recordIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center space-x-4">
+                                <span className="font-medium text-gray-900">{record.character_name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-sm">
+                                {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
+                                {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
+                                {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
+                                {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
+                                {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ));
+                })()}
               </div>
             ) : (
               <div className="text-center py-8">

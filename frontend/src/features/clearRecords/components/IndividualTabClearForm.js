@@ -18,17 +18,79 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   const [difficultyData, setDifficultyData] = useState({});
 
   const { characters, loading: charactersLoading } = useGameCharacters(game.id);
-  const { submitIndividualConditions } = useClearRecords();
+  const { clearRecords, submitIndividualConditions } = useClearRecords(game.id);
 
   // 利用可能な難易度を取得
   const availableDifficulties = getDifficultyOrderForGame(game, selectedMode);
   const isModeGame = isModeAvailableForGame(game?.id);
 
-  // 機体リストが読み込まれた時に初期状態を設定
+  // 既存のクリア記録を元にチェック状態を設定する関数
+  const applyExistingClearRecords = (initialData, existingRecords, characters) => {
+    console.log('applyExistingClearRecords called:', {
+      existingRecords,
+      selectedMode,
+      initialDataKeys: Object.keys(initialData)
+    });
+    
+    if (!existingRecords || existingRecords.length === 0) {
+      console.log('No existing records found');
+      return initialData;
+    }
+
+    existingRecords.forEach(record => {
+      const difficulty = record.difficulty;
+      const characterName = record.character_name;
+      const mode = record.mode || 'normal';
+      
+      console.log('Processing record:', { difficulty, characterName, mode, selectedMode, record });
+      
+      // 現在のモードと一致するレコードのみ適用
+      if (mode !== selectedMode) {
+        console.log('Mode mismatch, skipping record');
+        return;
+      }
+      
+      // character_nameからcharacter_idを逆引き
+      const character = characters.find(c => c.character_name === characterName);
+      const characterId = character?.id;
+      
+      console.log('Found character:', { character, characterId });
+      
+      if (characterId && initialData[difficulty] && initialData[difficulty].characters[characterId]) {
+        const appliedData = {
+          cleared: record.is_cleared || false,
+          no_continue: record.is_no_continue_clear || false,
+          no_bomb: record.is_no_bomb_clear || false,
+          no_miss: record.is_no_miss_clear || false,
+          full_spell_card: record.is_full_spell_card || false
+        };
+        console.log('Applying data:', appliedData);
+        initialData[difficulty].characters[characterId] = appliedData;
+      } else {
+        console.log('No matching difficulty/character found in initialData', { 
+          characterId, 
+          hasDifficulty: !!initialData[difficulty],
+          hasCharacter: !!initialData[difficulty]?.characters[characterId]
+        });
+      }
+    });
+    
+    console.log('Final initialData after applying records:', initialData);
+    return initialData;
+  };
+
+  // 機体リストとクリア記録が読み込まれた時に初期状態を設定
   useEffect(() => {
+    console.log('useEffect triggered:', {
+      charactersLength: characters.length,
+      clearRecordsLength: clearRecords?.length,
+      selectedMode,
+      gameId: game?.id
+    });
+    
     if (characters.length > 0) {
       const currentDifficulties = getDifficultyOrderForGame(game, selectedMode);
-      const initialData = {};
+      let initialData = {};
       currentDifficulties.forEach(difficulty => {
         initialData[difficulty] = {
           characters: {}
@@ -43,6 +105,13 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
           };
         });
       });
+      
+      console.log('Initial data before applying records:', initialData);
+      
+      // 既存のクリア記録を適用
+      initialData = applyExistingClearRecords(initialData, clearRecords, characters);
+      
+      console.log('Setting difficultyData:', initialData);
       setDifficultyData(initialData);
       
       // 最初の難易度をアクティブタブに設定
@@ -50,7 +119,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
         setActiveTab(currentDifficulties[0]);
       }
     }
-  }, [characters, game, selectedMode]);
+  }, [characters, clearRecords, game, selectedMode]);
 
   // 機体の条件を更新
   const updateCharacterCondition = (difficulty, characterId, conditionType, value) => {
