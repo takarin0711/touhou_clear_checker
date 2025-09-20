@@ -210,7 +210,7 @@ INSERT INTO game_characters (game_id, character_name, description, sort_order) V
 
 ### 2. 既存データ移行
 ```sql
--- 既存clear_statusデータをclear_recordsに移行
+-- 既存のクリア状況データをclear_recordsテーブルに移行
 -- ※ 既存のgame_charactersテーブルがある場合
 INSERT INTO clear_records (
     user_id, game_id, character_id, difficulty, mode,
@@ -286,7 +286,7 @@ DELETE /api/v1/clear-records/{id}                    # クリア記録削除
 - **接続設定**: `infrastructure/database/connection.py`
 
 ## マイグレーション
-- **既存**: `scripts/migrate_database.py`（users, games, clear_status）
+- **既存**: `scripts/migrate_database.py`（users, games, clear_records）
 - **新規**: `scripts/migrate_to_unified_character_system.py`（統合game_charactersテーブル作成・データ移行）
 - **管理者権限追加**: `scripts/add_admin_flag.py`
 - **本編STGデータ追加**: `scripts/add_main_series_games.py`

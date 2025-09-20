@@ -215,23 +215,20 @@ src/features/games/
 - 「クリア状況を編集」機能
 - レスポンシブデザイン
 
-### 2. クリア状況管理機能
+### 2. クリア記録管理機能
 ```
-src/features/clearStatus/
+src/features/clearRecords/
 ├── components/
-│   ├── ClearStatusSummary.js   # メイン画面クリア状況まとめ
-│   ├── ClearStatusForm.js      # クリア状況登録・編集フォーム
-│   ├── ClearStatusCard.js      # クリア状況個別カード
-│   ├── DifficultyBadge.js      # 難易度バッジ
-│   └── index.js                # コンポーネント集約
+│   ├── IndividualTabClearForm.js # 機体別クリア記録登録フォーム
+│   └── index.js                  # コンポーネント集約
 ├── hooks/
-│   └── useClearStatus.js       # クリア状況管理フック
+│   └── useClearRecords.js        # クリア記録管理フック
 └── services/
-    └── clearStatusApi.js       # クリア状況API通信
+    └── clearRecordsApi.js        # クリア記録API通信
 ```
 
 **主要機能**:
-- **クリア状況まとめ表示**：全ゲームを俯瞰できるメイン画面
+- **機体別クリア記録登録**：機体ごとに個別の条件（クリア・ノーコン・ノーボム・ノーミス・フルスペカ）を選択可能
 - **ゲーム固有難易度制限**：妖々夢のPhantasm、獣王園のExtra制限など
 - **リアルタイム更新**：クリア状況変更時の自動反映
 - **詳細クリア条件**：ノーコンティニュー・ノーボム・ノーミス記録
@@ -253,15 +250,15 @@ src/features/clearStatus/
 ### 1. リアルタイム更新システム
 ```javascript
 // イベントベースの状態同期
-const emitClearStatusUpdate = () => {
-  window.dispatchEvent(new Event('clearStatusUpdated'));
+const emitClearRecordsUpdate = () => {
+  window.dispatchEvent(new Event('clearRecordsUpdated'));
 };
 
 // グローバルイベントリスナー
 useEffect(() => {
-  const handleUpdate = () => refetchClearStatuses();
-  window.addEventListener('clearStatusUpdated', handleUpdate);
-  return () => window.removeEventListener('clearStatusUpdated', handleUpdate);
+  const handleUpdate = () => refetchClearRecords();
+  window.addEventListener('clearRecordsUpdated', handleUpdate);
+  return () => window.removeEventListener('clearRecordsUpdated', handleUpdate);
 }, []);
 ```
 
@@ -270,14 +267,14 @@ useEffect(() => {
 // ゲーム管理
 const { games, loading, error, applyFilters } = useGames();
 
-// クリア状況管理  
+// クリア記録管理  
 const { 
-  clearStatuses, 
-  createClearStatus, 
-  updateClearStatus,
-  deleteClearStatus,
+  clearRecords, 
+  createClearRecord, 
+  updateClearRecord,
+  deleteClearRecord,
   refetch 
-} = useClearStatus(gameId);
+} = useClearRecords(gameId);
 ```
 
 ## 次回実装予定

@@ -22,12 +22,12 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── user.py         # ユーザーエンティティ
 │   │   ├── game.py         # ゲームエンティティ
-│   │   └── clear_status.py # クリア状況エンティティ
+│   │   └── clear_record.py # クリア記録エンティティ
 │   ├── repositories/       # リポジトリインターフェース
 │   │   ├── __init__.py
 │   │   ├── user_repository.py
 │   │   ├── game_repository.py
-│   │   └── clear_status_repository.py
+│   │   └── clear_record_repository.py
 │   └── value_objects/      # 値オブジェクト
 │       ├── __init__.py
 │       └── difficulty.py
@@ -37,12 +37,12 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── user_service.py     # ユーザー管理サービス
 │   │   ├── game_service.py     # ゲーム管理サービス
-│   │   └── clear_status_service.py # クリア状況管理サービス
+│   │   └── clear_record_service.py # クリア記録管理サービス
 │   └── dtos/              # データ転送オブジェクト
 │       ├── __init__.py
 │       ├── user_dto.py         # ユーザーDTO
 │       ├── game_dto.py         # ゲームDTO
-│       └── clear_status_dto.py # クリア状況DTO
+│       └── clear_record_dto.py # クリア記録DTO
 ├── infrastructure/        # インフラストラクチャ層
 │   ├── __init__.py
 │   ├── database/         # データベース関連
@@ -52,12 +52,12 @@ backend/
 │   │   │   ├── __init__.py
 │   │   │   ├── user_model.py      # ユーザーモデル
 │   │   │   ├── game_model.py      # ゲームモデル
-│   │   │   └── clear_status_model.py # クリア状況モデル
+│   │   │   └── clear_record_model.py # クリア記録モデル
 │   │   └── repositories/ # リポジトリ実装
 │   │       ├── __init__.py
 │   │       ├── user_repository_impl.py
 │   │       ├── game_repository_impl.py
-│   │       └── clear_status_repository_impl.py
+│   │       └── clear_record_repository_impl.py
 │   └── security/         # セキュリティ関連
 │       ├── __init__.py
 │       ├── auth_middleware.py  # JWT認証ミドルウェア
@@ -71,14 +71,14 @@ backend/
 │   │   │   ├── __init__.py
 │   │   │   ├── users.py       # ユーザーAPI（自分の情報のみ）
 │   │   │   ├── games.py       # ゲームAPI（読み取り専用）
-│   │   │   ├── clear_status.py # クリア状況API
+│   │   │   ├── clear_records.py # クリア記録API
 │   │   │   └── admin.py       # 管理者専用API
 │   │   └── dependencies.py    # 依存関係注入
 │   └── schemas/           # Pydanticスキーマ
 │       ├── __init__.py
 │       ├── user_schema.py     # ユーザースキーマ
 │       ├── game_schema.py     # ゲームスキーマ
-│       └── clear_status_schema.py # クリア状況スキーマ
+│       └── clear_record_schema.py # クリア記録スキーマ
 └── scripts/              # マイグレーション・ユーティリティ
     ├── __init__.py
     ├── migrate_database.py    # 初期DB作成
@@ -98,7 +98,7 @@ frontend/
 │   │   │   ├── hooks/         # カスタムフック
 │   │   │   └── services/      # authApi.js
 │   │   ├── games/         # ゲーム管理機能（実装予定）
-│   │   └── clearStatus/   # クリア状況機能（実装予定）
+│   │   └── clearRecords/  # クリア記録機能
 │   ├── contexts/          # グローバル状態管理
 │   │   └── AuthContext.js # 認証状態管理
 │   ├── services/          # 共通API設定
@@ -130,7 +130,7 @@ touhou_clear_checker/
 - `DELETE /api/v1/users/me` - 自分のアカウント削除
 - `GET /api/v1/games/` - ゲーム一覧取得
 - `GET /api/v1/games/{id}` - ゲーム詳細取得
-- `GET/POST/PUT/DELETE /api/v1/clear-status/` - クリア状況管理
+- `GET/POST/PUT/DELETE /api/v1/clear-records/` - クリア記録管理
 
 ### 管理者専用API（管理者権限必要）
 - `GET /api/v1/admin/users/` - 全ユーザー一覧
@@ -139,7 +139,7 @@ touhou_clear_checker/
 - `POST/PUT/DELETE /api/v1/admin/games/` - ゲーム作品管理
 
 ## 権限システム
-- **一般ユーザー**: 自分の情報とクリア状況のみ管理可能
+- **一般ユーザー**: 自分の情報とクリア記録のみ管理可能
 - **管理者**: 全ユーザー管理 + ゲーム作品管理権限
 
 ## フロントエンド状態管理
