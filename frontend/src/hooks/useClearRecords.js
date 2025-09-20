@@ -169,11 +169,13 @@ export const useClearRecords = (gameId = null) => {
   /**
    * 機体別条件式データを送信
    */
-  const submitIndividualConditions = useCallback(async (gameId, difficulty, difficultyData) => {
+  const submitIndividualConditions = useCallback(async (gameId, difficulty, difficultyData, characters) => {
     setError(null);
     
     try {
-      const records = await clearRecordApi.submitIndividualConditions(gameId, difficulty, difficultyData);
+      console.log('Submitting individual conditions:', { gameId, difficulty, difficultyData });
+      const records = await clearRecordApi.submitIndividualConditions(gameId, difficulty, difficultyData, characters);
+      console.log('Submit response:', records);
       
       // 状態を更新
       setClearRecords(prev => {
@@ -199,7 +201,18 @@ export const useClearRecords = (gameId = null) => {
       return { success: true, data: records };
     } catch (err) {
       console.error('機体別条件送信エラー:', err);
-      const errorMessage = err.response?.data?.detail || '条件の保存に失敗しました';
+      console.error('Error response:', err.response);
+      console.error('Error data:', err.response?.data);
+      
+      let errorMessage = '条件の保存に失敗しました';
+      if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail;
+      } else if (err.response?.data) {
+        errorMessage = JSON.stringify(err.response.data, null, 2);
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }

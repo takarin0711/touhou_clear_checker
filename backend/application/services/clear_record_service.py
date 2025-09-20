@@ -30,12 +30,14 @@ class ClearRecordService:
         clear_record = ClearRecord(
             user_id=user_id,
             game_id=clear_record_data.get('game_id'),
-            character_id=clear_record_data.get('character_id'),
+            character_name=clear_record_data.get('character_name'),
             difficulty=clear_record_data.get('difficulty'),
+            mode=clear_record_data.get('mode', 'normal'),
             is_cleared=clear_record_data.get('is_cleared', False),
             is_no_continue_clear=clear_record_data.get('is_no_continue_clear', False),
             is_no_bomb_clear=clear_record_data.get('is_no_bomb_clear', False),
             is_no_miss_clear=clear_record_data.get('is_no_miss_clear', False),
+            is_full_spell_card=clear_record_data.get('is_full_spell_card', False),
             cleared_at=clear_record_data.get('cleared_at')
         )
         return await self.clear_record_repository.create(clear_record)
@@ -70,23 +72,51 @@ class ClearRecordService:
     
     async def create_or_update_clear_record(self, user_id: int, clear_record_data: dict) -> ClearRecord:
         """クリア記録を作成または更新（UPSERT）"""
-        clear_record = ClearRecord(
-            user_id=user_id,
-            game_id=clear_record_data.get('game_id'),
-            character_id=clear_record_data.get('character_id'),
-            difficulty=clear_record_data.get('difficulty'),
-            is_cleared=clear_record_data.get('is_cleared', False),
-            is_no_continue_clear=clear_record_data.get('is_no_continue_clear', False),
-            is_no_bomb_clear=clear_record_data.get('is_no_bomb_clear', False),
-            is_no_miss_clear=clear_record_data.get('is_no_miss_clear', False),
-            cleared_at=clear_record_data.get('cleared_at')
-        )
-        return await self.clear_record_repository.create_or_update(clear_record)
+        try:
+            print(f"Creating ClearRecord with data: {clear_record_data}")
+            clear_record = ClearRecord(
+                user_id=user_id,
+                game_id=clear_record_data.get('game_id'),
+                character_name=clear_record_data.get('character_name'),
+                difficulty=clear_record_data.get('difficulty'),
+                mode=clear_record_data.get('mode', 'normal'),
+                is_cleared=clear_record_data.get('is_cleared', False),
+                is_no_continue_clear=clear_record_data.get('is_no_continue_clear', False),
+                is_no_bomb_clear=clear_record_data.get('is_no_bomb_clear', False),
+                is_no_miss_clear=clear_record_data.get('is_no_miss_clear', False),
+                is_full_spell_card=clear_record_data.get('is_full_spell_card', False),
+                cleared_at=clear_record_data.get('cleared_at')
+            )
+            print(f"Created ClearRecord entity: {clear_record}")
+            result = await self.clear_record_repository.create_or_update(clear_record)
+            print(f"Repository returned: {result}")
+            return result
+        except Exception as e:
+            print(f"Error in create_or_update_clear_record: {e}")
+            print(f"Input data: {clear_record_data}")
+            raise e
+    
+    async def upsert_clear_record(self, user_id: int, clear_record_data: dict) -> ClearRecord:
+        """クリア記録をUpsert（作成または更新）"""
+        return await self.create_or_update_clear_record(user_id, clear_record_data)
     
     async def batch_create_or_update_records(self, user_id: int, records_data: List[dict]) -> List[ClearRecord]:
         """複数のクリア記録を一括で作成または更新"""
+        print(f"Processing batch for user {user_id}, {len(records_data)} records")
         results = []
-        for record_data in records_data:
-            result = await self.create_or_update_clear_record(user_id, record_data)
-            results.append(result)
+        for i, record_data in enumerate(records_data):
+            try:
+                print(f"Processing record {i+1}/{len(records_data)}: {record_data}")
+                result = await self.create_or_update_clear_record(user_id, record_data)
+                print(f"Result: {result}")
+                results.append(result)
+            except Exception as e:
+                print(f"Error processing record {i+1}: {e}")
+                print(f"Record data: {record_data}")
+                raise e
+        print(f"Batch complete, returning {len(results)} results")
         return results
+    
+    async def batch_upsert_clear_records(self, user_id: int, records_data: List[dict]) -> List[ClearRecord]:
+        """複数のクリア記録を一括でUpsert"""
+        return await self.batch_create_or_update_records(user_id, records_data)

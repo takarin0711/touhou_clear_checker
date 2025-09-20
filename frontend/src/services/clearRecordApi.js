@@ -12,7 +12,7 @@ export const clearRecordApi = {
    * @returns {Promise<Array>} クリア記録配列
    */
   async getMyClearRecords() {
-    const response = await apiClient.get('/clear-records');
+    const response = await apiClient.get('/clear-records/');
     return response.data;
   },
 
@@ -22,7 +22,7 @@ export const clearRecordApi = {
    * @returns {Promise<Array>} クリア記録配列
    */
   async getMyClearRecordsByGame(gameId) {
-    const response = await apiClient.get(`/clear-records?game_id=${gameId}`);
+    const response = await apiClient.get(`/clear-records/?game_id=${gameId}`);
     return response.data;
   },
 
@@ -40,7 +40,7 @@ export const clearRecordApi = {
    * @returns {Promise<Object>} 作成されたクリア記録
    */
   async createClearRecord(recordData) {
-    const response = await apiClient.post('/clear-records', recordData);
+    const response = await apiClient.post('/clear-records/', recordData);
     return response.data;
   },
 
@@ -92,24 +92,32 @@ export const clearRecordApi = {
    * @param {string} difficulty - 難易度
    * @param {Object} difficultyData - 機体別条件データ
    * @param {Object} difficultyData.characters - 機体ごとの条件 {characterId: {cleared: bool, no_continue: bool, ...}}
+   * @param {Array} characters - キャラクター一覧（id, nameの情報を含む）
    * @returns {Promise<Array>} 作成/更新されたクリア記録の配列
    */
-  async submitIndividualConditions(gameId, difficulty, difficultyData) {
+  async submitIndividualConditions(gameId, difficulty, difficultyData, characters = []) {
     const recordsData = [];
     
     // 機体ごとの条件データを個別レコードに変換
     Object.entries(difficultyData.characters || {}).forEach(([characterId, conditions]) => {
-      if (conditions.cleared || conditions.no_continue || conditions.no_bomb || conditions.no_miss) {
-        recordsData.push({
+      if (conditions.cleared || conditions.no_continue || conditions.no_bomb || conditions.no_miss || conditions.full_spell_card) {
+        // characterIdから対応するcharacter_nameを取得
+        const character = characters.find(c => c.id === parseInt(characterId));
+        const characterName = character?.character_name || character?.name || "霊夢";
+        
+        const recordData = {
           game_id: gameId,
-          character_id: parseInt(characterId),
+          character_name: characterName,
           difficulty: difficulty,
+          mode: "normal",
           is_cleared: conditions.cleared || false,
           is_no_continue_clear: conditions.no_continue || false,
           is_no_bomb_clear: conditions.no_bomb || false,
           is_no_miss_clear: conditions.no_miss || false,
+          is_full_spell_card: conditions.full_spell_card || false,
           cleared_at: conditions.cleared ? new Date().toISOString().split('T')[0] : null
-        });
+        };
+        recordsData.push(recordData);
       }
     });
 

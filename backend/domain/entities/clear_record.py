@@ -13,7 +13,7 @@ class ClearRecord:
         id: Optional[int] = None,
         user_id: int = 0,
         game_id: int = 0,
-        character_id: int = 0,              # 機体ID（game_charactersテーブルの参照）
+        character_name: str = "",           # 機体名
         difficulty: str = "",
         mode: str = "normal",               # ゲームモード（通常: normal、紺珠伝: legacy/pointdevice）
         is_cleared: bool = False,
@@ -31,7 +31,7 @@ class ClearRecord:
         self.id = id
         self.user_id = user_id
         self.game_id = game_id
-        self.character_id = character_id
+        self.character_name = character_name
         self.difficulty = difficulty
         self.mode = mode
         self.is_cleared = is_cleared
@@ -88,7 +88,7 @@ class ClearRecord:
             'id': self.id,
             'user_id': self.user_id,
             'game_id': self.game_id,
-            'character_id': self.character_id,
+            'character_name': self.character_name,
             'difficulty': self.difficulty,
             'is_cleared': self.is_cleared,
             'is_no_continue_clear': self.is_no_continue_clear,
@@ -110,7 +110,7 @@ class ClearRecord:
             id=data.get('id'),
             user_id=data.get('user_id', 0),
             game_id=data.get('game_id', 0),
-            character_id=data.get('character_id', 0),
+            character_name=data.get('character_name', ''),
             difficulty=data.get('difficulty', ''),
             is_cleared=data.get('is_cleared', False),
             is_no_continue_clear=data.get('is_no_continue_clear', False),
@@ -128,7 +128,7 @@ class ClearRecord:
     def __str__(self) -> str:
         conditions = self.get_achieved_conditions()
         condition_str = ", ".join(conditions) if conditions else "未クリア"
-        return f"ClearRecord(user={self.user_id}, game={self.game_id}, char={self.character_id}, diff={self.difficulty}, conditions={condition_str})"
+        return f"ClearRecord(user={self.user_id}, game={self.game_id}, char={self.character_name}, diff={self.difficulty}, conditions={condition_str})"
     
     def __repr__(self) -> str:
         return self.__str__()

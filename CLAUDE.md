@@ -28,7 +28,7 @@
 ## よく使用するコマンド
 
 ### バックエンド
-- 開発サーバー: `cd backend && uvicorn main:app --reload`
+- 開発サーバー: `cd backend && source venv39/bin/activate && python main.py`
 - 依存関係インストール: `cd backend && pip install -r requirements.txt`
 
 ### フロントエンド  

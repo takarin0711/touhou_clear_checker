@@ -1,7 +1,7 @@
 /**
  * 獣王園のExtra難易度除外テスト用ファイル
  */
-import { getDifficultyOrderForGame, DIFFICULTIES } from './types/clearStatus';
+import { getDifficultyOrderForGame, DIFFICULTIES } from './types/difficulty';
 
 // テスト用ゲームデータ
 const testGames = [

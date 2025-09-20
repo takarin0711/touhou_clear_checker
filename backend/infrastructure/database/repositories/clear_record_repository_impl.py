@@ -31,7 +31,7 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
             ClearRecordModel.user_id == user_id
         ).order_by(
             ClearRecordModel.game_id, 
-            ClearRecordModel.character_id, 
+            ClearRecordModel.character_name, 
             ClearRecordModel.difficulty
         ).all()
         return [model.to_entity() for model in models]
@@ -42,7 +42,7 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
             ClearRecordModel.game_id == game_id
         ).order_by(
             ClearRecordModel.user_id, 
-            ClearRecordModel.character_id, 
+            ClearRecordModel.character_name, 
             ClearRecordModel.difficulty
         ).all()
         return [model.to_entity() for model in models]
@@ -53,7 +53,7 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
             ClearRecordModel.user_id == user_id,
             ClearRecordModel.game_id == game_id
         ).order_by(
-            ClearRecordModel.character_id, 
+            ClearRecordModel.character_name, 
             ClearRecordModel.difficulty
         ).all()
         return [model.to_entity() for model in models]
@@ -62,49 +62,45 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
         self, 
         user_id: int, 
         game_id: int, 
-        character_id: int, 
+        character_name: str, 
         difficulty: str
     ) -> Optional[ClearRecord]:
         """ユーザー・ゲーム・キャラ・難易度でクリア記録を取得"""
         model = self.session.query(ClearRecordModel).filter(
             ClearRecordModel.user_id == user_id,
             ClearRecordModel.game_id == game_id,
-            ClearRecordModel.character_id == character_id,
+            ClearRecordModel.character_name == character_name,
             ClearRecordModel.difficulty == difficulty
         ).first()
         return model.to_entity() if model else None
     
     async def create(self, clear_record: ClearRecord) -> ClearRecord:
         """クリア記録を作成"""
-        now = datetime.now()
-        
-        # cleared_atの設定: is_clearedがTrueで既存のcleared_atがNoneの場合は今日の日付を設定
-        cleared_at = clear_record.cleared_at
-        if clear_record.is_cleared and cleared_at is None:
-            cleared_at = date.today()
-        
-        model = ClearRecordModel(
-            user_id=clear_record.user_id,
-            game_id=clear_record.game_id,
-            character_id=clear_record.character_id,
-            difficulty=clear_record.difficulty,
-            is_cleared=clear_record.is_cleared,
-            is_no_continue_clear=clear_record.is_no_continue_clear,
-            is_no_bomb_clear=clear_record.is_no_bomb_clear,
-            is_no_miss_clear=clear_record.is_no_miss_clear,
-            is_full_spell_card=clear_record.is_full_spell_card,
-            is_special_clear_1=clear_record.is_special_clear_1,
-            is_special_clear_2=clear_record.is_special_clear_2,
-            is_special_clear_3=clear_record.is_special_clear_3,
-            cleared_at=cleared_at,
-            last_updated_at=now,
-            created_at=now
-        )
-        
-        self.session.add(model)
-        self.session.commit()
-        self.session.refresh(model)
-        return model.to_entity()
+        try:
+            now = datetime.now()
+            
+            # cleared_atの設定: is_clearedがTrueで既存のcleared_atがNoneの場合は今日の日付を設定
+            cleared_at = clear_record.cleared_at
+            if clear_record.is_cleared and cleared_at is None:
+                cleared_at = date.today()
+            
+            model = ClearRecordModel.from_entity(clear_record)
+            if cleared_at:
+                model.cleared_at = cleared_at
+            model.last_updated_at = now
+            model.created_at = now
+            
+            print(f"Creating model: {model}")
+            self.session.add(model)
+            self.session.commit()
+            self.session.refresh(model)
+            result = model.to_entity()
+            print(f"Created entity: {result}")
+            return result
+        except Exception as e:
+            print(f"Error in repository create: {e}")
+            self.session.rollback()
+            raise e
     
     async def update(self, clear_record: ClearRecord) -> ClearRecord:
         """クリア記録を更新"""
@@ -155,7 +151,7 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
         existing = await self.find_by_user_game_character_difficulty(
             clear_record.user_id,
             clear_record.game_id,
-            clear_record.character_id,
+            clear_record.character_name,
             clear_record.difficulty
         )
         

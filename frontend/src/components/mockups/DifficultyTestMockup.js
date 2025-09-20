@@ -1,6 +1,5 @@
 import React from 'react';
-import { getDifficultyOrderForGame } from '../../types/clearStatus';
-import DifficultyBadge from '../../features/clearStatus/components/DifficultyBadge';
+import { getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../types/difficulty';
 
 // テスト用ゲームデータ
 const testGames = [
@@ -26,6 +25,22 @@ const testGames = [
     game_type: 'main_series'
   }
 ];
+
+/**
+ * 難易度に応じた色クラスを取得
+ */
+const getDifficultyColorClasses = (difficulty) => {
+  const colorMap = {
+    'green': 'bg-green-100 text-green-800 border-green-200',
+    'blue': 'bg-blue-100 text-blue-800 border-blue-200',
+    'orange': 'bg-orange-100 text-orange-800 border-orange-200',
+    'red': 'bg-red-100 text-red-800 border-red-200',
+    'purple': 'bg-purple-100 text-purple-800 border-purple-200'
+  };
+  
+  const color = DIFFICULTY_COLORS[difficulty] || 'blue';
+  return colorMap[color] || colorMap.blue;
+};
 
 /**
  * 難易度表示テスト用モックアップ
@@ -91,7 +106,12 @@ const DifficultyTestMockup = () => {
               <span className="text-sm font-medium text-gray-700">利用可能な難易度:</span>
               <div className="flex flex-wrap gap-2 mt-2">
                 {difficulties.map(difficulty => (
-                  <DifficultyBadge key={difficulty} difficulty={difficulty} />
+                  <span 
+                    key={difficulty} 
+                    className={`px-3 py-1 text-sm rounded-full border font-medium ${getDifficultyColorClasses(difficulty)}`}
+                  >
+                    {difficulty}
+                  </span>
                 ))}
               </div>
             </div>

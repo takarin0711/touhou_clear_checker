@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './features/auth/components/AuthPage';
 import { GameList } from './features/games/components';
-import ClearStatusSummary from './features/clearStatus/components/ClearStatusSummary';
 import MockupViewer from './components/mockups/MockupViewer';
 import './App.css';
 
@@ -12,7 +11,6 @@ import './App.css';
 const GameListPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <ClearStatusSummary />
       <GameList />
     </div>
   );

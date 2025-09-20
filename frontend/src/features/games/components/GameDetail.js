@@ -2,12 +2,9 @@ import React, { useState } from 'react';
 import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
 import { GAME_TYPE_LABELS } from '../../../types/game';
-import { DIFFICULTIES, getDifficultyOrderForGame } from '../../../types/clearStatus';
-import { useClearStatus } from '../../clearStatus/hooks/useClearStatus';
-import ClearStatusCard from '../../clearStatus/components/ClearStatusCard';
-import ClearStatusForm from '../../clearStatus/components/ClearStatusForm';
-import IndividualTabClearForm from '../../clearStatus/components/IndividualTabClearForm';
-import DifficultyBadge from '../../clearStatus/components/DifficultyBadge';
+import { DIFFICULTIES, getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../../types/difficulty';
+import { useClearRecords } from '../../../hooks/useClearRecords';
+import IndividualTabClearForm from '../../clearRecords/components/IndividualTabClearForm';
 import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
 import { useGameCharacters } from '../hooks/useGameCharacters';
 
@@ -15,20 +12,15 @@ import { useGameCharacters } from '../hooks/useGameCharacters';
  * ゲーム詳細コンポーネント
  */
 const GameDetail = ({ game, onBack }) => {
-  const [showForm, setShowForm] = useState(false);
   const [showIndividualForm, setShowIndividualForm] = useState(false);
-  const [editingClearStatus, setEditingClearStatus] = useState(null);
-  const [formLoading, setFormLoading] = useState(false);
 
   const {
-    clearStatuses,
-    loading,
+    clearRecords,
+    loading: recordsLoading,
     error,
-    createClearStatus,
-    updateClearStatus,
-    deleteClearStatus,
-    getClearStatusByGameAndDifficulty
-  } = useClearStatus(game.id);
+    fetchClearRecords
+  } = useClearRecords(game.id);
+
 
   const {
     characters,
@@ -59,10 +51,19 @@ const GameDetail = ({ game, onBack }) => {
       : `第${seriesNumber}作`;
   };
 
-  // クリア状況更新イベントを発火
-  const emitClearStatusUpdate = () => {
-    window.dispatchEvent(new Event('clearStatusUpdated'));
+  const getDifficultyColorClasses = (difficulty) => {
+    const colorMap = {
+      'green': 'bg-green-100 text-green-800 border-green-200',
+      'blue': 'bg-blue-100 text-blue-800 border-blue-200',
+      'orange': 'bg-orange-100 text-orange-800 border-orange-200',
+      'red': 'bg-red-100 text-red-800 border-red-200',
+      'purple': 'bg-purple-100 text-purple-800 border-purple-200'
+    };
+    
+    const color = DIFFICULTY_COLORS[difficulty] || 'blue';
+    return colorMap[color] || colorMap.blue;
   };
+
 
   const getAvailableDifficulties = () => {
     // 紺珠伝の場合は両モードの難易度を統合表示
@@ -78,73 +79,9 @@ const GameDetail = ({ game, onBack }) => {
     return getDifficultyOrderForGame(game);
   };
 
-  const handleFormSubmit = async (formData) => {
-    setFormLoading(true);
-    
-    try {
-      let result;
-      if (editingClearStatus) {
-        result = await updateClearStatus(editingClearStatus.id, formData);
-      } else {
-        result = await createClearStatus(formData);
-      }
-
-      if (result.success) {
-        setShowForm(false);
-        setEditingClearStatus(null);
-        emitClearStatusUpdate(); // クリア状況まとめを更新
-      }
-    } catch (error) {
-      console.error('フォーム送信エラー:', error);
-    } finally {
-      setFormLoading(false);
-    }
-  };
-
-  const handleEditClearStatus = (clearStatus) => {
-    setEditingClearStatus(clearStatus);
-    setShowForm(true);
-  };
-
-  const handleDeleteClearStatus = async (clearStatus) => {
-    if (window.confirm('このクリア状況を削除しますか？')) {
-      const result = await deleteClearStatus(clearStatus.id);
-      if (result.success) {
-        emitClearStatusUpdate(); // クリア状況まとめを更新
-      }
-    }
-  };
-
-  const handleToggleClear = async (clearStatus) => {
-    const updatedData = {
-      is_cleared: !clearStatus.is_cleared,
-      cleared_at: !clearStatus.is_cleared ? new Date().toISOString().split('T')[0] : null,
-      no_continue_clear: clearStatus.no_continue_clear,
-      no_bomb_clear: clearStatus.no_bomb_clear,
-      no_miss_clear: clearStatus.no_miss_clear,
-      score: clearStatus.score,
-      memo: clearStatus.memo,
-      clear_count: clearStatus.clear_count || 0
-    };
-    
-    const result = await updateClearStatus(clearStatus.id, updatedData);
-    if (result.success) {
-      emitClearStatusUpdate(); // クリア状況まとめを更新
-    }
-  };
-
-  const handleAddNewClearStatus = () => {
-    setEditingClearStatus(null);
-    setShowForm(true);
-  };
 
   const handleAddIndividualClearStatus = () => {
     setShowIndividualForm(true);
-  };
-
-  const handleCancelForm = () => {
-    setShowForm(false);
-    setEditingClearStatus(null);
   };
 
   const handleCancelIndividualForm = () => {
@@ -153,7 +90,8 @@ const GameDetail = ({ game, onBack }) => {
 
   const handleIndividualFormSuccess = () => {
     setShowIndividualForm(false);
-    emitClearStatusUpdate(); // クリア状況まとめを更新
+    // クリア記録を再取得
+    fetchClearRecords();
   };
 
   return (
@@ -194,7 +132,9 @@ const GameDetail = ({ game, onBack }) => {
           <div className="flex flex-wrap gap-2 mt-2">
             {getAvailableDifficulties().map(difficulty => (
               <div key={difficulty} className="flex items-center">
-                <DifficultyBadge difficulty={difficulty} />
+                <span className={`px-3 py-1 text-sm rounded-full border font-medium ${getDifficultyColorClasses(difficulty)}`}>
+                  {difficulty}
+                </span>
                 {/* 紺珠伝のExtraはLegacyモードのみの注釈 */}
                 {isModeAvailableForGame(game?.id) && difficulty === 'Extra' && (
                   <span className="ml-1 text-xs text-gray-500">(Legacy)</span>
@@ -218,16 +158,16 @@ const GameDetail = ({ game, onBack }) => {
         </div>
       </div>
 
-      {/* クリア状況セクション */}
+      {/* クリア記録セクション */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">クリア状況</h2>
+          <h2 className="text-2xl font-bold text-gray-900">クリア記録</h2>
           <Button
             onClick={handleAddIndividualClearStatus}
             variant="primary"
             size="medium"
           >
-            クリア記録
+            クリア記録登録
           </Button>
         </div>
 
@@ -236,23 +176,6 @@ const GameDetail = ({ game, onBack }) => {
             <div className="text-sm text-red-700">
               {typeof error === 'string' ? error : JSON.stringify(error)}
             </div>
-          </div>
-        )}
-
-        {/* 個別追加フォーム表示 */}
-        {showForm && (
-          <div className="mb-6 p-6 bg-gray-50 rounded-lg">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">
-              {editingClearStatus ? 'クリア状況を編集' : '新しいクリア状況を追加'}
-            </h3>
-            <ClearStatusForm
-              gameId={game.id}
-              game={game}
-              initialData={editingClearStatus}
-              onSubmit={handleFormSubmit}
-              onCancel={handleCancelForm}
-              loading={formLoading}
-            />
           </div>
         )}
 
@@ -268,34 +191,49 @@ const GameDetail = ({ game, onBack }) => {
         )}
 
         {/* ローディング */}
-        {loading && (
+        {recordsLoading && (
           <div className="flex justify-center items-center py-8">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">クリア状況を読み込み中...</span>
+            <span className="ml-2 text-gray-600">クリア記録を読み込み中...</span>
           </div>
         )}
 
-        {/* クリア状況一覧 */}
-        {!loading && (
+        {/* クリア記録一覧 */}
+        {!recordsLoading && (
           <div className="space-y-4">
-            {clearStatuses.length > 0 ? (
-              clearStatuses.map((clearStatus) => (
-                <ClearStatusCard
-                  key={clearStatus.id}
-                  clearStatus={clearStatus}
-                  onEdit={handleEditClearStatus}
-                  onDelete={handleDeleteClearStatus}
-                  onToggleClear={handleToggleClear}
-                />
-              ))
+            {clearRecords.length > 0 ? (
+              <div className="space-y-2">
+                {clearRecords.map((record) => (
+                  <div key={record.id} className="bg-gray-50 p-3 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
+                        <span className="font-medium">{record.character_name}</span>
+                        <span className="text-sm text-gray-600">{record.difficulty}</span>
+                        {record.mode !== 'normal' && (
+                          <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                            {record.mode}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
+                        {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
+                        {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
+                        {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
+                        {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="text-center py-8">
                 <div className="text-gray-400 text-6xl mb-4">🎯</div>
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  まだクリア状況が登録されていません
+                  まだクリア記録が登録されていません
                 </h3>
                 <p className="text-gray-600 mb-4">
-                  「新しいクリア状況を追加」ボタンからクリア状況を登録しましょう。
+                  「クリア記録登録」ボタンからクリア記録を登録しましょう。
                 </p>
               </div>
             )}
