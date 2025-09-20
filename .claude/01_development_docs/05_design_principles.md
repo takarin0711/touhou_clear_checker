@@ -54,9 +54,14 @@ if (isPhantasmAvailable(game.series_number)) {
 ## 2. コーディング原則
 
 ### 共通原則
+- **DRY原則**: Don't Repeat Yourself - 同じコードの重複を避ける
+- **SOLID原則**: 
+  - **S**ingle Responsibility - 単一責任の原則
+  - **O**pen/Closed - 開放閉鎖の原則  
+  - **L**iskov Substitution - リスコフの置換原則
+  - **I**nterface Segregation - インターフェース分離の原則
+  - **D**ependency Inversion - 依存性逆転の原則
 - **依存性注入**: インターフェースに依存し、具象クラスに依存しない
-- **単一責任の原則**: 1つのクラス・関数は1つの責任を持つ
-- **開放閉鎖の原則**: 拡張に開いて修正に閉じる
 - **関心の分離**: UI/ロジック/データアクセスを分離
 
 ### バックエンド原則

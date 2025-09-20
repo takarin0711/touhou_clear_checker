@@ -10,33 +10,26 @@ const GameModeSelector = ({ game, selectedMode, onModeChange, className = '' }) 
     return null;
   }
 
-  const availableModes = [GAME_MODES.LEGACY, GAME_MODES.POINTDEVICE];
+  const availableModes = [GAME_MODES.POINTDEVICE, GAME_MODES.LEGACY];
 
   const getModeColors = (mode, isSelected = false) => {
     const colorMap = {
-      [GAME_MODES.LEGACY]: {
-        bg: isSelected ? 'bg-red-50' : 'bg-white',
-        text: isSelected ? 'text-red-700' : 'text-gray-700',
-        border: isSelected ? 'border-red-500' : 'border-gray-300',
-        hover: 'hover:border-red-400 hover:bg-red-50'
-      },
       [GAME_MODES.POINTDEVICE]: {
         bg: isSelected ? 'bg-blue-50' : 'bg-white',
         text: isSelected ? 'text-blue-700' : 'text-gray-700',
         border: isSelected ? 'border-blue-500' : 'border-gray-300',
         hover: 'hover:border-blue-400 hover:bg-blue-50'
+      },
+      [GAME_MODES.LEGACY]: {
+        bg: isSelected ? 'bg-red-50' : 'bg-white',
+        text: isSelected ? 'text-red-700' : 'text-gray-700',
+        border: isSelected ? 'border-red-500' : 'border-gray-300',
+        hover: 'hover:border-red-400 hover:bg-red-50'
       }
     };
-    return colorMap[mode] || colorMap[GAME_MODES.LEGACY];
+    return colorMap[mode] || colorMap[GAME_MODES.POINTDEVICE];
   };
 
-  const getModeDescription = (mode) => {
-    const descriptions = {
-      [GAME_MODES.LEGACY]: '従来の東方シリーズと同じシステム',
-      [GAME_MODES.POINTDEVICE]: 'チェックポイント制で練習向け'
-    };
-    return descriptions[mode] || '';
-  };
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -58,11 +51,11 @@ const GameModeSelector = ({ game, selectedMode, onModeChange, className = '' }) 
               onClick={() => onModeChange(mode)}
               className={`relative p-4 rounded-lg border-2 text-left transition-all duration-200 ${colors.bg} ${colors.text} ${colors.border} ${colors.hover} ${
                 isSelected ? 'ring-2 ring-opacity-50' : ''
-              } ${isSelected && mode === GAME_MODES.LEGACY ? 'ring-red-300' : ''} ${
-                isSelected && mode === GAME_MODES.POINTDEVICE ? 'ring-blue-300' : ''
+              } ${isSelected && mode === GAME_MODES.POINTDEVICE ? 'ring-blue-300' : ''} ${
+                isSelected && mode === GAME_MODES.LEGACY ? 'ring-red-300' : ''
               }`}
             >
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between">
                 <span className="font-medium text-sm">
                   {GAME_MODE_LABELS[mode]}
                 </span>
@@ -72,26 +65,6 @@ const GameModeSelector = ({ game, selectedMode, onModeChange, className = '' }) 
                   </span>
                 )}
               </div>
-              
-              <p className="text-xs opacity-75">
-                {getModeDescription(mode)}
-              </p>
-              
-              {mode === GAME_MODES.LEGACY && (
-                <div className="mt-2 text-xs">
-                  <span className="inline-block px-2 py-1 bg-red-100 text-red-700 rounded">
-                    Extra対応
-                  </span>
-                </div>
-              )}
-              
-              {mode === GAME_MODES.POINTDEVICE && (
-                <div className="mt-2 text-xs">
-                  <span className="inline-block px-2 py-1 bg-blue-100 text-blue-700 rounded">
-                    初心者向け
-                  </span>
-                </div>
-              )}
             </button>
           );
         })}

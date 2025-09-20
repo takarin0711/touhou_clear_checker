@@ -108,8 +108,8 @@ export const GAME_MODES = {
  */
 export const GAME_MODE_LABELS = {
   [GAME_MODES.NORMAL]: '通常',
-  [GAME_MODES.LEGACY]: 'Legacy',
-  [GAME_MODES.POINTDEVICE]: 'Pointdevice'
+  [GAME_MODES.LEGACY]: 'レガシーモード',
+  [GAME_MODES.POINTDEVICE]: '完全無欠モード'
 };
 
 /**

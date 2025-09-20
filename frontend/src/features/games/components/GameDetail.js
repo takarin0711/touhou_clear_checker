@@ -210,8 +210,8 @@ const GameDetail = ({ game, onBack }) => {
                 紺珠伝では2つのモードが利用可能です：
               </p>
               <div className="text-xs text-blue-700 space-y-1">
-                <div>• <span className="font-medium">Legacy Mode</span>: 従来システム（Extra対応）</div>
-                <div>• <span className="font-medium">Pointdevice Mode</span>: チェックポイント制（Easy～Lunatic）</div>
+                <div>• <span className="font-medium">完全無欠モード</span>: チェックポイント制（Easy～Lunatic）</div>
+                <div>• <span className="font-medium">レガシーモード</span>: 従来システム（Extra対応）</div>
               </div>
             </div>
           )}
