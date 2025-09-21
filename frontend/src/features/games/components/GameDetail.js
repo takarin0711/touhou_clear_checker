@@ -203,11 +203,21 @@ const GameDetail = ({ game, onBack }) => {
         {/* クリア記録一覧 */}
         {!recordsLoading && (
           <div className="space-y-4">
-            {clearRecords.length > 0 ? (
-              <div className="space-y-6">
-                {(() => {
-                  // 難易度とモードでグルーピング
-                  const groupedRecords = clearRecords.reduce((groups, record) => {
+            {(() => {
+              // 全てのクリア条件がfalseのレコードを除外
+              const filteredRecords = clearRecords.filter(record => 
+                record.is_cleared || 
+                record.is_no_continue_clear || 
+                record.is_no_bomb_clear || 
+                record.is_no_miss_clear || 
+                record.is_full_spell_card
+              );
+              
+              return filteredRecords.length > 0 ? (
+                <div className="space-y-6">
+                  {(() => {
+                    // 難易度とモードでグルーピング
+                    const groupedRecords = filteredRecords.reduce((groups, record) => {
                     // 紺珠伝の場合はモードも考慮
                     const groupKey = isModeAvailableForGame(game?.id) 
                       ? `${record.difficulty}_${record.mode || 'normal'}`
@@ -283,17 +293,18 @@ const GameDetail = ({ game, onBack }) => {
                   ));
                 })()}
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <div className="text-gray-400 text-6xl mb-4">🎯</div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
-                  まだクリア記録が登録されていません
-                </h3>
-                <p className="text-gray-600 mb-4">
-                  「クリア記録登録」ボタンからクリア記録を登録しましょう。
-                </p>
-              </div>
-            )}
+              ) : (
+                <div className="text-center py-8">
+                  <div className="text-gray-400 text-6xl mb-4">🎯</div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    まだクリア記録が登録されていません
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    「クリア記録登録」ボタンからクリア記録を登録しましょう。
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>

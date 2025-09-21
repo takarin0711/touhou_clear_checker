@@ -101,7 +101,11 @@ export const clearRecordApi = {
     
     // 機体ごとの条件データを個別レコードに変換
     Object.entries(difficultyData.characters || {}).forEach(([characterId, conditions]) => {
-      if (conditions.cleared || conditions.no_continue || conditions.no_bomb || conditions.no_miss || conditions.full_spell_card) {
+      // 何らかの条件が操作されている場合は送信する
+      // これにより、クリアフラグを外した場合（false設定）も正しく更新される
+      const hasAnyValue = Object.keys(conditions).length > 0;
+      
+      if (hasAnyValue) {
         // characterIdから対応するcharacter_nameを取得
         const character = characters.find(c => c.id === parseInt(characterId));
         const characterName = character?.character_name || character?.name || "霊夢";

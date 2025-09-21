@@ -137,24 +137,18 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
         modeDifficulties.forEach(difficulty => {
           const data = modeData[mode]?.[difficulty];
           if (data && Object.keys(data.characters).length > 0) {
-            // 何らかの条件が設定されているかチェック
-            const hasConditions = Object.values(data.characters).some(conditions =>
-              conditions.cleared || conditions.no_continue || conditions.no_bomb || 
-              conditions.no_miss || conditions.full_spell_card
+            // 機体データがある場合は送信（全てfalseでも送信する）
+            promises.push(
+              submitIndividualConditions(game.id, difficulty, data, characters, mode)
             );
-            
-            if (hasConditions) {
-              promises.push(
-                submitIndividualConditions(game.id, difficulty, data, characters, mode)
-              );
-              totalSettings++;
-            }
+            totalSettings++;
           }
         });
       });
 
+      // 登録対象がない場合も正常終了とする
       if (promises.length === 0) {
-        setError('設定されている条件がありません');
+        setError(null);
         return;
       }
 
