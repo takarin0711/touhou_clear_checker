@@ -9,6 +9,7 @@ export const GAME_IDS = {
   TOUHOU_06_EOSD: 1,    // 東方紅魔郷 (Embodiment of Scarlet Devil)
   TOUHOU_07_PCB: 2,     // 東方妖々夢 (Perfect Cherry Blossom)
   TOUHOU_08_IN: 3,      // 東方永夜抄 (Imperishable Night)
+  TOUHOU_09_PoFV: 4,    // 東方花映塚 (Phantasmagoria of Flower View)
   TOUHOU_15_LoLK: 11,   // 東方紺珠伝 (Legacy of Lunatic Kingdom)
   TOUHOU_19_UDoALG: 15, // 東方獣王園 (Unfinished Dream of All Living Ghost)
 };
@@ -171,4 +172,41 @@ export const getAvailableDifficultiesForGameAndMode = (gameId, mode) => {
   }
   
   return baseDifficulties;
+};
+
+/**
+ * 対戦型STGかどうかを判定
+ * @param {number} gameId - ゲームID
+ * @returns {boolean} 対戦型STGの場合true
+ */
+export const isVersusGame = (gameId) => {
+  const versusGameIds = [
+    GAME_IDS.TOUHOU_09_PoFV,   // 東方花映塚
+    GAME_IDS.TOUHOU_19_UDoALG  // 東方獣王園
+  ];
+  return versusGameIds.includes(gameId);
+};
+
+/**
+ * フルスペカが利用可能かどうかを判定
+ * @param {number} gameId - ゲームID
+ * @returns {boolean} フルスペカが利用可能な場合true
+ */
+export const isFullSpellCardAvailable = (gameId) => {
+  // 対戦型STGはフルスペカなし
+  return !isVersusGame(gameId);
+};
+
+/**
+ * ノーコンティニューが利用可能かどうかを判定
+ * @param {number} gameId - ゲームID
+ * @param {string} mode - ゲームモード
+ * @returns {boolean} ノーコンティニューが利用可能な場合true
+ */
+export const isNoContinueAvailable = (gameId, mode) => {
+  // 紺珠伝の完全無欠モードはチェックポイント制なのでノーコン概念なし
+  if (gameId === GAME_IDS.TOUHOU_15_LoLK && mode === GAME_MODES.POINTDEVICE) {
+    return false;
+  }
+  return true;
 };

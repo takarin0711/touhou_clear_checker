@@ -4,7 +4,7 @@
 import React, { useState, useEffect } from 'react';
 import Button from '../../../components/common/Button';
 import { DIFFICULTIES, getDifficultyOrderForGame } from '../../../types/difficulty';
-import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
+import { GAME_MODES, isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
 import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 
@@ -26,6 +26,8 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   // 現在選択中のモードでの利用可能な難易度を取得
   const availableDifficulties = getDifficultyOrderForGame(game, selectedMode);
   const isModeGame = isModeAvailableForGame(game?.id);
+  const isFullSpellAvailable = isFullSpellCardAvailable(game?.id);
+  const isNoContinueAvailableForCurrentMode = isNoContinueAvailable(game?.id, selectedMode);
   
   // 現在のモードのデータ
   const currentModeData = modeData[selectedMode] || {};
@@ -288,18 +290,22 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     クリア
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ノーコン
-                  </th>
+                  {isNoContinueAvailableForCurrentMode && (
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      ノーコン
+                    </th>
+                  )}
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ノーボム
                   </th>
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ノーミス
                   </th>
-                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    フルスペカ
-                  </th>
+                  {isFullSpellAvailable && (
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      フルスペカ
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -316,14 +322,16 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
-                    <td className="px-3 py-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={currentModeData[activeTab].characters[character.id]?.no_continue || false}
-                        onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_continue', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                    </td>
+                    {isNoContinueAvailableForCurrentMode && (
+                      <td className="px-3 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={currentModeData[activeTab].characters[character.id]?.no_continue || false}
+                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_continue', e.target.checked)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                    )}
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
@@ -340,14 +348,16 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
-                    <td className="px-3 py-4 text-center">
-                      <input
-                        type="checkbox"
-                        checked={currentModeData[activeTab].characters[character.id]?.full_spell_card || false}
-                        onChange={(e) => updateCharacterCondition(activeTab, character.id, 'full_spell_card', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                      />
-                    </td>
+                    {isFullSpellAvailable && (
+                      <td className="px-3 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={currentModeData[activeTab].characters[character.id]?.full_spell_card || false}
+                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'full_spell_card', e.target.checked)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        />
+                      </td>
+                    )}
                   </tr>
                 ))}
               </tbody>
