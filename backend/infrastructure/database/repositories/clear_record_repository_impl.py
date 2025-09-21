@@ -65,12 +65,30 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
         character_name: str, 
         difficulty: str
     ) -> Optional[ClearRecord]:
-        """ユーザー・ゲーム・キャラ・難易度でクリア記録を取得"""
+        """ユーザー・ゲーム・キャラ・難易度でクリア記録を取得（mode未指定時、レガシー互換）"""
         model = self.session.query(ClearRecordModel).filter(
             ClearRecordModel.user_id == user_id,
             ClearRecordModel.game_id == game_id,
             ClearRecordModel.character_name == character_name,
             ClearRecordModel.difficulty == difficulty
+        ).first()
+        return model.to_entity() if model else None
+    
+    async def find_by_user_game_character_difficulty_mode(
+        self, 
+        user_id: int, 
+        game_id: int, 
+        character_name: str, 
+        difficulty: str,
+        mode: str = "normal"
+    ) -> Optional[ClearRecord]:
+        """ユーザー・ゲーム・キャラ・難易度・モードでクリア記録を取得"""
+        model = self.session.query(ClearRecordModel).filter(
+            ClearRecordModel.user_id == user_id,
+            ClearRecordModel.game_id == game_id,
+            ClearRecordModel.character_name == character_name,
+            ClearRecordModel.difficulty == difficulty,
+            ClearRecordModel.mode == mode
         ).first()
         return model.to_entity() if model else None
     
@@ -147,12 +165,13 @@ class ClearRecordRepositoryImpl(ClearRecordRepository):
     
     async def create_or_update(self, clear_record: ClearRecord) -> ClearRecord:
         """クリア記録を作成または更新（UPSERT）"""
-        # 既存記録を検索
-        existing = await self.find_by_user_game_character_difficulty(
+        # 既存記録をmode情報も含めて検索
+        existing = await self.find_by_user_game_character_difficulty_mode(
             clear_record.user_id,
             clear_record.game_id,
             clear_record.character_name,
-            clear_record.difficulty
+            clear_record.difficulty,
+            clear_record.mode or "normal"
         )
         
         if existing:

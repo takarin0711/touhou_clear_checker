@@ -73,7 +73,6 @@ class ClearRecordService:
     async def create_or_update_clear_record(self, user_id: int, clear_record_data: dict) -> ClearRecord:
         """クリア記録を作成または更新（UPSERT）"""
         try:
-            print(f"Creating ClearRecord with data: {clear_record_data}")
             clear_record = ClearRecord(
                 user_id=user_id,
                 game_id=clear_record_data.get('game_id'),
@@ -87,13 +86,9 @@ class ClearRecordService:
                 is_full_spell_card=clear_record_data.get('is_full_spell_card', False),
                 cleared_at=clear_record_data.get('cleared_at')
             )
-            print(f"Created ClearRecord entity: {clear_record}")
             result = await self.clear_record_repository.create_or_update(clear_record)
-            print(f"Repository returned: {result}")
             return result
         except Exception as e:
-            print(f"Error in create_or_update_clear_record: {e}")
-            print(f"Input data: {clear_record_data}")
             raise e
     
     async def upsert_clear_record(self, user_id: int, clear_record_data: dict) -> ClearRecord:
@@ -102,19 +97,13 @@ class ClearRecordService:
     
     async def batch_create_or_update_records(self, user_id: int, records_data: List[dict]) -> List[ClearRecord]:
         """複数のクリア記録を一括で作成または更新"""
-        print(f"Processing batch for user {user_id}, {len(records_data)} records")
         results = []
-        for i, record_data in enumerate(records_data):
+        for record_data in records_data:
             try:
-                print(f"Processing record {i+1}/{len(records_data)}: {record_data}")
                 result = await self.create_or_update_clear_record(user_id, record_data)
-                print(f"Result: {result}")
                 results.append(result)
             except Exception as e:
-                print(f"Error processing record {i+1}: {e}")
-                print(f"Record data: {record_data}")
                 raise e
-        print(f"Batch complete, returning {len(results)} results")
         return results
     
     async def batch_upsert_clear_records(self, user_id: int, records_data: List[dict]) -> List[ClearRecord]:

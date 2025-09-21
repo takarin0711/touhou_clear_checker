@@ -149,11 +149,11 @@ const GameDetail = ({ game, onBack }) => {
           {isModeAvailableForGame(game?.id) && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800 font-medium mb-1">
-                紺珠伝では2つのモードが利用可能です：
+                紺珠伝では2つのモードが選択可能です：
               </p>
               <div className="text-xs text-blue-700 space-y-1">
                 <div>• <span className="font-medium">完全無欠モード</span>: チェックポイント制（Easy～Lunatic）</div>
-                <div>• <span className="font-medium">レガシーモード</span>: 従来システム（Extra対応）</div>
+                <div>• <span className="font-medium">レガシーモード</span>: 従来システム（Easy～Lunatic, Extra）</div>
               </div>
             </div>
           )}

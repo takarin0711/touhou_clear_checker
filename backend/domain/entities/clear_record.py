@@ -90,6 +90,7 @@ class ClearRecord:
             'game_id': self.game_id,
             'character_name': self.character_name,
             'difficulty': self.difficulty,
+            'mode': self.mode,
             'is_cleared': self.is_cleared,
             'is_no_continue_clear': self.is_no_continue_clear,
             'is_no_bomb_clear': self.is_no_bomb_clear,
@@ -112,6 +113,7 @@ class ClearRecord:
             game_id=data.get('game_id', 0),
             character_name=data.get('character_name', ''),
             difficulty=data.get('difficulty', ''),
+            mode=data.get('mode', 'normal'),
             is_cleared=data.get('is_cleared', False),
             is_no_continue_clear=data.get('is_no_continue_clear', False),
             is_no_bomb_clear=data.get('is_no_bomb_clear', False),
@@ -128,7 +130,7 @@ class ClearRecord:
     def __str__(self) -> str:
         conditions = self.get_achieved_conditions()
         condition_str = ", ".join(conditions) if conditions else "未クリア"
-        return f"ClearRecord(user={self.user_id}, game={self.game_id}, char={self.character_name}, diff={self.difficulty}, conditions={condition_str})"
+        return f"ClearRecord(user={self.user_id}, game={self.game_id}, char={self.character_name}, diff={self.difficulty}, mode={self.mode}, conditions={condition_str})"
     
     def __repr__(self) -> str:
         return self.__str__()

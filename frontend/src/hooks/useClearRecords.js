@@ -169,13 +169,11 @@ export const useClearRecords = (gameId = null) => {
   /**
    * 機体別条件式データを送信
    */
-  const submitIndividualConditions = useCallback(async (gameId, difficulty, difficultyData, characters) => {
+  const submitIndividualConditions = useCallback(async (gameId, difficulty, difficultyData, characters, mode = "normal") => {
     setError(null);
     
     try {
-      console.log('Submitting individual conditions:', { gameId, difficulty, difficultyData });
-      const records = await clearRecordApi.submitIndividualConditions(gameId, difficulty, difficultyData, characters);
-      console.log('Submit response:', records);
+      const records = await clearRecordApi.submitIndividualConditions(gameId, difficulty, difficultyData, characters, mode);
       
       // 状態を更新
       setClearRecords(prev => {
@@ -200,9 +198,6 @@ export const useClearRecords = (gameId = null) => {
       
       return { success: true, data: records };
     } catch (err) {
-      console.error('機体別条件送信エラー:', err);
-      console.error('Error response:', err.response);
-      console.error('Error data:', err.response?.data);
       
       let errorMessage = '条件の保存に失敗しました';
       if (err.response?.data?.detail) {

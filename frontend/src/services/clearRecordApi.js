@@ -93,9 +93,10 @@ export const clearRecordApi = {
    * @param {Object} difficultyData - 機体別条件データ
    * @param {Object} difficultyData.characters - 機体ごとの条件 {characterId: {cleared: bool, no_continue: bool, ...}}
    * @param {Array} characters - キャラクター一覧（id, nameの情報を含む）
+   * @param {string} [mode] - ゲームモード（レガシーモード: "legacy", 完全無欠モード: "normal"）
    * @returns {Promise<Array>} 作成/更新されたクリア記録の配列
    */
-  async submitIndividualConditions(gameId, difficulty, difficultyData, characters = []) {
+  async submitIndividualConditions(gameId, difficulty, difficultyData, characters = [], mode = "normal") {
     const recordsData = [];
     
     // 機体ごとの条件データを個別レコードに変換
@@ -109,7 +110,7 @@ export const clearRecordApi = {
           game_id: gameId,
           character_name: characterName,
           difficulty: difficulty,
-          mode: "normal",
+          mode: mode,
           is_cleared: conditions.cleared || false,
           is_no_continue_clear: conditions.no_continue || false,
           is_no_bomb_clear: conditions.no_bomb || false,

@@ -10,43 +10,39 @@ import { useClearRecords } from '../../../hooks/useClearRecords';
 
 const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   const [activeTab, setActiveTab] = useState('Easy');
-  const [selectedMode, setSelectedMode] = useState('normal');
+  const [selectedMode, setSelectedMode] = useState('pointdevice');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
-  // 各難易度での機体別条件状態を管理
-  const [difficultyData, setDifficultyData] = useState({});
+  // モード別データ管理：modeData[mode][difficulty] = {characters: {...}}
+  const [modeData, setModeData] = useState({
+    pointdevice: {},
+    legacy: {}
+  });
 
   const { characters, loading: charactersLoading } = useGameCharacters(game.id);
   const { clearRecords, submitIndividualConditions } = useClearRecords(game.id);
 
-  // 利用可能な難易度を取得
+  // 現在選択中のモードでの利用可能な難易度を取得
   const availableDifficulties = getDifficultyOrderForGame(game, selectedMode);
   const isModeGame = isModeAvailableForGame(game?.id);
+  
+  // 現在のモードのデータ
+  const currentModeData = modeData[selectedMode] || {};
 
-  // 既存のクリア記録を元にチェック状態を設定する関数
-  const applyExistingClearRecords = (initialData, existingRecords, characters) => {
-    console.log('applyExistingClearRecords called:', {
-      existingRecords,
-      selectedMode,
-      initialDataKeys: Object.keys(initialData)
-    });
-    
+  // 既存のクリア記録を元にチェック状態を設定する関数（モード対応）
+  const applyExistingClearRecords = (initialData, existingRecords, characters, mode) => {
     if (!existingRecords || existingRecords.length === 0) {
-      console.log('No existing records found');
       return initialData;
     }
 
     existingRecords.forEach(record => {
       const difficulty = record.difficulty;
       const characterName = record.character_name;
-      const mode = record.mode || 'normal';
+      const recordMode = record.mode || 'normal';
       
-      console.log('Processing record:', { difficulty, characterName, mode, selectedMode, record });
-      
-      // 現在のモードと一致するレコードのみ適用
-      if (mode !== selectedMode) {
-        console.log('Mode mismatch, skipping record');
+      // 指定されたモードと一致するレコードのみ適用
+      if (recordMode !== mode) {
         return;
       }
       
@@ -54,115 +50,108 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
       const character = characters.find(c => c.character_name === characterName);
       const characterId = character?.id;
       
-      console.log('Found character:', { character, characterId });
-      
       if (characterId && initialData[difficulty] && initialData[difficulty].characters[characterId]) {
-        const appliedData = {
+        initialData[difficulty].characters[characterId] = {
           cleared: record.is_cleared || false,
           no_continue: record.is_no_continue_clear || false,
           no_bomb: record.is_no_bomb_clear || false,
           no_miss: record.is_no_miss_clear || false,
           full_spell_card: record.is_full_spell_card || false
         };
-        console.log('Applying data:', appliedData);
-        initialData[difficulty].characters[characterId] = appliedData;
-      } else {
-        console.log('No matching difficulty/character found in initialData', { 
-          characterId, 
-          hasDifficulty: !!initialData[difficulty],
-          hasCharacter: !!initialData[difficulty]?.characters[characterId]
-        });
       }
     });
     
-    console.log('Final initialData after applying records:', initialData);
     return initialData;
   };
 
-  // 機体リストとクリア記録が読み込まれた時に初期状態を設定
+  // 機体リストとクリア記録が読み込まれた時に両モードの初期状態を設定
   useEffect(() => {
-    console.log('useEffect triggered:', {
-      charactersLength: characters.length,
-      clearRecordsLength: clearRecords?.length,
-      selectedMode,
-      gameId: game?.id
-    });
-    
     if (characters.length > 0) {
-      const currentDifficulties = getDifficultyOrderForGame(game, selectedMode);
-      let initialData = {};
-      currentDifficulties.forEach(difficulty => {
-        initialData[difficulty] = {
-          characters: {}
-        };
-        characters.forEach(character => {
-          initialData[difficulty].characters[character.id] = {
-            cleared: false,
-            no_continue: false,
-            no_bomb: false,
-            no_miss: false,
-            full_spell_card: false
+      const newModeData = { pointdevice: {}, legacy: {} };
+      
+      // 両モードの初期データを作成
+      ['pointdevice', 'legacy'].forEach(mode => {
+        const modeDifficulties = getDifficultyOrderForGame(game, mode);
+        modeDifficulties.forEach(difficulty => {
+          newModeData[mode][difficulty] = {
+            characters: {}
           };
+          characters.forEach(character => {
+            newModeData[mode][difficulty].characters[character.id] = {
+              cleared: false,
+              no_continue: false,
+              no_bomb: false,
+              no_miss: false,
+              full_spell_card: false
+            };
+          });
         });
+        
+        // 既存のクリア記録を適用
+        newModeData[mode] = applyExistingClearRecords(newModeData[mode], clearRecords, characters, mode);
       });
       
-      console.log('Initial data before applying records:', initialData);
-      
-      // 既存のクリア記録を適用
-      initialData = applyExistingClearRecords(initialData, clearRecords, characters);
-      
-      console.log('Setting difficultyData:', initialData);
-      setDifficultyData(initialData);
+      setModeData(newModeData);
       
       // 最初の難易度をアクティブタブに設定
-      if (currentDifficulties.length > 0) {
-        setActiveTab(currentDifficulties[0]);
+      const firstDifficulty = getDifficultyOrderForGame(game, selectedMode)[0];
+      if (firstDifficulty) {
+        setActiveTab(firstDifficulty);
       }
     }
-  }, [characters, clearRecords, game, selectedMode]);
+  }, [characters, clearRecords, game]);
 
-  // 機体の条件を更新
+  // 機体の条件を更新（モード対応）
   const updateCharacterCondition = (difficulty, characterId, conditionType, value) => {
-    setDifficultyData(prev => ({
+    setModeData(prev => ({
       ...prev,
-      [difficulty]: {
-        ...prev[difficulty],
-        characters: {
-          ...prev[difficulty].characters,
-          [characterId]: {
-            ...prev[difficulty].characters[characterId],
-            [conditionType]: value
+      [selectedMode]: {
+        ...prev[selectedMode],
+        [difficulty]: {
+          ...prev[selectedMode][difficulty],
+          characters: {
+            ...prev[selectedMode][difficulty].characters,
+            [characterId]: {
+              ...prev[selectedMode][difficulty].characters[characterId],
+              [conditionType]: value
+            }
           }
         }
       }
     }));
   };
 
-  // すべての難易度のすべての機体に登録
+  // 両モードのすべての難易度・機体を一括登録
   const handleSubmitAll = async () => {
     setLoading(true);
     setError(null);
 
     try {
       const promises = [];
+      let totalSettings = 0;
       
-      // 各難易度ごとに送信
-      for (const difficulty of availableDifficulties) {
-        const data = difficultyData[difficulty];
-        if (data && Object.keys(data.characters).length > 0) {
-          // 何らかの条件が設定されているかチェック
-          const hasConditions = Object.values(data.characters).some(conditions =>
-            conditions.cleared || conditions.no_continue || conditions.no_bomb || 
-            conditions.no_miss || conditions.full_spell_card
-          );
-          
-          if (hasConditions) {
-            promises.push(
-              submitIndividualConditions(game.id, difficulty, data, characters)
+      // 両モードのデータを確認・送信
+      ['pointdevice', 'legacy'].forEach(mode => {
+        const modeDifficulties = getDifficultyOrderForGame(game, mode);
+        
+        modeDifficulties.forEach(difficulty => {
+          const data = modeData[mode]?.[difficulty];
+          if (data && Object.keys(data.characters).length > 0) {
+            // 何らかの条件が設定されているかチェック
+            const hasConditions = Object.values(data.characters).some(conditions =>
+              conditions.cleared || conditions.no_continue || conditions.no_bomb || 
+              conditions.no_miss || conditions.full_spell_card
             );
+            
+            if (hasConditions) {
+              promises.push(
+                submitIndividualConditions(game.id, difficulty, data, characters, mode)
+              );
+              totalSettings++;
+            }
           }
-        }
-      }
+        });
+      });
 
       if (promises.length === 0) {
         setError('設定されている条件がありません');
@@ -175,13 +164,11 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
       const failures = results.filter(result => result.status === 'rejected' || !result.value?.success);
       
       if (failures.length > 0) {
-        setError('一部の登録に失敗しました');
+        setError(`${failures.length}件の登録に失敗しました`);
         return;
       }
-
       onSuccess();
     } catch (err) {
-      console.error('Submit error:', err);
       setError('登録に失敗しました');
     } finally {
       setLoading(false);
@@ -215,33 +202,32 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
         </div>
       )}
 
-      {/* モード選択（紺珠伝の場合のみ） */}
+      {/* モードタブ（紺珠伝の場合のみ） */}
       {isModeGame && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <h4 className="text-sm font-medium text-blue-900 mb-3">ゲームモード選択</h4>
-          <div className="flex space-x-6">
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="normal"
-                checked={selectedMode === 'normal'}
-                onChange={(e) => setSelectedMode(e.target.value)}
-                className="mr-2 text-blue-600"
-              />
-              <span className="text-blue-800">完全無欠モード</span>
-            </label>
-            <label className="flex items-center">
-              <input
-                type="radio"
-                value="legacy"
-                checked={selectedMode === 'legacy'}
-                onChange={(e) => setSelectedMode(e.target.value)}
-                className="mr-2 text-blue-600"
-              />
-              <span className="text-blue-800">レガシーモード</span>
-            </label>
+        <>
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setSelectedMode('pointdevice')}
+              className={`flex-1 py-3 px-4 text-center font-medium transition-all ${
+                selectedMode === 'pointdevice'
+                  ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              完全無欠モード
+            </button>
+            <button
+              onClick={() => setSelectedMode('legacy')}
+              className={`flex-1 py-3 px-4 text-center font-medium transition-all ${
+                selectedMode === 'legacy'
+                  ? 'border-b-2 border-orange-500 text-orange-600 bg-orange-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              レガシーモード
+            </button>
           </div>
-        </div>
+        </>
       )}
 
       {/* 難易度タブ */}
@@ -294,7 +280,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
       </div>
 
       {/* 機体別条件設定テーブル */}
-      {difficultyData[activeTab] && (
+      {currentModeData[activeTab] && (
         <div className="mb-6">
           <h4 className="text-lg font-medium text-gray-900 mb-4">{activeTab} - 機体別条件設定</h4>
           
@@ -331,7 +317,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={difficultyData[activeTab].characters[character.id]?.cleared || false}
+                        checked={currentModeData[activeTab].characters[character.id]?.cleared || false}
                         onChange={(e) => updateCharacterCondition(activeTab, character.id, 'cleared', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -339,7 +325,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={difficultyData[activeTab].characters[character.id]?.no_continue || false}
+                        checked={currentModeData[activeTab].characters[character.id]?.no_continue || false}
                         onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_continue', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -347,7 +333,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={difficultyData[activeTab].characters[character.id]?.no_bomb || false}
+                        checked={currentModeData[activeTab].characters[character.id]?.no_bomb || false}
                         onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_bomb', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -355,7 +341,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={difficultyData[activeTab].characters[character.id]?.no_miss || false}
+                        checked={currentModeData[activeTab].characters[character.id]?.no_miss || false}
                         onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_miss', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -363,7 +349,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={difficultyData[activeTab].characters[character.id]?.full_spell_card || false}
+                        checked={currentModeData[activeTab].characters[character.id]?.full_spell_card || false}
                         onChange={(e) => updateCharacterCondition(activeTab, character.id, 'full_spell_card', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
@@ -387,7 +373,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
           disabled={loading}
           size="medium"
         >
-          {loading ? '登録中...' : 'すべて登録する'}
+          {loading ? '登録中...' : isModeGame ? '両モードすべて登録する' : 'すべて登録する'}
         </Button>
       </div>
     </div>

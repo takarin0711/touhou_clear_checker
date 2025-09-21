@@ -46,6 +46,18 @@ class ClearRecordRepository(ABC):
         pass
     
     @abstractmethod
+    async def find_by_user_game_character_difficulty_mode(
+        self, 
+        user_id: int, 
+        game_id: int, 
+        character_name: str, 
+        difficulty: str,
+        mode: str = "normal"
+    ) -> Optional[ClearRecord]:
+        """ユーザー・ゲーム・キャラ・難易度・モードでクリア記録を取得"""
+        pass
+    
+    @abstractmethod
     async def create(self, clear_record: ClearRecord) -> ClearRecord:
         """クリア記録を作成"""
         pass
