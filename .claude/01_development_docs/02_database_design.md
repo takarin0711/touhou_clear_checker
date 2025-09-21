@@ -162,10 +162,12 @@ class GameMode(Enum):
 ### ゲームタイプ（GameType）
 ```python
 class GameType(Enum):
-    MAIN_SERIES = "main_series"  # 本編STG（第6作〜第19作）
+    MAIN_SERIES = "main_series"  # 本編STG（第6作〜第20作）
+    SPIN_OFF_STG = "spin_off_stg"  # 外伝STG（妖精大戦争など）
     FIGHTING = "fighting"        # 格闘ゲーム（.5作系）
     PHOTOGRAPHY = "photography"  # 撮影STG（文花帖系）
     MIXED = "mixed"             # 格闘+STG要素
+    VERSUS = "versus"           # 対戦型STG（花映塚、獣王園）
 ```
 
 ## データ移行戦略
@@ -250,7 +252,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
 ('東方風神録', 10.0, 2007, 'main_series'),
 ('東方地霊殿', 11.0, 2008, 'main_series'),
 ('東方星蓮船', 12.0, 2009, 'main_series'),
-('妖精大戦争', 12.8, 2010, 'main_series'), 
+('妖精大戦争', 12.8, 2010, 'spin_off_stg'), 
 ('東方神霊廟', 13.0, 2011, 'main_series'),
 ('東方輝針城', 14.0, 2013, 'main_series'),
 ('東方紺珠伝', 15.0, 2015, 'main_series'),

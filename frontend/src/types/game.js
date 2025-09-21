@@ -31,6 +31,7 @@
 
 export const GAME_TYPES = {
   MAIN_SERIES: 'main_series',
+  SPIN_OFF_STG: 'spin_off_stg',
   FIGHTING: 'fighting',
   PHOTOGRAPHY: 'photography',
   MIXED: 'mixed',
@@ -39,6 +40,7 @@ export const GAME_TYPES = {
 
 export const GAME_TYPE_LABELS = {
   [GAME_TYPES.MAIN_SERIES]: '本編STG',
+  [GAME_TYPES.SPIN_OFF_STG]: '外伝STG',
   [GAME_TYPES.FIGHTING]: '格闘ゲーム',
   [GAME_TYPES.PHOTOGRAPHY]: '撮影STG',
   [GAME_TYPES.MIXED]: '格闘+STG',

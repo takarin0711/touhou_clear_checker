@@ -10,12 +10,16 @@ const GameCard = ({ game, onClick, className = '' }) => {
     switch (gameType) {
       case 'main_series':
         return 'primary';
+      case 'spin_off_stg':
+        return 'warning';
       case 'fighting':
         return 'danger';
       case 'photography':
         return 'warning';
       case 'mixed':
         return 'purple';
+      case 'versus':
+        return 'success';
       default:
         return 'default';
     }
