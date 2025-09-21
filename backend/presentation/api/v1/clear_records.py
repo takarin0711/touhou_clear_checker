@@ -31,7 +31,7 @@ def _to_response(record) -> ClearRecordResponse:
     )
 
 
-@router.get("/", response_model=List[ClearRecordResponse])
+@router.get("", response_model=List[ClearRecordResponse])
 async def get_my_clear_records(
     game_id: Optional[int] = None,
     current_user: User = Depends(get_current_active_user),
@@ -63,7 +63,7 @@ async def get_clear_record_by_id(
     return _to_response(record)
 
 
-@router.post("/", response_model=ClearRecordResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=ClearRecordResponse, status_code=status.HTTP_201_CREATED)
 async def create_clear_record(
     record_data: ClearRecordCreate,
     current_user: User = Depends(get_current_active_user),

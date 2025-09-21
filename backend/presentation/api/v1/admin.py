@@ -18,7 +18,7 @@ router = APIRouter()
 
 # ゲーム管理API
 
-@router.get("/games/", response_model=List[GameResponse])
+@router.get("/games", response_model=List[GameResponse])
 async def admin_get_games(
     series_number: Optional[Decimal] = Query(None, description="シリーズ番号で検索"),
     game_type: Optional[str] = Query(None, description="ゲームタイプで検索"),
@@ -55,7 +55,7 @@ async def admin_get_games(
         game_type=game.game_type
     ) for game in games]
 
-@router.post("/games/", response_model=GameResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/games", response_model=GameResponse, status_code=status.HTTP_201_CREATED)
 async def create_game(
     game_data: GameCreate,
     current_admin: User = Depends(get_current_admin_user),
@@ -134,7 +134,7 @@ async def delete_game_by_series(
 
 # ユーザー管理API
 
-@router.get("/users/", response_model=List[UserResponse])
+@router.get("/users", response_model=List[UserResponse])
 async def admin_get_all_users(
     current_admin: User = Depends(get_current_admin_user),
     db: Session = Depends(get_db)

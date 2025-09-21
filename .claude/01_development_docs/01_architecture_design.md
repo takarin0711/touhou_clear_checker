@@ -128,15 +128,15 @@ touhou_clear_checker/
 - `GET /api/v1/users/me` - 自分の情報取得
 - `PUT /api/v1/users/me` - 自分の情報更新
 - `DELETE /api/v1/users/me` - 自分のアカウント削除
-- `GET /api/v1/games/` - ゲーム一覧取得
+- `GET /api/v1/games` - ゲーム一覧取得
 - `GET /api/v1/games/{id}` - ゲーム詳細取得
-- `GET/POST/PUT/DELETE /api/v1/clear-records/` - クリア記録管理
+- `GET/POST/PUT/DELETE /api/v1/clear-records` - クリア記録管理
 
 ### 管理者専用API（管理者権限必要）
-- `GET /api/v1/admin/users/` - 全ユーザー一覧
+- `GET /api/v1/admin/users` - 全ユーザー一覧
 - `PUT /api/v1/admin/users/{id}` - 任意ユーザー更新
 - `DELETE /api/v1/admin/users/{id}` - 任意ユーザー削除
-- `POST/PUT/DELETE /api/v1/admin/games/` - ゲーム作品管理
+- `POST/PUT/DELETE /api/v1/admin/games` - ゲーム作品管理
 
 ## 権限システム
 - **一般ユーザー**: 自分の情報とクリア記録のみ管理可能

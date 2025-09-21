@@ -12,7 +12,7 @@ export const clearRecordApi = {
    * @returns {Promise<Array>} クリア記録配列
    */
   async getMyClearRecords() {
-    const response = await apiClient.get('/clear-records/');
+    const response = await apiClient.get('/clear-records');
     return response.data;
   },
 
@@ -22,7 +22,7 @@ export const clearRecordApi = {
    * @returns {Promise<Array>} クリア記録配列
    */
   async getMyClearRecordsByGame(gameId) {
-    const response = await apiClient.get(`/clear-records/?game_id=${gameId}`);
+    const response = await apiClient.get(`/clear-records?game_id=${gameId}`);
     return response.data;
   },
 
@@ -40,7 +40,7 @@ export const clearRecordApi = {
    * @returns {Promise<Object>} 作成されたクリア記録
    */
   async createClearRecord(recordData) {
-    const response = await apiClient.post('/clear-records/', recordData);
+    const response = await apiClient.post('/clear-records', recordData);
     return response.data;
   },
 

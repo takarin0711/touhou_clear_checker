@@ -18,7 +18,7 @@ def get_character_service() -> CharacterService:
     return CharacterService(character_repository)
 
 
-@router.get("/", response_model=List[dict])
+@router.get("", response_model=List[dict])
 async def get_characters(
     character_service: CharacterService = Depends(get_character_service),
     current_user: User = Depends(get_current_user)
@@ -49,7 +49,7 @@ async def get_character_by_id(
         raise HTTPException(status_code=500, detail=f"キャラクター取得に失敗しました: {str(e)}")
 
 
-@router.post("/", response_model=dict)
+@router.post("", response_model=dict)
 async def create_character(
     character_data: dict,
     character_service: CharacterService = Depends(get_character_service),

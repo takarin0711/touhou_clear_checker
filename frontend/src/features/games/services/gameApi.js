@@ -21,7 +21,7 @@ export const gameApi = {
     }
     
     const queryString = params.toString();
-    const url = queryString ? `/games/?${queryString}` : '/games/';
+    const url = queryString ? `/games?${queryString}` : '/games';
     
     const response = await api.get(url);
     return response.data;

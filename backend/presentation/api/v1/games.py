@@ -10,7 +10,7 @@ from domain.entities.user import User
 
 router = APIRouter()
 
-@router.get("/", response_model=List[GameResponse])
+@router.get("", response_model=List[GameResponse])
 async def get_games(
     series_number: Optional[Decimal] = Query(None, description="シリーズ番号で検索"),
     game_type: Optional[str] = Query(None, description="ゲームタイプで検索"),
