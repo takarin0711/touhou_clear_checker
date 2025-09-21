@@ -201,12 +201,19 @@ export const isFullSpellCardAvailable = (gameId) => {
  * ノーコンティニューが利用可能かどうかを判定
  * @param {number} gameId - ゲームID
  * @param {string} mode - ゲームモード
+ * @param {string} difficulty - 難易度（オプション）
  * @returns {boolean} ノーコンティニューが利用可能な場合true
  */
-export const isNoContinueAvailable = (gameId, mode) => {
+export const isNoContinueAvailable = (gameId, mode, difficulty = null) => {
   // 紺珠伝の完全無欠モードはチェックポイント制なのでノーコン概念なし
   if (gameId === GAME_IDS.TOUHOU_15_LoLK && mode === GAME_MODES.POINTDEVICE) {
     return false;
   }
+  
+  // Extra/Phantasmステージはコンティニューできない仕様なのでノーコン概念なし
+  if (difficulty === 'Extra' || difficulty === 'Phantasm') {
+    return false;
+  }
+  
   return true;
 };

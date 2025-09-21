@@ -3,8 +3,8 @@
  */
 import React, { useState, useEffect } from 'react';
 import Button from '../../../components/common/Button';
-import { DIFFICULTIES, getDifficultyOrderForGame } from '../../../types/difficulty';
-import { GAME_MODES, isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
+import { getDifficultyOrderForGame } from '../../../types/difficulty';
+import { isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
 import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 
@@ -27,7 +27,8 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   const availableDifficulties = getDifficultyOrderForGame(game, selectedMode);
   const isModeGame = isModeAvailableForGame(game?.id);
   const isFullSpellAvailable = isFullSpellCardAvailable(game?.id);
-  const isNoContinueAvailableForCurrentMode = isNoContinueAvailable(game?.id, selectedMode);
+  // ヘッダー表示用：現在選択中の難易度でノーコンが利用可能かを判定
+  const isNoContinueAvailableForCurrentTab = isNoContinueAvailable(game?.id, selectedMode, activeTab);
   
   // 現在のモードのデータ
   const currentModeData = modeData[selectedMode] || {};
@@ -290,7 +291,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     クリア
                   </th>
-                  {isNoContinueAvailableForCurrentMode && (
+                  {isNoContinueAvailableForCurrentTab && (
                     <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       ノーコン
                     </th>
@@ -322,7 +323,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
-                    {isNoContinueAvailableForCurrentMode && (
+                    {isNoContinueAvailableForCurrentTab && (
                       <td className="px-3 py-4 text-center">
                         <input
                           type="checkbox"
