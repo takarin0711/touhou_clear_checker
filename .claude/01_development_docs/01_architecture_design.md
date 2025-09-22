@@ -10,7 +10,7 @@
 - **バックエンド**: FastAPI 0.68.0, uvicorn, SQLAlchemy 1.4.23, Pydantic 1.8.2
 - **認証**: JWT (python-jose), bcrypt, passlib
 - **データベース**: SQLite（開発環境）
-- **Python**: 3.9.6（3.13は互換性問題あり）
+- **Python**: 3.13.5
 
 ## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
 ```

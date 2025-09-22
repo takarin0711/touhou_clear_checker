@@ -22,17 +22,16 @@
 
 ## 開発環境
 - フロントエンド：React 18.2.0, axios
-- バックエンド：FastAPI, uvicorn, SQLAlchemy, SQLite
+- バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy, SQLite
 - パッケージマネージャー：npm (frontend), pip (backend)
-- **重要**: Python 3.13でのバージョン互換性問題あり
-  - FastAPI==0.95.2, pydantic==1.10.13使用
-  - 必要に応じてPython 3.11以下での動作推奨
+- **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 1.10.22で互換性問題解決
 
 ## よく使用するコマンド
 
 ### バックエンド
-- 開発サーバー: `cd backend && source venv39/bin/activate && python main.py`
-- 依存関係インストール: `cd backend && pip install -r requirements.txt`
+- 開発サーバー: `cd backend && source venv313/bin/activate && python main.py &`
+- 依存関係インストール: `cd backend && source venv313/bin/activate && pip install -r requirements.txt`
+- **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
 ### フロントエンド  
 - 開発サーバー: `cd frontend && npm start`
