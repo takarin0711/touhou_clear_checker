@@ -22,9 +22,9 @@ class ClearRecordModel(Base):
     is_no_bomb_clear = Column(Boolean, default=False)
     is_no_miss_clear = Column(Boolean, default=False)
     is_full_spell_card = Column(Boolean, default=False)
-    special_clear_flag_1 = Column(Boolean, default=False)
-    special_clear_flag_2 = Column(Boolean, default=False)
-    special_clear_flag_3 = Column(Boolean, default=False)
+    is_special_clear_1 = Column(Boolean, default=False)
+    is_special_clear_2 = Column(Boolean, default=False)
+    is_special_clear_3 = Column(Boolean, default=False)
     cleared_at = Column(Date, nullable=True)
     last_updated_at = Column(DateTime, default=func.now(), onupdate=func.now())
     created_at = Column(DateTime, default=func.now())
@@ -44,9 +44,9 @@ class ClearRecordModel(Base):
             is_no_bomb_clear=clear_record.is_no_bomb_clear,
             is_no_miss_clear=clear_record.is_no_miss_clear,
             is_full_spell_card=clear_record.is_full_spell_card,
-            special_clear_flag_1=getattr(clear_record, 'is_special_clear_1', False),
-            special_clear_flag_2=getattr(clear_record, 'is_special_clear_2', False),
-            special_clear_flag_3=getattr(clear_record, 'is_special_clear_3', False),
+            is_special_clear_1=getattr(clear_record, 'is_special_clear_1', False),
+            is_special_clear_2=getattr(clear_record, 'is_special_clear_2', False),
+            is_special_clear_3=getattr(clear_record, 'is_special_clear_3', False),
             cleared_at=clear_record.cleared_at,
             last_updated_at=clear_record.last_updated_at,
             created_at=clear_record.created_at
@@ -66,9 +66,9 @@ class ClearRecordModel(Base):
             is_no_bomb_clear=self.is_no_bomb_clear,
             is_no_miss_clear=self.is_no_miss_clear,
             is_full_spell_card=self.is_full_spell_card,
-            is_special_clear_1=self.special_clear_flag_1,
-            is_special_clear_2=self.special_clear_flag_2,
-            is_special_clear_3=self.special_clear_flag_3,
+            is_special_clear_1=self.is_special_clear_1,
+            is_special_clear_2=self.is_special_clear_2,
+            is_special_clear_3=self.is_special_clear_3,
             cleared_at=self.cleared_at,
             last_updated_at=self.last_updated_at,
             created_at=self.created_at

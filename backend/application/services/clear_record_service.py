@@ -38,6 +38,9 @@ class ClearRecordService:
             is_no_bomb_clear=clear_record_data.get('is_no_bomb_clear', False),
             is_no_miss_clear=clear_record_data.get('is_no_miss_clear', False),
             is_full_spell_card=clear_record_data.get('is_full_spell_card', False),
+            is_special_clear_1=clear_record_data.get('is_special_clear_1', False),
+            is_special_clear_2=clear_record_data.get('is_special_clear_2', False),
+            is_special_clear_3=clear_record_data.get('is_special_clear_3', False),
             cleared_at=clear_record_data.get('cleared_at')
         )
         return await self.clear_record_repository.create(clear_record)
@@ -54,6 +57,11 @@ class ClearRecordService:
         existing_record.is_no_continue_clear = update_data.get('is_no_continue_clear', existing_record.is_no_continue_clear)
         existing_record.is_no_bomb_clear = update_data.get('is_no_bomb_clear', existing_record.is_no_bomb_clear)
         existing_record.is_no_miss_clear = update_data.get('is_no_miss_clear', existing_record.is_no_miss_clear)
+        existing_record.is_full_spell_card = update_data.get('is_full_spell_card', existing_record.is_full_spell_card)
+        existing_record.is_special_clear_1 = update_data.get('is_special_clear_1', existing_record.is_special_clear_1)
+        existing_record.is_special_clear_2 = update_data.get('is_special_clear_2', existing_record.is_special_clear_2)
+        existing_record.is_special_clear_3 = update_data.get('is_special_clear_3', existing_record.is_special_clear_3)
+        existing_record.mode = update_data.get('mode', existing_record.mode)
         
         # cleared_atの処理
         if 'cleared_at' in update_data:
@@ -84,6 +92,9 @@ class ClearRecordService:
                 is_no_bomb_clear=clear_record_data.get('is_no_bomb_clear', False),
                 is_no_miss_clear=clear_record_data.get('is_no_miss_clear', False),
                 is_full_spell_card=clear_record_data.get('is_full_spell_card', False),
+                is_special_clear_1=clear_record_data.get('is_special_clear_1', False),
+                is_special_clear_2=clear_record_data.get('is_special_clear_2', False),
+                is_special_clear_3=clear_record_data.get('is_special_clear_3', False),
                 cleared_at=clear_record_data.get('cleared_at')
             )
             result = await self.clear_record_repository.create_or_update(clear_record)

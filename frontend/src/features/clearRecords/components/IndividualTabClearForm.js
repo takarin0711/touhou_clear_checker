@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../../components/common/Button';
 import { getDifficultyOrderForGame } from '../../../types/difficulty';
 import { isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
+import { getSpecialClearLabel, getSpecialClearDescription } from '../../../types/clearRecord';
 import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 
@@ -29,6 +30,10 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   const isFullSpellAvailable = isFullSpellCardAvailable(game?.id);
   // ヘッダー表示用：現在選択中の難易度でノーコンが利用可能かを判定
   const isNoContinueAvailableForCurrentTab = isNoContinueAvailable(game?.id, selectedMode, activeTab);
+  
+  // 特殊クリア条件が利用可能かチェック
+  const hasSpecialClear1 = [7, 8, 9, 12, 13, 14].includes(game?.id);
+  const hasSpecialClear2 = [13].includes(game?.id); // 鬼形獣のみ
   
   // 現在のモードのデータ
   const currentModeData = modeData[selectedMode] || {};
@@ -59,7 +64,10 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
           no_continue: record.is_no_continue_clear || false,
           no_bomb: record.is_no_bomb_clear || false,
           no_miss: record.is_no_miss_clear || false,
-          full_spell_card: record.is_full_spell_card || false
+          full_spell_card: record.is_full_spell_card || false,
+          special_clear_1: record.is_special_clear_1 || false,
+          special_clear_2: record.is_special_clear_2 || false,
+          special_clear_3: record.is_special_clear_3 || false
         };
       }
     });
@@ -85,7 +93,10 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
               no_continue: false,
               no_bomb: false,
               no_miss: false,
-              full_spell_card: false
+              full_spell_card: false,
+              special_clear_1: false,
+              special_clear_2: false,
+              special_clear_3: false
             };
           });
         });
@@ -302,6 +313,16 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     ノーミス
                   </th>
+                  {hasSpecialClear1 && (
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {getSpecialClearLabel(game?.id, 'special_clear_1')}
+                    </th>
+                  )}
+                  {hasSpecialClear2 && (
+                    <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {getSpecialClearLabel(game?.id, 'special_clear_2')}
+                    </th>
+                  )}
                   {isFullSpellAvailable && (
                     <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                       フルスペカ
@@ -349,6 +370,28 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
+                    {hasSpecialClear1 && (
+                      <td className="px-3 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={currentModeData[activeTab].characters[character.id]?.special_clear_1 || false}
+                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'special_clear_1', e.target.checked)}
+                          className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
+                          title={getSpecialClearDescription(game?.id, 'special_clear_1')}
+                        />
+                      </td>
+                    )}
+                    {hasSpecialClear2 && (
+                      <td className="px-3 py-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={currentModeData[activeTab].characters[character.id]?.special_clear_2 || false}
+                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'special_clear_2', e.target.checked)}
+                          className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                          title={getSpecialClearDescription(game?.id, 'special_clear_2')}
+                        />
+                      </td>
+                    )}
                     {isFullSpellAvailable && (
                       <td className="px-3 py-4 text-center">
                         <input

@@ -36,6 +36,9 @@ export const clearRecordApi = {
    * @param {boolean} recordData.is_no_continue_clear - ノーコンティニュークリア
    * @param {boolean} recordData.is_no_bomb_clear - ノーボムクリア
    * @param {boolean} recordData.is_no_miss_clear - ノーミスクリア
+   * @param {boolean} [recordData.is_special_clear_1] - 特殊クリア条件1
+   * @param {boolean} [recordData.is_special_clear_2] - 特殊クリア条件2
+   * @param {boolean} [recordData.is_special_clear_3] - 特殊クリア条件3
    * @param {string} [recordData.cleared_at] - クリア日（YYYY-MM-DD）
    * @returns {Promise<Object>} 作成されたクリア記録
    */
@@ -120,6 +123,9 @@ export const clearRecordApi = {
           is_no_bomb_clear: conditions.no_bomb || false,
           is_no_miss_clear: conditions.no_miss || false,
           is_full_spell_card: conditions.full_spell_card || false,
+          is_special_clear_1: conditions.special_clear_1 || false,
+          is_special_clear_2: conditions.special_clear_2 || false,
+          is_special_clear_3: conditions.special_clear_3 || false,
           cleared_at: conditions.cleared ? new Date().toISOString().split('T')[0] : null
         };
         recordsData.push(recordData);

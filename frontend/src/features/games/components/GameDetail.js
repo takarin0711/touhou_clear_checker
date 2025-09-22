@@ -7,6 +7,7 @@ import { useClearRecords } from '../../../hooks/useClearRecords';
 import IndividualTabClearForm from '../../clearRecords/components/IndividualTabClearForm';
 import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
 import { useGameCharacters } from '../hooks/useGameCharacters';
+import { getSpecialClearLabel } from '../../../types/clearRecord';
 
 /**
  * ゲーム詳細コンポーネント
@@ -283,6 +284,8 @@ const GameDetail = ({ game, onBack }) => {
                                 {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
                                 {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
                                 {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
+                                {[7, 8, 9, 12, 13, 14].includes(game?.id) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
+                                {[13].includes(game?.id) && record.is_special_clear_2 && <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_2')}</span>}
                                 {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
                               </div>
                             </div>

@@ -25,6 +25,9 @@ def _to_response(record) -> ClearRecordResponse:
         is_no_bomb_clear=record.is_no_bomb_clear,
         is_no_miss_clear=record.is_no_miss_clear,
         is_full_spell_card=record.is_full_spell_card,
+        is_special_clear_1=getattr(record, 'is_special_clear_1', False),
+        is_special_clear_2=getattr(record, 'is_special_clear_2', False),
+        is_special_clear_3=getattr(record, 'is_special_clear_3', False),
         cleared_at=record.cleared_at,
         created_at=record.created_at,
         last_updated_at=record.last_updated_at

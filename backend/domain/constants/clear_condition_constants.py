@@ -26,8 +26,8 @@ class SpecialClearConditions:
     NO_REVERSE_USE = "no_reverse_use"          # ノーリバース使用
     
     # 鬼形獣特有条件
-    NO_ROARING_MODE = "no_roaring_mode"        # ノーロアリング
-    SINGLE_ANIMAL_SPIRIT = "single_animal"     # 単一アニマルスピリット
+    NO_ROARING_MODE = "no_roaring_mode"        # ノー暴走（ロアリングモード未使用）
+    NO_HYPER_MODE = "no_hyper_mode"            # ノー霊撃（ハイパーモード未使用）
     
     # 虹龍洞特有条件
     NO_ABILITY_CARD = "no_ability_card"        # ノーアビリティカード
@@ -37,6 +37,15 @@ class SpecialClearConditions:
     NO_CARD_UPGRADE = "no_card_upgrade"        # ノーカードアップグレード
     STARTER_DECK_ONLY = "starter_deck_only"    # スターターデッキのみ
     
+    # 星蓮船特有条件
+    NO_VENT_LASER = "no_vent_laser"            # ノーベントラー（ベントラー未使用）
+    
+    # 神霊廟特有条件
+    NO_TRANCE = "no_trance"                    # ノートランス（トランス未使用）
+    
+    # 妖精大戦争特有条件
+    NO_ICE = "no_ice"                          # ノーアイス（アイスバリア未使用）
+    
     # 錦上京特有条件
     NO_HENKA_STONE = "no_henka_stone"          # ノー異変石
     BASIC_STONE_ONLY = "basic_stone_only"      # 基本異変石のみ
@@ -44,6 +53,30 @@ class SpecialClearConditions:
 
 # 作品別特殊条件マッピング
 GAME_SPECIAL_CONDITIONS = {
+    GameIds.TOUHOU_12_UFO: {
+        "special_1": {
+            "key": SpecialClearConditions.NO_VENT_LASER,
+            "display_name": "ノーベントラー",
+            "description": "ベントラーを使用せずにクリア"
+        }
+    },
+    
+    GameIds.TOUHOU_128_FW: {
+        "special_1": {
+            "key": SpecialClearConditions.NO_ICE,
+            "display_name": "ノーアイス",
+            "description": "アイスバリアを使用せずにクリア"
+        }
+    },
+    
+    GameIds.TOUHOU_13_TD: {
+        "special_1": {
+            "key": SpecialClearConditions.NO_TRANCE,
+            "display_name": "ノートランス",
+            "description": "トランスを使用せずにクリア"
+        }
+    },
+    
     GameIds.TOUHOU_14_DDC: {
         "special_1": {
             "key": SpecialClearConditions.NO_REVERSE_USE,
@@ -57,37 +90,27 @@ GAME_SPECIAL_CONDITIONS = {
             "key": SpecialClearConditions.NO_SEASON_RELEASE,
             "display_name": "ノー季節解放",
             "description": "シーズンリリースを使用せずにクリア"
-        },
-        "special_2": {
-            "key": SpecialClearConditions.NO_SUB_SEASON,
-            "display_name": "ノーサブシーズン",
-            "description": "サブシーズンを変更せずにクリア"
         }
     },
     
     GameIds.TOUHOU_17_WBaWC: {
         "special_1": {
             "key": SpecialClearConditions.NO_ROARING_MODE,
-            "display_name": "ノーロアリング",
-            "description": "ローリングモードを発動せずにクリア"
+            "display_name": "ノー暴走",
+            "description": "ロアリングモードを使用せずにクリア"
         },
         "special_2": {
-            "key": SpecialClearConditions.SINGLE_ANIMAL_SPIRIT,
-            "display_name": "単一アニマル",
-            "description": "1種類のアニマルスピリットのみでクリア"
+            "key": SpecialClearConditions.NO_HYPER_MODE,
+            "display_name": "ノー霊撃",
+            "description": "ハイパーモードを使用せずにクリア"
         }
     },
     
     GameIds.TOUHOU_18_UM: {
         "special_1": {
             "key": SpecialClearConditions.NO_ABILITY_CARD,
-            "display_name": "ノーアビリティカード",
+            "display_name": "ノーカード",
             "description": "アビリティカードを使用せずにクリア"
-        },
-        "special_2": {
-            "key": SpecialClearConditions.BASIC_SETUP_ONLY,
-            "display_name": "基本装備のみ",
-            "description": "初期装備のみでクリア"
         }
     },
     

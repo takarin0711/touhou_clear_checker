@@ -15,6 +15,9 @@ class ClearRecordBase(BaseModel):
     is_no_bomb_clear: bool = False
     is_no_miss_clear: bool = False
     is_full_spell_card: bool = False
+    is_special_clear_1: bool = False
+    is_special_clear_2: bool = False
+    is_special_clear_3: bool = False
     cleared_at: Optional[date] = None
 
 class ClearRecordCreate(ClearRecordBase):
@@ -26,6 +29,9 @@ class ClearRecordUpdate(BaseModel):
     is_no_bomb_clear: Optional[bool] = None
     is_no_miss_clear: Optional[bool] = None
     is_full_spell_card: Optional[bool] = None
+    is_special_clear_1: Optional[bool] = None
+    is_special_clear_2: Optional[bool] = None
+    is_special_clear_3: Optional[bool] = None
     mode: Optional[str] = None
     cleared_at: Optional[date] = None
 
