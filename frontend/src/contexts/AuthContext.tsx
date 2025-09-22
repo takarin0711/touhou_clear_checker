@@ -1,8 +1,20 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { authApi } from '../features/auth/services/authApi';
+import { User, LoginCredentials, RegisterData, AuthContextType } from '../types/auth';
 
-// 認証状態の管理
-const authReducer = (state, action) => {
+interface AuthState {
+  user: User | null;
+  token: string | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+interface AuthAction {
+  type: 'AUTH_START' | 'AUTH_SUCCESS' | 'AUTH_ERROR' | 'LOGOUT';
+  payload?: any;
+}
+
+const authReducer = (state: AuthState, action: AuthAction): AuthState => {
   switch (action.type) {
     case 'AUTH_START':
       return { ...state, isLoading: true, error: null };
@@ -39,7 +51,7 @@ const authReducer = (state, action) => {
   }
 };
 
-const initialState = {
+const initialState: AuthState = {
   user: null,
   token: null,
   isLoading: false,
@@ -47,12 +59,16 @@ const initialState = {
 };
 
 // コンテキストの作成
-const AuthContext = createContext();
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: React.ReactNode;
+}
 
 /**
  * 認証プロバイダーコンポーネント
  */
-export const AuthProvider = ({ children }) => {
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   // 初期化時に保存された認証情報をチェック
@@ -67,7 +83,7 @@ export const AuthProvider = ({ children }) => {
           type: 'AUTH_SUCCESS',
           payload: { user, token },
         });
-      } catch (error) {
+      } catch (error: any) {
         console.error('認証情報の復元に失敗:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
@@ -78,7 +94,7 @@ export const AuthProvider = ({ children }) => {
   /**
    * ログイン
    */
-  const login = async (credentials) => {
+  const login = async (credentials: LoginCredentials) => {
     dispatch({ type: 'AUTH_START' });
     
     try {
@@ -95,7 +111,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage = error.response?.data?.detail || 'ログインに失敗しました';
       dispatch({
         type: 'AUTH_ERROR',
@@ -108,7 +124,7 @@ export const AuthProvider = ({ children }) => {
   /**
    * ユーザー登録
    */
-  const register = async (registerData) => {
+  const register = async (registerData: RegisterData) => {
     dispatch({ type: 'AUTH_START' });
     
     try {
@@ -125,7 +141,7 @@ export const AuthProvider = ({ children }) => {
       });
 
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       const errorMessage = error.response?.data?.detail || 'ユーザー登録に失敗しました';
       dispatch({
         type: 'AUTH_ERROR',
@@ -161,7 +177,7 @@ export const AuthProvider = ({ children }) => {
         payload: { user, token },
       });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('認証確認エラー:', error);
       // バックエンドが動いていない場合はログアウトして続行
       logout();
@@ -190,7 +206,7 @@ export const AuthProvider = ({ children }) => {
 /**
  * 認証コンテキストを使用するカスタムフック
  */
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

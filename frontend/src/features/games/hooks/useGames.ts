@@ -1,18 +1,32 @@
 import { useState, useEffect, useCallback } from 'react';
 import { gameApi } from '../services/gameApi';
+import { Game, GameFilter } from '../../../types/game';
+
+interface UseGamesReturn {
+  games: Game[];
+  allGames: Game[];
+  loading: boolean;
+  error: string | null;
+  filters: GameFilter;
+  fetchGames: (filterParams?: any) => Promise<void>;
+  applyFilters: (newFilters: GameFilter) => void;
+  applyServerFilters: (serverFilters: any) => Promise<void>;
+  resetFilters: () => void;
+  refetch: () => Promise<void>;
+}
 
 /**
  * ゲーム一覧管理のカスタムフック
  */
-export const useGames = (initialFilters = {}) => {
-  const [games, setGames] = useState([]);
-  const [filteredGames, setFilteredGames] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [filters, setFilters] = useState(initialFilters);
+export const useGames = (initialFilters: GameFilter = {}): UseGamesReturn => {
+  const [games, setGames] = useState<Game[]>([]);
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<GameFilter>(initialFilters);
 
   // ゲーム一覧の取得
-  const fetchGames = useCallback(async (filterParams = {}) => {
+  const fetchGames = useCallback(async (filterParams: any = {}): Promise<void> => {
     setLoading(true);
     setError(null);
     
@@ -22,14 +36,14 @@ export const useGames = (initialFilters = {}) => {
       setFilteredGames(data);
     } catch (err) {
       console.error('ゲーム一覧の取得に失敗:', err);
-      setError(err.response?.data?.detail || 'ゲーム一覧の取得に失敗しました');
+      setError((err as any).response?.data?.detail || 'ゲーム一覧の取得に失敗しました');
     } finally {
       setLoading(false);
     }
   }, []);
 
   // フィルターの適用
-  const applyFilters = useCallback((newFilters) => {
+  const applyFilters = useCallback((newFilters: GameFilter): void => {
     setFilters(newFilters);
     
     // タイトル検索はフロントエンド側でフィルタリング
@@ -42,12 +56,12 @@ export const useGames = (initialFilters = {}) => {
   }, [games]);
 
   // サーバー側フィルターの適用（series_number, game_type）
-  const applyServerFilters = useCallback(async (serverFilters) => {
+  const applyServerFilters = useCallback(async (serverFilters: any): Promise<void> => {
     await fetchGames(serverFilters);
   }, [fetchGames]);
 
   // フィルターのリセット
-  const resetFilters = useCallback(() => {
+  const resetFilters = useCallback((): void => {
     setFilters({});
     fetchGames();
   }, [fetchGames]);

@@ -1,9 +1,25 @@
 import React from 'react';
 
 /**
+ * Inputコンポーネントのprops型定義
+ */
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+  type?: React.HTMLInputTypeAttribute;
+  name?: string;
+  value?: string | number;
+  onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  placeholder?: string;
+  required?: boolean;
+  error?: string;
+  disabled?: boolean;
+  className?: string;
+}
+
+/**
  * 再利用可能な入力フィールドコンポーネント
  */
-const Input = ({
+const Input: React.FC<InputProps> = ({
   label,
   type = 'text',
   name,

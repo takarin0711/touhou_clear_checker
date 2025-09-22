@@ -100,17 +100,17 @@ export const clearRecordApi = {
    * @returns {Promise<Array>} 作成/更新されたクリア記録の配列
    */
   async submitIndividualConditions(gameId, difficulty, difficultyData, characters = [], mode = "normal") {
-    const recordsData = [];
+    const recordsData: any[] = [];
     
     // 機体ごとの条件データを個別レコードに変換
     Object.entries(difficultyData.characters || {}).forEach(([characterId, conditions]) => {
       // 何らかの条件が操作されている場合は送信する
       // これにより、クリアフラグを外した場合（false設定）も正しく更新される
-      const hasAnyValue = Object.keys(conditions).length > 0;
+      const hasAnyValue = Object.keys(conditions as object).length > 0;
       
       if (hasAnyValue) {
         // characterIdから対応するcharacter_nameを取得
-        const character = characters.find(c => c.id === parseInt(characterId));
+        const character = (characters as any[]).find((c: any) => c.id === parseInt(characterId));
         const characterName = character?.character_name || character?.name || "霊夢";
         
         const recordData = {
@@ -118,15 +118,15 @@ export const clearRecordApi = {
           character_name: characterName,
           difficulty: difficulty,
           mode: mode,
-          is_cleared: conditions.cleared || false,
-          is_no_continue_clear: conditions.no_continue || false,
-          is_no_bomb_clear: conditions.no_bomb || false,
-          is_no_miss_clear: conditions.no_miss || false,
-          is_full_spell_card: conditions.full_spell_card || false,
-          is_special_clear_1: conditions.special_clear_1 || false,
-          is_special_clear_2: conditions.special_clear_2 || false,
-          is_special_clear_3: conditions.special_clear_3 || false,
-          cleared_at: conditions.cleared ? new Date().toISOString().split('T')[0] : null
+          is_cleared: (conditions as any).cleared || false,
+          is_no_continue_clear: (conditions as any).no_continue || false,
+          is_no_bomb_clear: (conditions as any).no_bomb || false,
+          is_no_miss_clear: (conditions as any).no_miss || false,
+          is_full_spell_card: (conditions as any).full_spell_card || false,
+          is_special_clear_1: (conditions as any).special_clear_1 || false,
+          is_special_clear_2: (conditions as any).special_clear_2 || false,
+          is_special_clear_3: (conditions as any).special_clear_3 || false,
+          cleared_at: (conditions as any).cleared ? new Date().toISOString().split('T')[0] : null
         };
         recordsData.push(recordData);
       }

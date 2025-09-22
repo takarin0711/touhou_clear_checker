@@ -21,14 +21,15 @@
 
 ## プロジェクト概要
 - 東方シリーズのゲームクリア状況を管理・追跡するWebアプリケーション
-- フロントエンド：React
+- フロントエンド：React + TypeScript
 - バックエンド：FastAPI (Python)
 
 ## 開発環境
-- フロントエンド：React 18.2.0, axios
+- フロントエンド：React 18.2.0, TypeScript 5.9.2, axios
 - バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy, SQLite
 - パッケージマネージャー：npm (frontend), pip (backend)
 - **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 2.11.9で互換性問題解決
+- **TypeScript化完了**: 2025年1月にフロントエンドを完全TypeScript化、型安全性と保守性が向上
 
 ## よく使用するコマンド
 
@@ -40,11 +41,13 @@
 - 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
-### フロントエンド  
+### フロントエンド (TypeScript + React)
 - 開発サーバー: `cd frontend && npm start`
 - 依存関係インストール: `cd frontend && npm install`
 - ビルド: `cd frontend && npm run build`
 - テスト: `cd frontend && npm test`
+- 型チェック: `cd frontend && npx tsc --noEmit`
+- **注意**: ブラウザキャッシュが原因でエラーが出る場合は、ハードリフレッシュ（Cmd+Shift+R）またはシークレットモードでアクセス
 
 ## プロジェクト構造
 ```
@@ -70,14 +73,16 @@ touhou_clear_checker/
 │   ├── requirements.txt
 │   ├── requirements-dev.txt
 │   └── pytest.ini
-├── frontend/
+├── frontend/                 # TypeScript + React フロントエンド
 │   ├── src/
-│   │   ├── components/
-│   │   ├── features/
-│   │   ├── hooks/
-│   │   ├── services/
-│   │   └── types/
-│   └── package.json
+│   │   ├── components/     # 共通コンポーネント（.tsx）
+│   │   ├── features/       # 機能別コンポーネント（.tsx）
+│   │   ├── hooks/          # カスタムフック（.ts）
+│   │   ├── services/       # API通信サービス（.ts）
+│   │   ├── types/          # TypeScript型定義（.ts）
+│   │   └── contexts/       # React Context（.tsx）
+│   ├── package.json
+│   └── tsconfig.json       # TypeScript設定
 ├── .claude/                # 設計書・開発ドキュメント
 ├── README.md
 └── CLAUDE.md
@@ -95,3 +100,28 @@ touhou_clear_checker/
 - APIエンドポイントの統合テスト
 - データベース連携テスト
 - 認証・認可の統合テスト
+
+## TypeScript化について
+
+### 完了事項（2025年1月）
+- **全ファイル変換**: 全.jsファイルを.ts/.tsxに変換完了
+- **型定義追加**: 37個のinterfaceと型定義を追加
+- **型安全性確保**: コンパイル時エラー検出による品質向上
+- **開発体験改善**: IDEでの自動補完・リファクタリング支援
+- **保守性向上**: 明確な型定義によるコード理解向上
+
+### 主要な型定義
+- **認証系**: User, LoginCredentials, RegisterData, AuthContextType
+- **ゲーム系**: Game, GameFilter, GameListResponse, GameCharacter
+- **クリア記録系**: ClearRecord, ClearRecordFormData, IndividualConditionData
+- **共通コンポーネント**: ButtonProps, InputProps, BadgeProps
+
+### TypeScript設定
+- **tsconfig.json**: 厳密な型チェック有効
+- **型エラー対応**: 全TypeScriptエラー解消済み
+- **eslint警告**: 未使用変数などの警告のみ残存（機能に影響なし）
+
+### トラブルシューティング
+- **ブラウザキャッシュエラー**: ハードリフレッシュ（Cmd+Shift+R）で解決
+- **型エラー**: `npx tsc --noEmit`で型チェック実行
+- **ビルドエラー**: `npm run build`で詳細確認

@@ -6,13 +6,13 @@ import { characterApi } from '../services/characterApi';
 
 /**
  * キャラクター管理フック
- * @param {number} [gameId] - 特定ゲームのキャラクターのみを取得する場合のゲームID
- * @returns {Object} キャラクター管理の状態と操作
+ * @param gameId - 特定ゲームのキャラクターのみを取得する場合のゲームID
+ * @returns キャラクター管理の状態と操作
  */
-export const useCharacters = (gameId = null) => {
-  const [characters, setCharacters] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useCharacters = (gameId: number | null = null) => {
+  const [characters, setCharacters] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * キャラクター一覧を取得
@@ -31,7 +31,7 @@ export const useCharacters = (gameId = null) => {
       setCharacters(data);
     } catch (err) {
       console.error('キャラクター取得エラー:', err);
-      setError(err.response?.data?.detail || 'キャラクターの取得に失敗しました');
+      setError((err as any).response?.data?.detail || 'キャラクターの取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -49,7 +49,7 @@ export const useCharacters = (gameId = null) => {
       return { success: true, data: newCharacter };
     } catch (err) {
       console.error('キャラクター作成エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'キャラクターの作成に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'キャラクターの作成に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -69,7 +69,7 @@ export const useCharacters = (gameId = null) => {
       return { success: true, data: updatedCharacter };
     } catch (err) {
       console.error('キャラクター更新エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'キャラクターの更新に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'キャラクターの更新に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -87,7 +87,7 @@ export const useCharacters = (gameId = null) => {
       return { success: true };
     } catch (err) {
       console.error('キャラクター削除エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'キャラクターの削除に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'キャラクターの削除に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
-import { GAME_TYPE_LABELS } from '../../../types/game';
+import { GAME_TYPE_LABELS, Game } from '../../../types/game';
 import { DIFFICULTIES, getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../../types/difficulty';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 import { useGameMemo } from '../../../hooks/useGameMemo';
@@ -10,13 +10,18 @@ import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConst
 import { useGameCharacters } from '../hooks/useGameCharacters';
 import { getSpecialClearLabel } from '../../../types/clearRecord';
 
+interface GameDetailProps {
+  game: Game;
+  onBack: () => void;
+}
+
 /**
  * ゲーム詳細コンポーネント
  */
-const GameDetail = ({ game, onBack }) => {
-  const [showIndividualForm, setShowIndividualForm] = useState(false);
-  const [showMemoForm, setShowMemoForm] = useState(false);
-  const [memoText, setMemoText] = useState('');
+const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
+  const [showIndividualForm, setShowIndividualForm] = useState<boolean>(false);
+  const [showMemoForm, setShowMemoForm] = useState<boolean>(false);
+  const [memoText, setMemoText] = useState<string>('');
 
   const {
     clearRecords,
@@ -42,7 +47,7 @@ const GameDetail = ({ game, onBack }) => {
     hasMemo
   } = useGameMemo(game.id);
 
-  const getBadgeVariant = (gameType) => {
+  const getBadgeVariant = (gameType: string): 'default' | 'primary' | 'warning' | 'danger' | 'purple' | 'success' => {
     switch (gameType) {
       case 'main_series':
         return 'primary';
@@ -61,13 +66,13 @@ const GameDetail = ({ game, onBack }) => {
     }
   };
 
-  const getSeriesDisplay = (seriesNumber) => {
+  const getSeriesDisplay = (seriesNumber: number): string => {
     return seriesNumber % 1 === 0 
       ? `第${seriesNumber}作` 
       : `第${seriesNumber}作`;
   };
 
-  const getDifficultyColorClasses = (difficulty) => {
+  const getDifficultyColorClasses = (difficulty: string): string => {
     const colorMap = {
       'green': 'bg-green-100 text-green-800 border-green-200',
       'blue': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -81,14 +86,14 @@ const GameDetail = ({ game, onBack }) => {
   };
 
 
-  const getAvailableDifficulties = () => {
+  const getAvailableDifficulties = (): string[] => {
     // 紺珠伝の場合は両モードの難易度を統合表示
     if (isModeAvailableForGame(game?.id)) {
       const legacyDifficulties = getDifficultyOrderForGame(game, GAME_MODES.LEGACY);
       const pointdeviceDifficulties = getDifficultyOrderForGame(game, GAME_MODES.POINTDEVICE);
       
       // 重複を除いてマージ（Legacy + Pointdevice の難易度を全て表示）
-      const allDifficulties = [...new Set([...pointdeviceDifficulties, ...legacyDifficulties])];
+      const allDifficulties = Array.from(new Set([...pointdeviceDifficulties, ...legacyDifficulties]));
       return allDifficulties;
     }
     
@@ -255,7 +260,11 @@ const GameDetail = ({ game, onBack }) => {
                 <div className="space-y-6">
                   {(() => {
                     // 難易度とモードでグルーピング
-                    const groupedRecords = filteredRecords.reduce((groups, record) => {
+                    const groupedRecords: Record<string, {
+                      difficulty: string;
+                      mode: string;
+                      records: any[];
+                    }> = filteredRecords.reduce((groups, record) => {
                     // 紺珠伝の場合はモードも考慮
                     const groupKey = isModeAvailableForGame(game?.id) 
                       ? `${record.difficulty}_${record.mode || 'normal'}`
@@ -270,7 +279,11 @@ const GameDetail = ({ game, onBack }) => {
                     }
                     groups[groupKey].records.push(record);
                     return groups;
-                  }, {});
+                  }, {} as Record<string, {
+                    difficulty: string;
+                    mode: string;
+                    records: any[];
+                  }>);
 
                   // 難易度順でソート
                   const availableDifficulties = getAvailableDifficulties();
@@ -379,7 +392,7 @@ const GameDetail = ({ game, onBack }) => {
             <div className="space-y-3">
               <textarea
                 value={memoText}
-                onChange={(e) => setMemoText(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setMemoText(e.target.value)}
                 placeholder="ゲームに関するメモを入力してください..."
                 className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-[100px]"
                 disabled={memoSaving}

@@ -3,21 +3,32 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { clearRecordApi } from '../services/clearRecordApi';
+import { ClearRecord } from '../types/clearRecord';
+
+interface UseClearRecordsReturn {
+  clearRecords: ClearRecord[];
+  loading: boolean;
+  error: string | null;
+  fetchClearRecords: () => Promise<void>;
+  submitIndividualConditions: (gameId: number, difficulty: string, data: any, characters: any, mode?: string) => Promise<any>;
+  clearError: () => void;
+  refetch: () => Promise<void>;
+}
 
 /**
  * クリア記録管理フック
- * @param {number} [gameId] - 特定ゲームの記録のみを取得する場合のゲームID
- * @returns {Object} クリア記録管理の状態と操作
+ * @param gameId - 特定ゲームの記録のみを取得する場合のゲームID
+ * @returns クリア記録管理の状態と操作
  */
-export const useClearRecords = (gameId = null) => {
-  const [clearRecords, setClearRecords] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+export const useClearRecords = (gameId: number | null = null): UseClearRecordsReturn => {
+  const [clearRecords, setClearRecords] = useState<ClearRecord[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
   /**
    * クリア記録一覧を取得
    */
-  const fetchClearRecords = useCallback(async () => {
+  const fetchClearRecords = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
     
@@ -31,7 +42,7 @@ export const useClearRecords = (gameId = null) => {
       setClearRecords(data);
     } catch (err) {
       console.error('クリア記録取得エラー:', err);
-      setError(err.response?.data?.detail || 'クリア記録の取得に失敗しました');
+      setError((err as any).response?.data?.detail || 'クリア記録の取得に失敗しました');
     } finally {
       setLoading(false);
     }
@@ -49,7 +60,7 @@ export const useClearRecords = (gameId = null) => {
       return { success: true, data: newRecord };
     } catch (err) {
       console.error('クリア記録作成エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'クリア記録の作成に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'クリア記録の作成に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -69,7 +80,7 @@ export const useClearRecords = (gameId = null) => {
       return { success: true, data: updatedRecord };
     } catch (err) {
       console.error('クリア記録更新エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'クリア記録の更新に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'クリア記録の更新に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -87,7 +98,7 @@ export const useClearRecords = (gameId = null) => {
       return { success: true };
     } catch (err) {
       console.error('クリア記録削除エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'クリア記録の削除に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'クリア記録の削除に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -121,7 +132,7 @@ export const useClearRecords = (gameId = null) => {
       return { success: true, data: record };
     } catch (err) {
       console.error('クリア記録作成/更新エラー:', err);
-      const errorMessage = err.response?.data?.detail || 'クリア記録の保存に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || 'クリア記録の保存に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -160,7 +171,7 @@ export const useClearRecords = (gameId = null) => {
       return { success: true, data: records };
     } catch (err) {
       console.error('一括クリア記録処理エラー:', err);
-      const errorMessage = err.response?.data?.detail || '一括処理に失敗しました';
+      const errorMessage = (err as any).response?.data?.detail || '一括処理に失敗しました';
       setError(errorMessage);
       return { success: false, error: errorMessage };
     }
@@ -169,7 +180,13 @@ export const useClearRecords = (gameId = null) => {
   /**
    * 機体別条件式データを送信
    */
-  const submitIndividualConditions = useCallback(async (gameId, difficulty, difficultyData, characters, mode = "normal") => {
+  const submitIndividualConditions = useCallback(async (
+    gameId: number, 
+    difficulty: string, 
+    difficultyData: any, 
+    characters: any, 
+    mode: string = "normal"
+  ): Promise<any> => {
     setError(null);
     
     try {
@@ -200,12 +217,12 @@ export const useClearRecords = (gameId = null) => {
     } catch (err) {
       
       let errorMessage = '条件の保存に失敗しました';
-      if (err.response?.data?.detail) {
-        errorMessage = err.response.data.detail;
-      } else if (err.response?.data) {
-        errorMessage = JSON.stringify(err.response.data, null, 2);
-      } else if (err.message) {
-        errorMessage = err.message;
+      if ((err as any).response?.data?.detail) {
+        errorMessage = (err as any).response.data.detail;
+      } else if ((err as any).response?.data) {
+        errorMessage = JSON.stringify((err as any).response.data, null, 2);
+      } else if ((err as any).message) {
+        errorMessage = (err as any).message;
       }
       
       setError(errorMessage);
@@ -227,9 +244,16 @@ export const useClearRecords = (gameId = null) => {
   /**
    * ゲーム別のクリア記録を取得
    */
-  const getClearRecordsByGame = useCallback((gameId) => {
+  const getClearRecordsByGame = useCallback((gameId: number): ClearRecord[] => {
     return clearRecords.filter(record => record.game_id === gameId);
   }, [clearRecords]);
+
+  /**
+   * エラーをクリア
+   */
+  const clearError = useCallback((): void => {
+    setError(null);
+  }, []);
 
   // 初期データ取得
   useEffect(() => {
@@ -241,14 +265,8 @@ export const useClearRecords = (gameId = null) => {
     loading,
     error,
     fetchClearRecords,
-    createClearRecord,
-    updateClearRecord,
-    deleteClearRecord,
-    createOrUpdateClearRecord,
-    batchCreateOrUpdateRecords,
     submitIndividualConditions,
-    getClearRecord,
-    getClearRecordsByGame,
+    clearError,
     refetch: fetchClearRecords
   };
 };
