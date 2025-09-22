@@ -7,9 +7,10 @@
 
 ## 技術スタック
 - **フロントエンド**: React 18.2.0, axios, CSS
-- **バックエンド**: FastAPI 0.68.0, uvicorn, SQLAlchemy 1.4.23, Pydantic 1.8.2
+- **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9
 - **認証**: JWT (python-jose), bcrypt, passlib
 - **データベース**: SQLite（開発環境）
+- **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
 
 ## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
@@ -79,10 +80,21 @@ backend/
 │       ├── user_schema.py     # ユーザースキーマ
 │       ├── game_schema.py     # ゲームスキーマ
 │       └── clear_record_schema.py # クリア記録スキーマ
-└── scripts/              # マイグレーション・ユーティリティ
-    ├── __init__.py
-    ├── migrate_database.py    # 初期DB作成
-    └── add_admin_flag.py      # 管理者権限追加
+├── scripts/              # マイグレーション・ユーティリティ
+│   ├── __init__.py
+│   ├── migrate_database.py    # 初期DB作成
+│   └── add_admin_flag.py      # 管理者権限追加
+└── tests/                # テスト
+    ├── conftest.py          # テスト共通設定
+    ├── pytest.ini          # pytest設定
+    ├── requirements-dev.txt # テスト依存関係
+    ├── unit/               # 単体テスト（実装済み）
+    │   ├── services/       # サービス層テスト
+    │   └── repositories/   # リポジトリ層テスト
+    └── integration/        # 統合テスト（未実装）
+        ├── api/           # APIエンドポイントテスト
+        ├── database/      # DB統合テスト
+        └── auth/          # 認証統合テスト
 ```
 
 ## フロントエンドアーキテクチャ（Feature-Based Architecture）
@@ -166,6 +178,23 @@ const authState = {
 
 ## 実装済み機能
 
+### バックエンド
+✅ **アーキテクチャ**
+- DDD/クリーンアーキテクチャ
+- レイヤー分離（ドメイン・アプリケーション・インフラ・プレゼンテーション）
+- 依存性注入
+
+✅ **API**
+- ユーザー管理API（認証・CRUD）
+- ゲーム管理API
+- クリア記録管理API
+- 管理者専用API
+
+✅ **テスト**
+- 単体テスト（37テスト、サービス層・リポジトリ層）
+- pytest + モック化
+- 高速実行（0.08秒）
+
 ### フロントエンド
 ✅ **認証システム**
 - ユーザー登録・ログイン
@@ -183,6 +212,7 @@ const authState = {
 - 管理者バッジ表示
 
 ### 実装予定
+🔄 **統合テスト**（API・DB・認証）
 🔄 **ゲーム一覧表示機能**
 🔄 **クリア状況管理機能**
 🔄 **管理者画面**

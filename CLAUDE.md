@@ -14,6 +14,10 @@
 - **音の通知**: 
   - ユーザーに確認する際: `.claude/claude_confirm.sh`を実行して音を鳴らす
   - 作業完了時: `.claude/claude_done.sh`を実行して音を鳴らす
+- **テスト運用規則**:
+  - 新規APIを作成した時には単体テストも作成すること
+  - APIを修正した時には単体テストを実行して修正が必要がないか確認し、必要であれば修正すること
+  - APIを削除したら不要な単体テストも削除すること
 
 ## プロジェクト概要
 - 東方シリーズのゲームクリア状況を管理・追跡するWebアプリケーション
@@ -31,6 +35,9 @@
 ### バックエンド
 - 開発サーバー: `cd backend && source venv313/bin/activate && python main.py &`
 - 依存関係インストール: `cd backend && source venv313/bin/activate && pip install -r requirements.txt`
+- テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
+- 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
+- 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
 ### フロントエンド  
@@ -43,17 +50,48 @@
 ```
 touhou_clear_checker/
 ├── backend/
+│   ├── application/         # アプリケーション層
+│   │   ├── dtos/           # データ転送オブジェクト
+│   │   └── services/       # ビジネスロジック
+│   ├── domain/             # ドメイン層
+│   │   ├── entities/       # エンティティ
+│   │   ├── repositories/   # リポジトリインターフェース
+│   │   └── value_objects/  # 値オブジェクト
+│   ├── infrastructure/     # インフラ層
+│   │   ├── database/       # データベース
+│   │   └── security/       # セキュリティ
+│   ├── presentation/       # プレゼンテーション層
+│   │   ├── api/v1/        # APIエンドポイント
+│   │   └── schemas/        # リクエスト/レスポンススキーマ
+│   ├── tests/              # テスト
+│   │   ├── unit/          # 単体テスト（実装済み）
+│   │   └── integration/    # 統合テスト（未実装）
 │   ├── main.py
-│   └── requirements.txt
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   └── pytest.ini
 ├── frontend/
-│   ├── package.json
-│   ├── public/
-│   │   └── index.html
-│   └── src/
-│       ├── App.js
-│       ├── App.css
-│       ├── index.js
-│       └── index.css
+│   ├── src/
+│   │   ├── components/
+│   │   ├── features/
+│   │   ├── hooks/
+│   │   ├── services/
+│   │   └── types/
+│   └── package.json
+├── .claude/                # 設計書・開発ドキュメント
 ├── README.md
 └── CLAUDE.md
 ```
+
+## テスト構成
+### 単体テスト（実装済み）
+- **計37個のテスト**が正常動作
+- **サービスレイヤー**: 26テスト（ゲーム・ユーザー管理のビジネスロジック）
+- **リポジトリレイヤー**: 11テスト（データアクセスの基本操作）
+- **技術スタック**: pytest + pytest-mock
+- **特徴**: 完全モック化により外部依存なし、高速実行（0.08秒）
+
+### 統合テスト（未実装）
+- APIエンドポイントの統合テスト
+- データベース連携テスト
+- 認証・認可の統合テスト
