@@ -24,7 +24,7 @@
 - フロントエンド：React 18.2.0, axios
 - バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy, SQLite
 - パッケージマネージャー：npm (frontend), pip (backend)
-- **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 1.10.22で互換性問題解決
+- **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 2.11.9で互換性問題解決
 
 ## よく使用するコマンド
 

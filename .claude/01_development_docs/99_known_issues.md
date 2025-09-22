@@ -11,8 +11,9 @@ ValueError: 'not' is not a valid parameter name
 ```
 
 **解決済み対応**:
-- FastAPI 0.117.1, Pydantic 1.10.22にアップグレード
+- FastAPI 0.117.1, Pydantic 2.11.9にアップグレード
 - Python 3.13対応仮想環境（venv313）を作成
+- Pydantic V2対応コード修正（schema_extra → json_schema_extra）
 - 互換性問題を解決し、Python 3.13で正常動作確認済み
 
 ### 2. 日付処理（解決済み）

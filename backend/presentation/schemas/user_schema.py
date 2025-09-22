@@ -9,7 +9,7 @@ class UserCreate(BaseModel):
     password: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "username": "testuser",
                 "email": "test@example.com",
@@ -25,7 +25,7 @@ class UserUpdate(BaseModel):
     is_active: Optional[bool] = None
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "username": "updated_username",
                 "email": "updated@example.com",
@@ -45,7 +45,7 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "id": 1,
                 "username": "testuser",
@@ -62,7 +62,7 @@ class LoginRequest(BaseModel):
     password: str
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "username": "testuser",
                 "password": "password123"
@@ -76,7 +76,7 @@ class TokenResponse(BaseModel):
     user: UserResponse
 
     class Config:
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
