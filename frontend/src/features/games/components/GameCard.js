@@ -27,7 +27,7 @@ const GameCard = ({ game, onClick, className = '' }) => {
 
   const getSeriesDisplay = (seriesNumber) => {
     return seriesNumber % 1 === 0 
-      ? `第${seriesNumber}作` 
+      ? `第${Math.floor(seriesNumber)}作` 
       : `第${seriesNumber}作`;
   };
 
