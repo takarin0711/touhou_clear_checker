@@ -68,7 +68,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
 
   const getSeriesDisplay = (seriesNumber: number): string => {
     return seriesNumber % 1 === 0 
-      ? `第${seriesNumber}作` 
+      ? `第${Math.floor(seriesNumber)}作` 
       : `第${seriesNumber}作`;
   };
 
