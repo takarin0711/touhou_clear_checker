@@ -2,20 +2,31 @@ import React, { useState } from 'react';
 import { useAuth } from '../../../contexts/AuthContext';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
+import { LoginCredentials } from '../../../types/auth';
+
+interface LoginFormProps {
+  onSuccess?: () => void;
+  onSwitchToRegister: () => void;
+}
+
+interface FormErrors {
+  username?: string;
+  password?: string;
+}
 
 /**
  * ログインフォームコンポーネント
  */
-const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
   const { login, isLoading, error } = useAuth();
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<LoginCredentials>({
     username: '',
     password: '',
   });
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
 
   // フォーム入力の処理
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -31,8 +42,8 @@ const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
   };
 
   // バリデーション
-  const validateForm = () => {
-    const errors = {};
+  const validateForm = (): boolean => {
+    const errors: FormErrors = {};
     
     if (!formData.username.trim()) {
       errors.username = 'ユーザー名を入力してください';
@@ -47,7 +58,7 @@ const LoginForm = ({ onSuccess, onSwitchToRegister }) => {
   };
 
   // フォーム送信
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     if (!validateForm()) {

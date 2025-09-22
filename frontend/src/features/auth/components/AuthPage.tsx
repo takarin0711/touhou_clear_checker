@@ -2,10 +2,14 @@ import React, { useState } from 'react';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 
+interface AuthPageProps {
+  onAuthSuccess: () => void;
+}
+
 /**
  * 認証ページ（ログイン・登録の切り替え）
  */
-const AuthPage = ({ onAuthSuccess }) => {
+const AuthPage: React.FC<AuthPageProps> = ({ onAuthSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
 
   const switchToRegister = () => setIsLogin(false);

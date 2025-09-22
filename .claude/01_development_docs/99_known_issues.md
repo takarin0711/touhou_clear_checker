@@ -24,6 +24,19 @@ ValueError: 'not' is not a valid parameter name
 - フロントエンド：ISO形式変換を避けて文字列直接処理
 - データフォーマット：`YYYY-MM-DD`で統一
 
+### 3. TypeScript移行（完了済み）
+**実施内容**: JavaScriptからTypeScriptへの完全移行（2025年1月）
+
+**完了事項**:
+- 全.jsファイルを.ts/.tsxに変換
+- 37個のinterfaceと型定義を追加
+- tsconfig.json設定とビルド環境構築
+- 型安全性確保とコンパイル時エラー検出
+
+**残存事項**:
+- ESLint警告（未使用変数、依存配列）のみ
+- 機能に影響なし、段階的に解消予定
+
 ## UI/UX制限
 
 ### 1. レスポンシブ対応
@@ -89,7 +102,19 @@ ValueError: 'not' is not a valid parameter name
 
 ## 既知のバグ
 
-現在、重大な既知のバグはありません。
+### 1. TypeScript移行後のブラウザキャッシュ問題（軽微）
+**問題**: TypeScript移行後、ブラウザが古いindex.jsを参照してエラーが発生する場合がある
+
+**症状**: 
+- "Module not found: Error: Can't resolve 'index.js'" エラー
+- 新規ユーザーには影響なし
+
+**解決方法**:
+- ハードリフレッシュ（Cmd+Shift+R / Ctrl+Shift+R）
+- シークレット/プライベートモードでアクセス
+- ブラウザキャッシュクリア
+
+**影響**: 軽微（開発者・既存ユーザーのみ）
 
 ## 制限事項の優先順位
 

@@ -1,22 +1,28 @@
 /**
  * キャラクター関連の型定義
- * JSDocを使用してTypeScriptライクな型チェックを提供
  */
 
 /**
  * キャラクター情報
- * @typedef {Object} Character
- * @property {number} id - キャラクターID
- * @property {string} name - キャラクター名（例: "霊夢A", "魔理沙&アリス（タッグ）"）
- * @property {string} [created_at] - 作成日時（ISO文字列）
- * @property {string} [updated_at] - 更新日時（ISO文字列）
  */
+export interface Character {
+  /** キャラクターID */
+  id: number;
+  /** キャラクター名（例: "霊夢A", "魔理沙&アリス（タッグ）"） */
+  name: string;
+  /** 作成日時（ISO文字列） */
+  created_at?: string;
+  /** 更新日時（ISO文字列） */
+  updated_at?: string;
+}
 
 /**
  * キャラクター作成/更新データ
- * @typedef {Object} CharacterFormData
- * @property {string} name - キャラクター名
  */
+export interface CharacterFormData {
+  /** キャラクター名 */
+  name: string;
+}
 
 export const CHARACTER_TYPES = {
   SOLO: 'solo',           // 単体キャラ（霊夢A等）
@@ -37,10 +43,8 @@ export const CHARACTER_TYPE_LABELS = {
 
 /**
  * キャラクター名から推定されるタイプを取得
- * @param {string} name - キャラクター名
- * @returns {string} キャラクタータイプ
  */
-export const getCharacterType = (name) => {
+export const getCharacterType = (name: string): string => {
   if (name.includes('&') && name.includes('タッグ')) {
     return CHARACTER_TYPES.PAIR_TAG;
   }
@@ -55,10 +59,8 @@ export const getCharacterType = (name) => {
 
 /**
  * キャラクター名から基本名を抽出
- * @param {string} name - キャラクター名
- * @returns {string} 基本名（例: "霊夢A" → "霊夢"）
  */
-export const getCharacterBaseName = (name) => {
+export const getCharacterBaseName = (name: string): string => {
   // ペアの場合
   if (name.includes('&')) {
     return name.split('&')[0].trim();

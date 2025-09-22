@@ -5,18 +5,29 @@ import React, { useState, useEffect } from 'react';
 import Button from '../../../components/common/Button';
 import { getDifficultyOrderForGame } from '../../../types/difficulty';
 import { isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
-import { getSpecialClearLabel, getSpecialClearDescription } from '../../../types/clearRecord';
+import { getSpecialClearLabel, getSpecialClearDescription, DifficultyData, IndividualConditionData } from '../../../types/clearRecord';
 import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
+import { Game } from '../../../types/game';
+import { GameCharacter } from '../../../types/gameCharacter';
 
-const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
-  const [activeTab, setActiveTab] = useState('Easy');
-  const [selectedMode, setSelectedMode] = useState('pointdevice');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+interface IndividualTabClearFormProps {
+  game: Game;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, onClose, onSuccess }) => {
+  const [activeTab, setActiveTab] = useState<string>('Easy');
+  const [selectedMode, setSelectedMode] = useState<string>('pointdevice');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   
   // モード別データ管理：modeData[mode][difficulty] = {characters: {...}}
-  const [modeData, setModeData] = useState({
+  const [modeData, setModeData] = useState<{
+    pointdevice: Record<string, DifficultyData>;
+    legacy: Record<string, DifficultyData>;
+  }>({
     pointdevice: {},
     legacy: {}
   });
@@ -39,7 +50,12 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   const currentModeData = modeData[selectedMode] || {};
 
   // 既存のクリア記録を元にチェック状態を設定する関数（モード対応）
-  const applyExistingClearRecords = (initialData, existingRecords, characters, mode) => {
+  const applyExistingClearRecords = (
+    initialData: Record<string, DifficultyData>, 
+    existingRecords: any[], 
+    characters: GameCharacter[], 
+    mode: string
+  ): Record<string, DifficultyData> => {
     if (!existingRecords || existingRecords.length === 0) {
       return initialData;
     }
@@ -116,7 +132,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
   }, [characters, clearRecords, game]);
 
   // 機体の条件を更新（モード対応）
-  const updateCharacterCondition = (difficulty, characterId, conditionType, value) => {
+  const updateCharacterCondition = (difficulty: string, characterId: number, conditionType: keyof IndividualConditionData, value: boolean) => {
     setModeData(prev => ({
       ...prev,
       [selectedMode]: {
@@ -141,7 +157,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
     setError(null);
 
     try {
-      const promises = [];
+      const promises: Promise<any>[] = [];
       let totalSettings = 0;
       
       // 両モードのデータを確認・送信
@@ -340,7 +356,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                       <input
                         type="checkbox"
                         checked={currentModeData[activeTab].characters[character.id]?.cleared || false}
-                        onChange={(e) => updateCharacterCondition(activeTab, character.id, 'cleared', e.target.checked)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'cleared', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
@@ -349,7 +365,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         <input
                           type="checkbox"
                           checked={currentModeData[activeTab].characters[character.id]?.no_continue || false}
-                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_continue', e.target.checked)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_continue', e.target.checked)}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </td>
@@ -358,7 +374,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                       <input
                         type="checkbox"
                         checked={currentModeData[activeTab].characters[character.id]?.no_bomb || false}
-                        onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_bomb', e.target.checked)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_bomb', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
@@ -366,7 +382,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                       <input
                         type="checkbox"
                         checked={currentModeData[activeTab].characters[character.id]?.no_miss || false}
-                        onChange={(e) => updateCharacterCondition(activeTab, character.id, 'no_miss', e.target.checked)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_miss', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
@@ -375,7 +391,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         <input
                           type="checkbox"
                           checked={currentModeData[activeTab].characters[character.id]?.special_clear_1 || false}
-                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'special_clear_1', e.target.checked)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'special_clear_1', e.target.checked)}
                           className="h-4 w-4 text-cyan-600 focus:ring-cyan-500 border-gray-300 rounded"
                           title={getSpecialClearDescription(game?.id, 'special_clear_1')}
                         />
@@ -386,7 +402,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         <input
                           type="checkbox"
                           checked={currentModeData[activeTab].characters[character.id]?.special_clear_2 || false}
-                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'special_clear_2', e.target.checked)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'special_clear_2', e.target.checked)}
                           className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
                           title={getSpecialClearDescription(game?.id, 'special_clear_2')}
                         />
@@ -397,7 +413,7 @@ const IndividualTabClearForm = ({ game, onClose, onSuccess }) => {
                         <input
                           type="checkbox"
                           checked={currentModeData[activeTab].characters[character.id]?.full_spell_card || false}
-                          onChange={(e) => updateCharacterCondition(activeTab, character.id, 'full_spell_card', e.target.checked)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'full_spell_card', e.target.checked)}
                           className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                         />
                       </td>

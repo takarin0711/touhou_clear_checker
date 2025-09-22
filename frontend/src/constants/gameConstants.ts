@@ -70,28 +70,28 @@ export const GAME_METADATA = {
 
 /**
  * シリーズ番号がPhantasm難易度に対応しているかチェック
- * @param {number} seriesNumber - シリーズ番号
- * @returns {boolean} Phantasm難易度が利用可能な場合true
+ * @param seriesNumber - シリーズ番号
+ * @returns Phantasm難易度が利用可能な場合true
  */
-export const isPhantasmAvailable = (seriesNumber) => {
+export const isPhantasmAvailable = (seriesNumber: number): boolean => {
   return GAME_SPECIFIC_SETTINGS.PHANTASM_AVAILABLE_SERIES.includes(seriesNumber);
 };
 
 /**
  * ゲームIDから期待キャラクター数を取得
- * @param {number} gameId - ゲームID
- * @returns {number} 期待キャラクター数
+ * @param gameId - ゲームID
+ * @returns 期待キャラクター数
  */
-export const getExpectedCharacterCount = (gameId) => {
+export const getExpectedCharacterCount = (gameId: number): number => {
   return GAME_SPECIFIC_SETTINGS.EXPECTED_CHARACTER_COUNTS[gameId] || 4;
 };
 
 /**
  * ゲームメタデータを取得
- * @param {number} gameId - ゲームID
- * @returns {Object|null} ゲームメタデータ、存在しない場合はnull
+ * @param gameId - ゲームID
+ * @returns ゲームメタデータ、存在しない場合はnull
  */
-export const getGameMetadata = (gameId) => {
+export const getGameMetadata = (gameId: number): any => {
   return GAME_METADATA[gameId] || null;
 };
 
@@ -128,19 +128,19 @@ export const LOLK_SETTINGS = {
 
 /**
  * 指定ゲームでモード選択が利用可能かチェック
- * @param {number} gameId - ゲームID
- * @returns {boolean} モード選択が利用可能な場合true
+ * @param gameId - ゲームID
+ * @returns モード選択が利用可能な場合true
  */
-export const isModeAvailableForGame = (gameId) => {
+export const isModeAvailableForGame = (gameId: number): boolean => {
   return gameId === LOLK_SETTINGS.GAME_ID;
 };
 
 /**
  * 指定ゲームで利用可能なモード一覧を取得
- * @param {number} gameId - ゲームID
- * @returns {Array} 利用可能なモード一覧
+ * @param gameId - ゲームID
+ * @returns 利用可能なモード一覧
  */
-export const getAvailableModesForGame = (gameId) => {
+export const getAvailableModesForGame = (gameId: number): string[] => {
   if (gameId === LOLK_SETTINGS.GAME_ID) {
     return LOLK_SETTINGS.MODES;
   }
@@ -149,11 +149,11 @@ export const getAvailableModesForGame = (gameId) => {
 
 /**
  * 指定ゲーム・モードで利用可能な難易度一覧を取得
- * @param {number} gameId - ゲームID
- * @param {string} mode - ゲームモード
- * @returns {Array} 利用可能な難易度一覧
+ * @param gameId - ゲームID
+ * @param mode - ゲームモード
+ * @returns 利用可能な難易度一覧
  */
-export const getAvailableDifficultiesForGameAndMode = (gameId, mode) => {
+export const getAvailableDifficultiesForGameAndMode = (gameId: number, mode: string): string[] => {
   if (gameId === LOLK_SETTINGS.GAME_ID && LOLK_SETTINGS.MODES.includes(mode)) {
     return LOLK_SETTINGS.DIFFICULTY_SETTINGS[mode];
   }
@@ -176,10 +176,10 @@ export const getAvailableDifficultiesForGameAndMode = (gameId, mode) => {
 
 /**
  * 対戦型STGかどうかを判定
- * @param {number} gameId - ゲームID
- * @returns {boolean} 対戦型STGの場合true
+ * @param gameId - ゲームID
+ * @returns 対戦型STGの場合true
  */
-export const isVersusGame = (gameId) => {
+export const isVersusGame = (gameId: number): boolean => {
   const versusGameIds = [
     GAME_IDS.TOUHOU_09_PoFV,   // 東方花映塚
     GAME_IDS.TOUHOU_19_UDoALG  // 東方獣王園
@@ -189,22 +189,22 @@ export const isVersusGame = (gameId) => {
 
 /**
  * フルスペカが利用可能かどうかを判定
- * @param {number} gameId - ゲームID
- * @returns {boolean} フルスペカが利用可能な場合true
+ * @param gameId - ゲームID
+ * @returns フルスペカが利用可能な場合true
  */
-export const isFullSpellCardAvailable = (gameId) => {
+export const isFullSpellCardAvailable = (gameId: number): boolean => {
   // 対戦型STGはフルスペカなし
   return !isVersusGame(gameId);
 };
 
 /**
  * ノーコンティニューが利用可能かどうかを判定
- * @param {number} gameId - ゲームID
- * @param {string} mode - ゲームモード
- * @param {string} difficulty - 難易度（オプション）
- * @returns {boolean} ノーコンティニューが利用可能な場合true
+ * @param gameId - ゲームID
+ * @param mode - ゲームモード
+ * @param difficulty - 難易度（オプション）
+ * @returns ノーコンティニューが利用可能な場合true
  */
-export const isNoContinueAvailable = (gameId, mode, difficulty = null) => {
+export const isNoContinueAvailable = (gameId: number, mode: string, difficulty: string | null = null): boolean => {
   // 紺珠伝の完全無欠モードはチェックポイント制なのでノーコン概念なし
   if (gameId === GAME_IDS.TOUHOU_15_LoLK && mode === GAME_MODES.POINTDEVICE) {
     return false;

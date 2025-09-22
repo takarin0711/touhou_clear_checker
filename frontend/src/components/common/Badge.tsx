@@ -1,9 +1,16 @@
 import React from 'react';
 
+interface BadgeProps {
+  children: React.ReactNode;
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'purple';
+  size?: 'small' | 'medium' | 'large';
+  className?: string;
+}
+
 /**
  * バッジコンポーネント
  */
-const Badge = ({ 
+const Badge: React.FC<BadgeProps> = ({ 
   children, 
   variant = 'default', 
   size = 'medium',

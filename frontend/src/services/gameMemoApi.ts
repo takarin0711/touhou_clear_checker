@@ -17,7 +17,7 @@ export const gameMemoApi = {
       const response = await apiClient.get(`/game-memos/${gameId}`);
       return response.data;
     } catch (error) {
-      if (error.response && error.response.status === 404) {
+      if ((error as any).response && (error as any).response.status === 404) {
         return null; // メモが存在しない場合
       }
       throw error;

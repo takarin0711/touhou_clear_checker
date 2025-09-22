@@ -33,6 +33,8 @@ ENV/
 # Database
 *.db
 *.sqlite3
+frontend/*.db
+frontend/*.sqlite*
 
 # Logs
 *.log
@@ -64,6 +66,11 @@ frontend/.yarn-integrity
 frontend/build/
 frontend/dist/
 
+# TypeScript
+frontend/.tsbuildinfo
+frontend/tsconfig.tsbuildinfo
+*.tsbuildinfo
+
 # Environment variables
 .env
 .env.local
@@ -75,6 +82,17 @@ frontend/dist/
 .coverage
 .pytest_cache/
 frontend/coverage/
+
+# ESLint/TypeScript cache
+frontend/.eslintcache
+.eslintcache
+
+# Editor/IDE specific
+*.code-workspace
+
+# Cache directories
+frontend/.cache/
+.cache/
 
 # Temporary files
 *.tmp

@@ -63,11 +63,8 @@ export const DIFFICULTY_ORDER = [
 
 /**
  * ゲームに応じた難易度順序を取得
- * @param {Object} game - ゲームオブジェクト
- * @param {string} mode - ゲームモード（省略時は"normal"）
- * @returns {Array} 難易度配列
  */
-export const getDifficultyOrderForGame = (game, mode = 'normal') => {
+export const getDifficultyOrderForGame = (game: { series_number: number } | null, mode: string = 'normal'): string[] => {
   if (!game) return BASE_DIFFICULTY_ORDER;
   
   // 紺珠伝の特殊モード対応

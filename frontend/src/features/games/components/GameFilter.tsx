@@ -1,20 +1,30 @@
 import React, { useState } from 'react';
 import Input from '../../../components/common/Input';
 import Button from '../../../components/common/Button';
-import { GAME_TYPES, GAME_TYPE_LABELS } from '../../../types/game';
+import { GAME_TYPES, GAME_TYPE_LABELS, GameFilter as GameFilterType } from '../../../types/game';
+
+interface GameFilterProps {
+  onFilterChange: (filters: any, isServerFilter?: boolean) => void;
+  filters: GameFilterType;
+  loading?: boolean;
+}
 
 /**
  * ゲームフィルター・検索コンポーネント
  */
-const GameFilter = ({ onFilterChange, filters, loading = false }) => {
-  const [localFilters, setLocalFilters] = useState({
+const GameFilter: React.FC<GameFilterProps> = ({ onFilterChange, filters, loading = false }) => {
+  const [localFilters, setLocalFilters] = useState<{
+    search: string;
+    game_type: string;
+    series_number: string;
+  }>({
     search: filters.search || '',
     game_type: filters.game_type || '',
-    series_number: filters.series_number || '',
+    series_number: filters.series_number?.toString() || '',
   });
 
   // フィルター値の更新
-  const handleFilterChange = (key, value) => {
+  const handleFilterChange = (key: string, value: string) => {
     const newFilters = {
       ...localFilters,
       [key]: value,
@@ -29,7 +39,7 @@ const GameFilter = ({ onFilterChange, filters, loading = false }) => {
 
   // サーバーサイドフィルターの適用
   const applyServerFilters = () => {
-    const serverFilters = {};
+    const serverFilters: any = {};
     
     if (localFilters.game_type) {
       serverFilters.game_type = localFilters.game_type;
@@ -69,7 +79,7 @@ const GameFilter = ({ onFilterChange, filters, loading = false }) => {
             label="タイトル検索"
             type="text"
             value={localFilters.search}
-            onChange={(e) => handleFilterChange('search', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange('search', e.target.value)}
             placeholder="ゲームタイトルを検索..."
             disabled={loading}
           />
@@ -82,7 +92,7 @@ const GameFilter = ({ onFilterChange, filters, loading = false }) => {
           </label>
           <select
             value={localFilters.game_type}
-            onChange={(e) => handleFilterChange('game_type', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => handleFilterChange('game_type', e.target.value)}
             disabled={loading}
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
@@ -102,7 +112,7 @@ const GameFilter = ({ onFilterChange, filters, loading = false }) => {
             type="number"
             step="0.1"
             value={localFilters.series_number}
-            onChange={(e) => handleFilterChange('series_number', e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFilterChange('series_number', e.target.value)}
             placeholder="例: 7, 12.8"
             disabled={loading}
           />

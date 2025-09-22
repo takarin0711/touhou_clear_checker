@@ -3,12 +3,13 @@ import GameCard from './GameCard';
 import GameFilter from './GameFilter';
 import GameDetail from './GameDetail';
 import { useGames } from '../hooks/useGames';
+import { Game } from '../../../types/game';
 
 /**
  * ゲーム一覧表示コンポーネント
  */
-const GameList = () => {
-  const [selectedGame, setSelectedGame] = useState(null);
+const GameList: React.FC = () => {
+  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   
   const { 
     games, 
@@ -21,10 +22,10 @@ const GameList = () => {
   } = useGames();
 
   // フィルター変更の処理
-  const handleFilterChange = (newFilters, isServerFilter = false) => {
+  const handleFilterChange = (newFilters: any, isServerFilter: boolean = false) => {
     if (isServerFilter) {
       // サーバーサイドフィルター（game_type, series_number）
-      const serverFilters = {};
+      const serverFilters: any = {};
       if (newFilters.game_type) serverFilters.game_type = newFilters.game_type;
       if (newFilters.series_number) serverFilters.series_number = newFilters.series_number;
       
@@ -41,7 +42,7 @@ const GameList = () => {
   };
 
   // ゲームカードクリック処理
-  const handleGameClick = (game) => {
+  const handleGameClick = (game: Game) => {
     setSelectedGame(game);
   };
 

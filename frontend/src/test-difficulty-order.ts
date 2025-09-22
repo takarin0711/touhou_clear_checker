@@ -71,5 +71,5 @@ export const testDifficultyOrder = () => {
 
 // ブラウザのコンソールで直接実行可能にする
 if (typeof window !== 'undefined') {
-  window.testDifficultyOrder = testDifficultyOrder;
+  (window as any).testDifficultyOrder = testDifficultyOrder;
 }

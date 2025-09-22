@@ -1,64 +1,110 @@
 /**
  * クリア記録関連の型定義（機体別条件対応）
- * JSDocを使用してTypeScriptライクな型チェックを提供
  */
 
 /**
  * クリア記録
- * @typedef {Object} ClearRecord
- * @property {number} id - 記録ID
- * @property {number} user_id - ユーザーID
- * @property {number} game_id - ゲームID
- * @property {number} character_id - キャラクターID
- * @property {string} difficulty - 難易度
- * @property {boolean} is_cleared - 通常クリア
- * @property {boolean} is_no_continue_clear - ノーコンティニュークリア
- * @property {boolean} is_no_bomb_clear - ノーボムクリア
- * @property {boolean} is_no_miss_clear - ノーミスクリア
- * @property {boolean} is_full_spell_card - フルスペルカード取得
- * @property {boolean} is_special_clear_1 - 特殊クリア条件1（作品固有）
- * @property {boolean} is_special_clear_2 - 特殊クリア条件2（作品固有）
- * @property {boolean} is_special_clear_3 - 特殊クリア条件3（作品固有）
- * @property {string} [cleared_at] - クリア日（YYYY-MM-DD）
- * @property {string} [last_updated_at] - 最終更新日時（ISO文字列）
- * @property {string} [created_at] - 作成日時（ISO文字列）
  */
+export interface ClearRecord {
+  /** 記録ID */
+  id: number;
+  /** ユーザーID */
+  user_id: number;
+  /** ゲームID */
+  game_id: number;
+  /** キャラクターID */
+  character_id: number;
+  /** 難易度 */
+  difficulty: string;
+  /** ゲームモード（紺珠伝など） */
+  mode?: string;
+  /** キャラクター名 */
+  character_name?: string;
+  /** 通常クリア */
+  is_cleared: boolean;
+  /** ノーコンティニュークリア */
+  is_no_continue_clear: boolean;
+  /** ノーボムクリア */
+  is_no_bomb_clear: boolean;
+  /** ノーミスクリア */
+  is_no_miss_clear: boolean;
+  /** フルスペルカード取得 */
+  is_full_spell_card: boolean;
+  /** 特殊クリア条件1（作品固有） */
+  is_special_clear_1: boolean;
+  /** 特殊クリア条件2（作品固有） */
+  is_special_clear_2: boolean;
+  /** 特殊クリア条件3（作品固有） */
+  is_special_clear_3: boolean;
+  /** クリア日（YYYY-MM-DD） */
+  cleared_at?: string;
+  /** 最終更新日時（ISO文字列） */
+  last_updated_at?: string;
+  /** 作成日時（ISO文字列） */
+  created_at?: string;
+}
 
 /**
  * クリア記録作成/更新データ
- * @typedef {Object} ClearRecordFormData
- * @property {number} game_id - ゲームID
- * @property {number} character_id - キャラクターID
- * @property {string} difficulty - 難易度
- * @property {boolean} is_cleared - 通常クリア
- * @property {boolean} is_no_continue_clear - ノーコンティニュークリア
- * @property {boolean} is_no_bomb_clear - ノーボムクリア
- * @property {boolean} is_no_miss_clear - ノーミスクリア
- * @property {boolean} is_full_spell_card - フルスペルカード取得
- * @property {boolean} is_special_clear_1 - 特殊クリア条件1（作品固有）
- * @property {boolean} is_special_clear_2 - 特殊クリア条件2（作品固有）
- * @property {boolean} is_special_clear_3 - 特殊クリア条件3（作品固有）
- * @property {string} [cleared_at] - クリア日（YYYY-MM-DD）
  */
+export interface ClearRecordFormData {
+  /** ゲームID */
+  game_id: number;
+  /** キャラクターID */
+  character_id: number;
+  /** 難易度 */
+  difficulty: string;
+  /** ゲームモード（紺珠伝など） */
+  mode?: string;
+  /** 通常クリア */
+  is_cleared: boolean;
+  /** ノーコンティニュークリア */
+  is_no_continue_clear: boolean;
+  /** ノーボムクリア */
+  is_no_bomb_clear: boolean;
+  /** ノーミスクリア */
+  is_no_miss_clear: boolean;
+  /** フルスペルカード取得 */
+  is_full_spell_card: boolean;
+  /** 特殊クリア条件1（作品固有） */
+  is_special_clear_1: boolean;
+  /** 特殊クリア条件2（作品固有） */
+  is_special_clear_2: boolean;
+  /** 特殊クリア条件3（作品固有） */
+  is_special_clear_3: boolean;
+  /** クリア日（YYYY-MM-DD） */
+  cleared_at?: string;
+}
 
 /**
  * 機体別条件データ（タブ式UI用）
- * @typedef {Object} IndividualConditionData
- * @property {boolean} cleared - 通常クリア
- * @property {boolean} no_continue - ノーコンティニュークリア
- * @property {boolean} no_bomb - ノーボムクリア
- * @property {boolean} no_miss - ノーミスクリア
- * @property {boolean} full_spell_card - フルスペルカード取得
- * @property {boolean} special_clear_1 - 特殊クリア条件1（作品固有）
- * @property {boolean} special_clear_2 - 特殊クリア条件2（作品固有）
- * @property {boolean} special_clear_3 - 特殊クリア条件3（作品固有）
  */
+export interface IndividualConditionData {
+  /** 通常クリア */
+  cleared: boolean;
+  /** ノーコンティニュークリア */
+  no_continue: boolean;
+  /** ノーボムクリア */
+  no_bomb: boolean;
+  /** ノーミスクリア */
+  no_miss: boolean;
+  /** フルスペルカード取得 */
+  full_spell_card: boolean;
+  /** 特殊クリア条件1（作品固有） */
+  special_clear_1: boolean;
+  /** 特殊クリア条件2（作品固有） */
+  special_clear_2: boolean;
+  /** 特殊クリア条件3（作品固有） */
+  special_clear_3: boolean;
+}
 
 /**
  * 難易度別データ（タブ式UI用）
- * @typedef {Object} DifficultyData
- * @property {Object.<string, IndividualConditionData>} characters - キャラクターID → 条件データのマップ
  */
+export interface DifficultyData {
+  /** キャラクターID → 条件データのマップ */
+  characters: Record<string, IndividualConditionData>;
+}
 
 /**
  * クリア条件の種類
@@ -97,12 +143,9 @@ export const CLEAR_CONDITIONS_ARRAY_VERSUS = [
 
 /**
  * ゲームタイプに応じたクリア条件配列を取得
- * @param {string} gameType - ゲームタイプ
- * @param {number} gameId - ゲームID（特殊条件判定用）
- * @returns {string[]} クリア条件配列
  */
-export const getClearConditionsForGameType = (gameType, gameId = null) => {
-  let conditions = [];
+export const getClearConditionsForGameType = (gameType: string, gameId: number | null = null): string[] => {
+  let conditions: string[] = [];
   
   if (gameType === 'versus') {
     conditions = CLEAR_CONDITIONS_ARRAY_VERSUS;
@@ -151,7 +194,7 @@ export const CLEAR_CONDITION_LABELS = {
 /**
  * ゲーム別の特殊クリア条件ラベル
  */
-export const getSpecialClearLabel = (gameId, specialType) => {
+export const getSpecialClearLabel = (gameId: number, specialType: string): string => {
   const labels = {
     7: { // 星蓮船
       special_clear_1: 'ノーベントラー'
@@ -194,7 +237,7 @@ export const CLEAR_CONDITION_DESCRIPTIONS = {
 /**
  * ゲーム別の特殊クリア条件説明
  */
-export const getSpecialClearDescription = (gameId, specialType) => {
+export const getSpecialClearDescription = (gameId: number, specialType: string): string => {
   const descriptions = {
     7: { // 星蓮船
       special_clear_1: 'ベントラーを使用せずにクリア'
@@ -236,11 +279,9 @@ export const CLEAR_CONDITION_COLORS = {
 
 /**
  * クリア記録から達成済み条件を取得
- * @param {ClearRecord} clearRecord - クリア記録
- * @returns {string[]} 達成済み条件のキー配列
  */
-export const getAchievedConditions = (clearRecord) => {
-  const conditions = [];
+export const getAchievedConditions = (clearRecord: ClearRecord): string[] => {
+  const conditions: string[] = [];
   if (clearRecord.is_cleared) conditions.push(CLEAR_CONDITIONS.CLEARED);
   if (clearRecord.is_no_continue_clear) conditions.push(CLEAR_CONDITIONS.NO_CONTINUE);
   if (clearRecord.is_no_bomb_clear) conditions.push(CLEAR_CONDITIONS.NO_BOMB);
@@ -254,10 +295,8 @@ export const getAchievedConditions = (clearRecord) => {
 
 /**
  * クリア記録が何らかの条件を達成しているかチェック
- * @param {ClearRecord} clearRecord - クリア記録
- * @returns {boolean} 何らかの条件を達成している場合true
  */
-export const hasAnyCondition = (clearRecord) => {
+export const hasAnyCondition = (clearRecord: ClearRecord): boolean => {
   return clearRecord.is_cleared || 
          clearRecord.is_no_continue_clear || 
          clearRecord.is_no_bomb_clear || 

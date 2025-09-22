@@ -1,4 +1,5 @@
 import api from '../../../services/api';
+import { Game, GameFilter } from '../../../types/game';
 
 /**
  * ゲームAPI関連の関数
@@ -6,10 +7,10 @@ import api from '../../../services/api';
 export const gameApi = {
   /**
    * ゲーム一覧取得
-   * @param {import('../../../types/game').GameFilter} filters - フィルター条件
-   * @returns {Promise<import('../../../types/game').Game[]>}
+   * @param filters - フィルター条件
+   * @returns ゲーム一覧
    */
-  getGames: async (filters = {}) => {
+  getGames: async (filters: GameFilter = {}): Promise<Game[]> => {
     const params = new URLSearchParams();
     
     if (filters.series_number !== null && filters.series_number !== undefined) {
@@ -29,29 +30,29 @@ export const gameApi = {
 
   /**
    * 特定シリーズ番号のゲーム取得
-   * @param {number} seriesNumber - シリーズ番号
-   * @returns {Promise<import('../../../types/game').Game|null>}
+   * @param seriesNumber - シリーズ番号
+   * @returns ゲーム情報またはnull
    */
-  getGameBySeriesNumber: async (seriesNumber) => {
+  getGameBySeriesNumber: async (seriesNumber: number): Promise<Game | null> => {
     const games = await gameApi.getGames({ series_number: seriesNumber });
     return games.length > 0 ? games[0] : null;
   },
 
   /**
    * 本編STGのゲーム一覧取得
-   * @returns {Promise<import('../../../types/game').Game[]>}
+   * @returns 本編STGゲーム一覧
    */
-  getMainSeriesGames: async () => {
+  getMainSeriesGames: async (): Promise<Game[]> => {
     return await gameApi.getGames({ game_type: 'main_series' });
   },
 
   /**
    * タイトル検索（フロントエンド側フィルタリング）
-   * @param {import('../../../types/game').Game[]} games - ゲーム一覧
-   * @param {string} searchTerm - 検索語句
-   * @returns {import('../../../types/game').Game[]}
+   * @param games - ゲーム一覧
+   * @param searchTerm - 検索語句
+   * @returns フィルタリング後のゲーム一覧
    */
-  filterGamesByTitle: (games, searchTerm) => {
+  filterGamesByTitle: (games: Game[], searchTerm: string): Game[] => {
     if (!searchTerm) return games;
     
     const term = searchTerm.toLowerCase();

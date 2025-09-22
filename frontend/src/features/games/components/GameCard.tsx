@@ -1,12 +1,18 @@
 import React from 'react';
 import Badge from '../../../components/common/Badge';
-import { GAME_TYPE_LABELS } from '../../../types/game';
+import { GAME_TYPE_LABELS, Game } from '../../../types/game';
+
+interface GameCardProps {
+  game: Game;
+  onClick?: (game: Game) => void;
+  className?: string;
+}
 
 /**
  * ゲームカードコンポーネント
  */
-const GameCard = ({ game, onClick, className = '' }) => {
-  const getBadgeVariant = (gameType) => {
+const GameCard: React.FC<GameCardProps> = ({ game, onClick, className = '' }) => {
+  const getBadgeVariant = (gameType: string): 'default' | 'primary' | 'warning' | 'danger' | 'purple' | 'success' => {
     switch (gameType) {
       case 'main_series':
         return 'primary';
@@ -25,7 +31,7 @@ const GameCard = ({ game, onClick, className = '' }) => {
     }
   };
 
-  const getSeriesDisplay = (seriesNumber) => {
+  const getSeriesDisplay = (seriesNumber: number): string => {
     return seriesNumber % 1 === 0 
       ? `第${Math.floor(seriesNumber)}作` 
       : `第${seriesNumber}作`;
@@ -56,7 +62,7 @@ const GameCard = ({ game, onClick, className = '' }) => {
       <div className="flex items-center justify-end">
         <button 
           className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-          onClick={(e) => {
+          onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
             e.stopPropagation();
             onClick?.(game);
           }}
