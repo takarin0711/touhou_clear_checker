@@ -2,7 +2,6 @@
 ゲームメモリポジトリ実装
 """
 from typing import List, Optional
-from datetime import datetime
 from sqlalchemy.orm import Session
 from domain.repositories.game_memo_repository import GameMemoRepository
 from domain.entities.game_memo import GameMemo
@@ -42,13 +41,10 @@ class GameMemoRepositoryImpl(GameMemoRepository):
     
     async def create(self, game_memo: GameMemo) -> GameMemo:
         """ゲームメモを作成"""
-        now = datetime.now()
         model = GameMemoModel(
             user_id=game_memo.user_id,
             game_id=game_memo.game_id,
-            memo=game_memo.memo,
-            created_at=now,
-            updated_at=now
+            memo=game_memo.memo
         )
         
         self.session.add(model)
@@ -62,9 +58,7 @@ class GameMemoRepositoryImpl(GameMemoRepository):
         if not model:
             raise ValueError(f"Game memo with id {game_memo.id} not found")
         
-        now = datetime.now()
         model.memo = game_memo.memo
-        model.updated_at = now
         
         self.session.commit()
         return model.to_entity()
@@ -93,7 +87,6 @@ class GameMemoRepositoryImpl(GameMemoRepository):
         if existing:
             # 既存メモを更新
             game_memo.id = existing.id
-            game_memo.created_at = existing.created_at  # 作成日時は保持
             return await self.update(game_memo)
         else:
             # 新規作成

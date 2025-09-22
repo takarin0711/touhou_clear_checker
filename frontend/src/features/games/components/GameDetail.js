@@ -4,6 +4,7 @@ import Button from '../../../components/common/Button';
 import { GAME_TYPE_LABELS } from '../../../types/game';
 import { DIFFICULTIES, getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../../types/difficulty';
 import { useClearRecords } from '../../../hooks/useClearRecords';
+import { useGameMemo } from '../../../hooks/useGameMemo';
 import IndividualTabClearForm from '../../clearRecords/components/IndividualTabClearForm';
 import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
 import { useGameCharacters } from '../hooks/useGameCharacters';
@@ -14,6 +15,8 @@ import { getSpecialClearLabel } from '../../../types/clearRecord';
  */
 const GameDetail = ({ game, onBack }) => {
   const [showIndividualForm, setShowIndividualForm] = useState(false);
+  const [showMemoForm, setShowMemoForm] = useState(false);
+  const [memoText, setMemoText] = useState('');
 
   const {
     clearRecords,
@@ -28,6 +31,16 @@ const GameDetail = ({ game, onBack }) => {
     loading: charactersLoading,
     error: charactersError
   } = useGameCharacters(game.id);
+
+  const {
+    memo,
+    loading: memoLoading,
+    error: memoError,
+    saving: memoSaving,
+    saveMemo,
+    getMemoText,
+    hasMemo
+  } = useGameMemo(game.id);
 
   const getBadgeVariant = (gameType) => {
     switch (gameType) {
@@ -95,6 +108,30 @@ const GameDetail = ({ game, onBack }) => {
     setShowIndividualForm(false);
     // クリア記録を再取得
     fetchClearRecords();
+  };
+
+  const handleMemoToggle = () => {
+    if (showMemoForm) {
+      setShowMemoForm(false);
+      setMemoText(getMemoText());
+    } else {
+      setMemoText(getMemoText());
+      setShowMemoForm(true);
+    }
+  };
+
+  const handleMemoSave = async () => {
+    try {
+      await saveMemo(memoText);
+      setShowMemoForm(false);
+    } catch (err) {
+      console.error('メモ保存エラー:', err);
+    }
+  };
+
+  const handleMemoCancel = () => {
+    setMemoText(getMemoText());
+    setShowMemoForm(false);
   };
 
   return (
@@ -251,7 +288,7 @@ const GameDetail = ({ game, onBack }) => {
                     return 0;
                   });
 
-                  return sortedGroups.map((group, groupIndex) => (
+                  return sortedGroups.map((group) => (
                     <div key={`${group.difficulty}_${group.mode}`} className="border border-gray-200 rounded-lg overflow-hidden">
                       {/* グループヘッダー */}
                       <div className={`px-4 py-3 font-medium text-sm ${getDifficultyColorClasses(group.difficulty)}`}>
@@ -310,6 +347,76 @@ const GameDetail = ({ game, onBack }) => {
             })()}
           </div>
         )}
+
+        {/* ゲームメモセクション */}
+        <div className="mt-8 pt-6 border-t border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-bold text-gray-900">ゲームメモ</h3>
+            <div className="flex items-center space-x-2">
+              {hasMemo() && (
+                <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
+                  メモあり
+                </span>
+              )}
+              <Button
+                onClick={handleMemoToggle}
+                variant={showMemoForm ? "outline" : "secondary"}
+                size="small"
+                disabled={memoLoading}
+              >
+                {showMemoForm ? "キャンセル" : (hasMemo() ? "メモを編集" : "メモを追加")}
+              </Button>
+            </div>
+          </div>
+
+          {memoError && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="text-sm text-red-700">{memoError}</div>
+            </div>
+          )}
+
+          {showMemoForm ? (
+            <div className="space-y-3">
+              <textarea
+                value={memoText}
+                onChange={(e) => setMemoText(e.target.value)}
+                placeholder="ゲームに関するメモを入力してください..."
+                className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-vertical min-h-[100px]"
+                disabled={memoSaving}
+              />
+              <div className="flex justify-end space-x-2">
+                <Button
+                  onClick={handleMemoCancel}
+                  variant="outline"
+                  size="small"
+                  disabled={memoSaving}
+                >
+                  キャンセル
+                </Button>
+                <Button
+                  onClick={handleMemoSave}
+                  variant="primary"
+                  size="small"
+                  disabled={memoSaving}
+                >
+                  {memoSaving ? '保存中...' : '保存'}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-gray-600">
+              {hasMemo() ? (
+                <div className="bg-gray-50 p-3 rounded-md whitespace-pre-wrap text-sm">
+                  {getMemoText()}
+                </div>
+              ) : (
+                <div className="text-center py-3 text-gray-400 text-sm">
+                  まだメモが登録されていません
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       </div>
     </div>
