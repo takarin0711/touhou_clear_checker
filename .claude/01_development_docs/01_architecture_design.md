@@ -8,7 +8,8 @@
 ## 技術スタック
 - **フロントエンド**: React 18.2.0, axios, CSS
 - **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9
-- **認証**: JWT (python-jose), bcrypt, passlib
+- **認証**: JWT (python-jose), Argon2 (argon2-cffi), passlib
+- **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性
 - **データベース**: SQLite（開発環境）
 - **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
