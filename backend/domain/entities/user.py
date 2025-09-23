@@ -11,6 +11,9 @@ class User:
     hashed_password: str
     is_active: bool = True
     is_admin: bool = False
+    email_verified: bool = False
+    verification_token: Optional[str] = None
+    verification_token_expires_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
 

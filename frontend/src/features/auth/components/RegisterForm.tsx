@@ -3,6 +3,7 @@ import { useAuth } from '../../../contexts/AuthContext';
 import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import { RegisterData } from '../../../types/auth';
+import EmailVerificationPendingPage from './EmailVerificationPendingPage';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -32,6 +33,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
     confirmPassword: '',
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [pendingEmailVerification, setPendingEmailVerification] = useState<string | null>(null);
 
   // フォーム入力の処理
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,9 +95,30 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
     const result = await register(registerData);
     
     if (result.success) {
-      onSuccess?.();
+      if (result.requiresEmailVerification) {
+        // メール認証が必要な場合
+        setPendingEmailVerification(registerData.email);
+      } else {
+        // 即座にログイン可能な場合（既存システムとの互換性）
+        onSuccess?.();
+      }
     }
   };
+
+  // メール認証待ち画面から戻る処理
+  const handleBackToRegister = () => {
+    setPendingEmailVerification(null);
+  };
+
+  // メール認証待ちの場合は専用ページを表示
+  if (pendingEmailVerification) {
+    return (
+      <EmailVerificationPendingPage 
+        email={pendingEmailVerification} 
+        onBackToAuth={handleBackToRegister}
+      />
+    );
+  }
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">

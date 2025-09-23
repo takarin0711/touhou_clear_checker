@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import AuthPage from './features/auth/components/AuthPage';
+import EmailVerificationPage from './features/auth/components/EmailVerificationPage';
 import { GameList } from './features/games/components';
 import './App.css';
 
@@ -69,6 +70,7 @@ const MainApp = () => {
 const AppContent = () => {
   const { user, checkAuth } = useAuth();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [currentPage, setCurrentPage] = useState<'auth' | 'verify-email' | 'main'>('auth');
 
   // 初期化時に認証状態をチェック
   useEffect(() => {
@@ -78,6 +80,20 @@ const AppContent = () => {
     };
     initAuth();
   }, [checkAuth]);
+
+  // URL に基づいてページを決定
+  useEffect(() => {
+    const path = window.location.pathname;
+    const params = new URLSearchParams(window.location.search);
+    
+    if (path.includes('verify-email') || params.get('token')) {
+      setCurrentPage('verify-email');
+    } else if (user) {
+      setCurrentPage('main');
+    } else {
+      setCurrentPage('auth');
+    }
+  }, [user]);
 
   // 初期化中はローディング表示
   if (!isInitialized) {
@@ -91,10 +107,22 @@ const AppContent = () => {
     );
   }
 
-  // 認証状態に応じて表示を切り替え
+  // ページ内容を決定
+  const renderContent = () => {
+    switch (currentPage) {
+      case 'verify-email':
+        return <EmailVerificationPage />;
+      case 'main':
+        return user ? <MainApp /> : <AuthPage onAuthSuccess={() => setCurrentPage('main')} />;
+      case 'auth':
+      default:
+        return user ? <MainApp /> : <AuthPage onAuthSuccess={() => setCurrentPage('main')} />;
+    }
+  };
+
   return (
     <div className="w-full h-full">
-      {user ? <MainApp /> : <AuthPage onAuthSuccess={() => {}} />}
+      {renderContent()}
     </div>
   );
 };

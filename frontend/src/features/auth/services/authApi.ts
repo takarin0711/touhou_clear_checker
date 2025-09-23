@@ -59,4 +59,24 @@ export const authApi = {
   deleteAccount: async () => {
     await api.delete('/users/me');
   },
+
+  /**
+   * メールアドレス認証
+   * @param {string} token 認証トークン
+   * @returns {Promise<import('../../../types/auth').MessageResponse>}
+   */
+  verifyEmail: async (token) => {
+    const response = await api.post('/users/verify-email', { token });
+    return response.data;
+  },
+
+  /**
+   * 認証メール再送信
+   * @param {string} email メールアドレス
+   * @returns {Promise<import('../../../types/auth').MessageResponse>}
+   */
+  resendVerificationEmail: async (email) => {
+    const response = await api.post('/users/resend-verification', { email });
+    return response.data;
+  },
 };

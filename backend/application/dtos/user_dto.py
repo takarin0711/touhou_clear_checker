@@ -26,6 +26,7 @@ class UserResponseDto:
     email: str
     is_active: bool
     is_admin: bool
+    email_verified: bool
     created_at: datetime
     updated_at: datetime
 

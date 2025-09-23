@@ -3,7 +3,7 @@
 ## 実装済みテーブル構造
 
 ### users テーブル
-ユーザー管理（認証・権限管理）
+ユーザー管理（認証・権限管理・メール認証）
 
 | カラム名 | データ型 | 制約 | 説明 |
 |---------|---------|------|------|
@@ -13,8 +13,16 @@
 | hashed_password | VARCHAR(255) | NOT NULL | ハッシュ化パスワード |
 | is_active | BOOLEAN | DEFAULT TRUE | アクティブフラグ |
 | is_admin | BOOLEAN | DEFAULT FALSE | 管理者権限フラグ |
+| email_verified | BOOLEAN | DEFAULT FALSE NOT NULL | メール認証済みフラグ |
+| verification_token | VARCHAR(255) | NULL INDEX | メール認証トークン |
+| verification_token_expires_at | TIMESTAMP | NULL | 認証トークン有効期限 |
 | created_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 作成日時 |
 | updated_at | DATETIME | DEFAULT CURRENT_TIMESTAMP | 更新日時 |
+
+```sql
+-- インデックス
+CREATE INDEX idx_users_verification_token ON users(verification_token);
+```
 
 ### games テーブル
 東方シリーズのゲーム作品管理

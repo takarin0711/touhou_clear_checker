@@ -52,6 +52,65 @@ class JWTHandler:
 - **シークレットキー**: 本番環境は環境変数 `JWT_SECRET_KEY`
 - **ペイロード**: `{"sub": username, "exp": timestamp}`
 
+### メール認証システム
+
+#### 認証トークン生成
+```python
+# backend/infrastructure/security/token_generator.py
+def generate_verification_token() -> str:
+    return secrets.token_urlsafe(48)  # 64文字の安全なトークン
+
+def generate_token_with_expiry() -> Tuple[str, datetime]:
+    token = generate_verification_token()
+    expires_at = datetime.utcnow() + timedelta(hours=24)
+    return token, expires_at
+```
+
+**仕様:**
+- **トークン形式**: URLセーフBase64エンコード（64文字）
+- **生成方法**: `secrets.token_urlsafe(48)` (暗号学的に安全)
+- **有効期限**: 24時間
+- **データベース**: `verification_token`, `verification_token_expires_at`カラム
+- **インデックス**: 高速検索のための`idx_users_verification_token`
+
+#### メール送信セキュリティ
+```python
+# backend/infrastructure/email/email_service.py
+class MockEmailService:  # 開発環境
+    def send_verification_email(self, email: str, token: str) -> bool:
+        verification_url = f"{self.base_url}?token={token}"
+        # コンソールに出力（実際の送信なし）
+        
+class SMTPEmailService:  # 本番環境
+    def send_verification_email(self, email: str, token: str) -> bool:
+        # 実際のSMTP経由でメール送信
+```
+
+**セキュリティ対策:**
+- **開発環境**: MockEmailService使用、実メール送信なし
+- **本番環境**: SMTP認証（TLS暗号化必須）
+- **URL構成**: `https://your-domain.com?token={secure_token}`
+- **トークン漏洩対策**: 24時間自動期限切れ
+- **再送信制限**: フロントエンドで60秒間隔制限
+
+#### 認証フロー制限
+```python
+# backend/application/services/user_service.py
+def authenticate_user(self, username: str, password: str) -> Optional[User]:
+    # パスワード確認後
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=400,
+            detail="メールアドレスの認証が必要です。"
+        )
+```
+
+**アクセス制御:**
+- **未認証ユーザー**: ログイン完全拒否
+- **登録時**: 自動ログインなし（認証必須）
+- **認証後**: 通常通りJWT発行
+- **トークン検証**: 期限・形式の厳密チェック
+
 ### 権限管理
 ```python
 # domain/entities/user.py

@@ -40,6 +40,7 @@ class UserResponse(BaseModel):
     email: str
     is_active: bool
     is_admin: bool
+    email_verified: bool
     created_at: datetime
     updated_at: datetime
 
@@ -51,6 +52,8 @@ class UserResponse(BaseModel):
                 "username": "testuser",
                 "email": "test@example.com",
                 "is_active": True,
+                "is_admin": False,
+                "email_verified": True,
                 "created_at": "2023-01-01T00:00:00",
                 "updated_at": "2023-01-01T00:00:00"
             }
@@ -89,5 +92,38 @@ class TokenResponse(BaseModel):
                     "created_at": "2023-01-01T00:00:00",
                     "updated_at": "2023-01-01T00:00:00"
                 }
+            }
+        }
+
+
+class EmailVerificationRequest(BaseModel):
+    token: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "token": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzA567BCD890EFG123"
+            }
+        }
+
+
+class ResendVerificationRequest(BaseModel):
+    email: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "test@example.com"
+            }
+        }
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "message": "Operation completed successfully"
             }
         }

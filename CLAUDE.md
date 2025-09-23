@@ -39,6 +39,8 @@
 - テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
 - 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
 - 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
+- **データベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --fresh`
+- **データベース確認**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --verify`
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
 ### フロントエンド (TypeScript + React)
@@ -70,6 +72,9 @@ touhou_clear_checker/
 │   ├── tests/              # テスト
 │   │   ├── unit/          # 単体テスト（実装済み）
 │   │   └── integration/    # 統合テスト（未実装）
+│   ├── scripts/            # データベース管理スクリプト
+│   │   ├── initialize_database.py  # 統合データベース初期化
+│   │   └── deprecated_scripts/     # 廃止予定の古いスクリプト
 │   ├── main.py
 │   ├── requirements.txt
 │   ├── requirements-dev.txt
@@ -142,6 +147,7 @@ touhou_clear_checker/
 ### 認証・認可
 - **パスワードハッシュ化**: Argon2使用、`backend/infrastructure/security/password_hasher.py`
 - **JWT認証**: アクセストークン30分、`backend/infrastructure/security/jwt_handler.py`
+- **メール認証**: 新規ユーザー必須、64文字トークン・24時間有効期限
 - **トークン管理**: LocalStorageに保存、ログアウト時自動クリア
 - **認証状態管理**: React Context + useReducerパターン
 
@@ -160,3 +166,36 @@ touhou_clear_checker/
 - **CSP（Content Security Policy）**: XSS攻撃の追加防御
 - **レート制限**: API呼び出し頻度制限
 - **ログ監視**: 異常なアクセスパターンの検出
+
+## データベース管理
+
+### 統合初期化スクリプト
+新しい`initialize_database.py`スクリプトにより、データベースの作成・管理が一括で可能：
+
+```bash
+# 完全初期化（既存DB削除 → テーブル作成 → 全データ投入）
+python scripts/initialize_database.py --fresh
+
+# 現在のDB状態確認
+python scripts/initialize_database.py --verify
+
+# ゲームデータのみ再投入
+python scripts/initialize_database.py --games-only
+
+# キャラクターデータのみ再投入
+python scripts/initialize_database.py --characters-only
+
+# ヘルプ表示
+python scripts/initialize_database.py --help
+```
+
+### データベース構成
+- **ファイル**: `backend/touhou_clear_checker.db` (SQLite3)
+- **ゲーム数**: 16作品（東方紅魔郷〜東方錦上京）
+- **機体数**: 120種類（全作品の機体を網羅）
+- **テーブル**: users, games, game_characters, clear_records, game_memos
+- **メール認証**: email_verified, verification_token等のカラム対応済み
+
+### スクリプト整理状況
+- **現在**: `initialize_database.py` - 統合された一括初期化スクリプト
+- **廃止**: `deprecated_scripts/` - 旧スクリプト群を移動済み
