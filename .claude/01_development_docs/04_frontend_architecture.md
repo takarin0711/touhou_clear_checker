@@ -412,6 +412,91 @@ export interface ClearRecord {
 }
 ```
 
+## テスト環境・テスト戦略
+
+### 単体テスト（Unit Test）✅実装済み
+**実装状況**: 143テスト（コンポーネント56 + フック79 + APIサービス8）
+
+#### 技術スタック
+- **React Testing Library 16.0.0**: コンポーネントテストライブラリ
+- **Jest 27.5.1**: JavaScript/TypeScriptテストフレームワーク
+- **@testing-library/jest-dom 6.4.2**: DOM要素のアサーション拡張
+- **@testing-library/user-event 14.5.2**: ユーザーインタラクションシミュレーション
+
+#### 主要テストファイル
+**共通コンポーネントテスト**:
+- `Button.test.tsx` (16テスト): バリアント、サイズ、クリックイベント、ローディング状態
+- `Input.test.tsx` (17テスト): バリデーション、エラー表示、フォーム連携
+- `Badge.test.tsx` (16テスト): バリアント、サイズ、条件付きレンダリング
+- `GameCard.test.tsx` (17テスト): ゲーム情報表示、クリックイベント、バッジ表示
+
+**認証システムテスト**:
+- `AuthContext.test.tsx` (19テスト): ログイン、登録、ログアウト、状態管理
+- `LoginForm.test.tsx` (13テスト): バリデーション、フォーム送信、エラー処理
+- `authApi.test.ts` (4テスト): API通信、レスポンス処理
+
+**カスタムフックテスト**:
+- `useCharacters.test.ts` (26テスト): CRUD操作、検索、状態管理
+- `useClearRecords.test.ts` (23テスト): クリア記録管理、機体別条件送信
+- `useGames.test.ts` (19テスト): ゲーム一覧、フィルタリング、ソート
+
+**APIサービステスト**:
+- `gameApi.test.ts` (11テスト): ゲーム一覧取得、詳細情報取得
+- `clearRecordApi.test.ts` (23テスト): CRUD操作、バッチ処理、機体別条件送信
+- `characterApi.test.ts` (8テスト): キャラクター管理、権限テスト
+
+#### テスト実行コマンド
+```bash
+# 全テスト実行
+cd frontend && npm test
+
+# カバレッジレポート付き実行
+npm test -- --coverage
+
+# 特定ファイルのテスト実行
+npm test Button.test.tsx
+
+# テストファイル監視モード（開発時）
+npm test -- --watch
+
+# CI環境用（非インタラクティブ）
+npm test -- --ci --coverage --watchAll=false
+```
+
+#### テスト原則
+- **ユーザー中心のテスト**: 実際のユーザー操作パターンを重視
+- **モック戦略**: axios、localStorage、外部依存関係を完全モック
+- **型安全テスト**: TypeScriptでの型安全なテストコード
+- **エラーハンドリング**: 正常系・異常系・境界値を包括的にテスト
+
+#### Mock設定 (`setupTests.ts`)
+```typescript
+// axios の完全モック
+jest.mock('axios', () => ({
+  __esModule: true,
+  default: {
+    create: jest.fn(() => ({
+      get: jest.fn(),
+      post: jest.fn(),
+      put: jest.fn(),
+      delete: jest.fn(),
+      interceptors: {
+        request: { use: jest.fn() },
+        response: { use: jest.fn() }
+      }
+    }))
+  }
+}));
+
+// localStorage の完全モック
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+};
+```
+
 ### TypeScript開発環境
 
 **tsconfig.json設定**:
