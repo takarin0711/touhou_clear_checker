@@ -3,7 +3,7 @@
  */
 import { getDifficultyOrderForGame, DIFFICULTIES } from './types/difficulty';
 
-// テスト用ゲームデータ
+// テスト用ゲームデータ（実際のデータベースIDに合わせたもの）
 const testGames = [
   {
     id: 1,
@@ -20,11 +20,18 @@ const testGames = [
     game_type: 'main_series'
   },
   {
-    id: 3,
+    id: 11,
+    title: '東方紺珠伝',
+    series_number: 15,
+    release_year: 2015,
+    game_type: 'main_series'
+  },
+  {
+    id: 15,
     title: '東方獣王園',
     series_number: 19,
     release_year: 2023,
-    game_type: 'main_series'
+    game_type: 'versus'
   }
 ];
 

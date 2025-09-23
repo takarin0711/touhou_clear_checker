@@ -41,75 +41,25 @@
 
 バックエンドディレクトリで以下のコマンドを実行：
 
+#### 特定ユーザーの認証URLを確認
+
 ```bash
 cd backend
 source venv313/bin/activate
-python -c "
-from infrastructure.database.connection import get_db
-from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
-
-db = next(get_db())
-repo = UserRepositoryImpl(db)
-
-# 特定のユーザーの認証URL確認（ユーザー名を指定）
-user = repo.get_by_username('ここにユーザー名を入力')
-
-if user:
-    print('=' * 60)
-    print('📧 メール認証URL（開発環境）')
-    print('=' * 60)
-    print(f'ユーザー名: {user.username}')
-    print(f'メールアドレス: {user.email}')
-    print(f'メール認証済み: {\"✅ はい\" if user.email_verified else \"❌ いいえ\"}')
-    
-    if user.verification_token:
-        print(f'認証URL:')
-        print(f'http://localhost:3000?token={user.verification_token}')
-        print('=' * 60)
-        print('上記URLをブラウザでアクセスしてください')
-        print('=' * 60)
-    else:
-        print('認証トークンがありません。')
-        if user.email_verified:
-            print('✅ このユーザーは既にメール認証済みです！')
-        else:
-            print('❌ 認証トークンが見つかりません。')
-else:
-    print('❌ ユーザーが見つかりません。')
-
-db.close()
-"
+# ユーザー名をtestuser001に置き換えてください
+python scripts/email_verification_helper.py --show-url testuser001
 ```
 
-**または、最新の未認証ユーザーを確認：**
+#### 最新の未認証ユーザーの認証URLを確認
 
 ```bash
-python -c "
-from infrastructure.database.connection import get_db
-from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
+python scripts/email_verification_helper.py --show-latest-url
+```
 
-db = next(get_db())
-repo = UserRepositoryImpl(db)
+#### 全未認証ユーザーを一覧表示
 
-# 最新の未認証ユーザーを取得
-users = repo.get_all()
-unverified_users = [u for u in users if not u.email_verified]
-
-if unverified_users:
-    user = unverified_users[-1]  # 最新の未認証ユーザー
-    print('=' * 60)
-    print('📧 最新の未認証ユーザーの認証URL')
-    print('=' * 60)
-    print(f'ユーザー名: {user.username}')
-    print(f'メールアドレス: {user.email}')
-    print(f'認証URL:')
-    print(f'http://localhost:3000?token={user.verification_token}')
-    print('=' * 60)
-else:
-    print('未認証のユーザーがいません。')
-
-db.close()
-"
+```bash
+python scripts/email_verification_helper.py --list-unverified
 ```
 
 ### Step 3: メール認証実行
@@ -125,25 +75,8 @@ db.close()
 認証後の状態を確認：
 
 ```bash
-python -c "
-from infrastructure.database.connection import get_db
-from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
-
-db = next(get_db())
-repo = UserRepositoryImpl(db)
-user = repo.get_by_username('ここにユーザー名を入力')
-
-if user:
-    print('=' * 50)
-    print('👤 ユーザー認証状態')
-    print('=' * 50)
-    print(f'ユーザー名: {user.username}')
-    print(f'メール認証済み: {\"✅ はい\" if user.email_verified else \"❌ いいえ\"}')
-    print(f'認証トークン: {\"なし\" if not user.verification_token else \"あり\"}')
-    print('=' * 50)
-
-db.close()
-"
+# ユーザー名をtestuser001に置き換えてください
+python scripts/email_verification_helper.py --check-status testuser001
 ```
 
 ### Step 5: ログインテスト
@@ -177,20 +110,31 @@ db.close()
 ### 認証URLでエラーが出る場合
 
 - URLが正しくコピーされているか確認
-- トークンが24時間以内のものか確認
+- トークンが24時間以内のものか確認（スクリプトで有効期限を表示）
 - バックエンド・フロントエンドサーバーが動いているか確認
 
 ### ユーザーが見つからない場合
 
 - ユーザー名のスペルを確認
-- 実際に登録が完了しているか確認
+- 実際に登録が完了しているか確認（`--list-unverified`で一覧確認）
 
 ### メール再送信テスト
 
 1. ログイン画面でメール未認証エラーを表示
 2. 「認証メールを再送信」ボタンをクリック
-3. Step 2のコマンドで新しい認証URLを確認
+3. スクリプトで新しい認証URLを確認：
+   ```bash
+   python scripts/email_verification_helper.py --show-url ユーザー名
+   ```
 4. 新しいURLでメール認証を実行
+
+### 期限切れトークンのクリーンアップ
+
+開発環境で期限切れトークンがたまった場合：
+
+```bash
+python scripts/email_verification_helper.py --cleanup-expired
+```
 
 ## 本番環境運用ガイド
 
@@ -217,9 +161,35 @@ export BASE_URL=https://your-domain.com
 ### 監視・メンテナンス
 - **メール送信ログ**: SMTP送信成功/失敗の記録
 - **トークン有効期限**: 期限切れトークンの定期クリーンアップ
-- **未認証ユーザー**: 長期間未認証ユーザーのアカウント削除検討
+  ```bash
+  python scripts/email_verification_helper.py --cleanup-expired
+  ```
+- **未認証ユーザー監視**: 長期間未認証ユーザーの確認
+  ```bash
+  python scripts/email_verification_helper.py --list-unverified
+  ```
+
+## メール認証支援スクリプト一覧
+
+`backend/scripts/email_verification_helper.py` の主要機能：
+
+| コマンド | 機能 | 使用例 |
+|---------|------|----------|
+| `--show-url <username>` | 特定ユーザーの認証URL表示 | `--show-url testuser001` |
+| `--show-latest-url` | 最新未認証ユーザーの認証URL表示 | `--show-latest-url` |
+| `--check-status <username>` | ユーザー認証状態確認 | `--check-status testuser001` |
+| `--list-unverified` | 全未認証ユーザー一覧 | `--list-unverified` |
+| `--cleanup-expired` | 期限切れトークンクリーンアップ | `--cleanup-expired` |
+| `--help` | ヘルプ表示 | `--help` |
+
+**使用方法**:
+```bash
+cd backend
+source venv313/bin/activate
+python scripts/email_verification_helper.py [オプション]
+```
 
 ---
 
 **作成日**: 2025年9月23日  
-**最終更新**: 2025年9月23日（メール認証システム実装完了）
+**最終更新**: 2025年9月23日（メール認証システム実装完了、支援スクリプト追加）

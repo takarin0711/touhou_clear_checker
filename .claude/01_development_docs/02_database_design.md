@@ -268,10 +268,10 @@ INSERT INTO game_characters (game_id, character_name, description, sort_order) V
 #### 東方星蓮船（12作目）
 ```sql
 INSERT INTO game_characters (game_id, character_name, description, sort_order) VALUES
-(7, '霊夢A', '針弾ホーミング型・安定性重視', 1),
-(7, '霊夢B', '陰陽玉直線型・火力重視', 2),
-(7, '魔理沙A', '星型弾幕・前方集中型', 3),
-(7, '魔理沙B', 'レーザー系・貫通特化', 4),
+(7, '霊夢A（一点集中攻撃力重視型）', '針弾ホーミング型・安定性重視', 1),
+(7, '霊夢B（アンチパターン重視超誘導型）', '陰陽玉直線型・火力重視', 2),
+(7, '魔理沙A（無限貫通＆常時攻撃型）', '星型弾幕・前方集中型', 3),
+(7, '魔理沙B（超攻撃範囲重視型）', 'レーザー系・貫通特化', 4),
 (7, '早苗A（一点集中＆誘導型）', 'サブショット直角誘導・全画面スペル', 5),
 (7, '早苗B（高威力＆広範囲炸裂型）', '爆発エフェクト・近距離最強火力', 6);
 ```
@@ -295,11 +295,11 @@ INSERT INTO game_characters (game_id, character_name, description, sort_order) V
 ```sql
 INSERT INTO game_characters (game_id, character_name, description, sort_order) VALUES
 (10, '霊夢A（お祓い棒）', 'サブショット頻繁配置・魔理沙砲戦術', 1),
-(10, '霊夢B', '従来型ホーミング・針攻撃', 2),
-(10, '魔理沙A', '遠距離ダメージ下位・ボムのみが取り柄', 3),
-(10, '魔理沙B（公式チート）', '極めて強力・最強ファーミング性能・防御脆弱', 4),
-(10, '咲夜A', 'バリアボム・優秀なファーミング・防御性能', 5),
-(10, '咲夜B', '咲夜Aに劣る性能', 6);
+(10, '霊夢B (妖器なし)', '従来型ホーミング・針攻撃', 2),
+(10, '魔理沙A（ミニ八卦路）', '遠距離ダメージ下位・ボムのみが取り柄', 3),
+(10, '魔理沙B（妖器なし）', '極めて強力・最強ファーミング性能・防御脆弱', 4),
+(10, '咲夜A（シルバーブレード）', 'バリアボム・優秀なファーミング・防御性能', 5),
+(10, '咲夜B（妖器なし）', '咲夜Aに劣る性能', 6);
 ```
 
 #### 東方紺珠伝（15作目）
@@ -441,7 +441,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
 ('東方紅魔郷', 6.0, 2002, 'main_series'),
 ('東方妖々夢', 7.0, 2003, 'main_series'),
 ('東方永夜抄', 8.0, 2004, 'main_series'),
-('東方花映塚', 9.0, 2005, 'main_series'),
+('東方花映塚', 9.0, 2005, 'versus'),
 ('東方風神録', 10.0, 2007, 'main_series'),
 ('東方地霊殿', 11.0, 2008, 'main_series'),
 ('東方星蓮船', 12.0, 2009, 'main_series'),
@@ -452,7 +452,7 @@ INSERT INTO games (title, series_number, release_year, game_type) VALUES
 ('東方天空璋', 16.0, 2017, 'main_series'),
 ('東方鬼形獣', 17.0, 2019, 'main_series'),
 ('東方虹龍洞', 18.0, 2021, 'main_series'),
-('東方獣王園', 19.0, 2023, 'main_series'),
+('東方獣王園', 19.0, 2023, 'versus'),
 ('東方錦上京', 20.0, 2025, 'main_series');
 ```
 

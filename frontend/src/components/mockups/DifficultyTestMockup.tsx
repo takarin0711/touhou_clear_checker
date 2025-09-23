@@ -1,7 +1,7 @@
 import React from 'react';
 import { getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../types/difficulty';
 
-// テスト用ゲームデータ
+// テスト用ゲームデータ（実際のデータベースIDに合わせたもの）
 const testGames = [
   {
     id: 1,
@@ -18,11 +18,18 @@ const testGames = [
     game_type: 'main_series'
   },
   {
-    id: 3,
+    id: 11,
+    title: '東方紺珠伝',
+    series_number: 15,
+    release_year: 2015,
+    game_type: 'main_series'
+  },
+  {
+    id: 15,
     title: '東方獣王園',
     series_number: 19,
     release_year: 2023,
-    game_type: 'main_series'
+    game_type: 'versus'
   }
 ];
 
@@ -67,7 +74,7 @@ const DifficultyTestMockup = () => {
         let testResult = '';
         let resultClass = '';
         
-        if (game.series_number === 19) {
+        if (game.id === 15) { // 獣王園
           if (!hasExtra) {
             testResult = '✅ 獣王園でExtra難易度が正しく除外されています';
             resultClass = 'bg-green-50 border-green-200 text-green-800';
@@ -75,12 +82,26 @@ const DifficultyTestMockup = () => {
             testResult = '❌ 獣王園でExtra難易度が除外されていません';
             resultClass = 'bg-red-50 border-red-200 text-red-800';
           }
-        } else if (game.series_number === 7) {
+        } else if (game.id === 2) { // 妖々夢
           if (hasExtra && hasPhantasm) {
             testResult = '✅ 妖々夢でExtra・Phantasm難易度が正しく含まれています';
             resultClass = 'bg-green-50 border-green-200 text-green-800';
           } else {
             testResult = '❌ 妖々夢で難易度設定に問題があります';
+            resultClass = 'bg-red-50 border-red-200 text-red-800';
+          }
+        } else if (game.id === 11) { // 紺珠伝
+          // 紺珠伝はモード別テストが必要（ここではlegacyモードでテスト）
+          const legacyDifficulties = getDifficultyOrderForGame(game, 'legacy');
+          const pointdeviceDifficulties = getDifficultyOrderForGame(game, 'pointdevice');
+          const legacyHasExtra = legacyDifficulties.includes('Extra');
+          const pointdeviceHasExtra = pointdeviceDifficulties.includes('Extra');
+          
+          if (legacyHasExtra && !pointdeviceHasExtra) {
+            testResult = '✅ 紺珠伝でモード別難易度設定が正しく動作しています';
+            resultClass = 'bg-green-50 border-green-200 text-green-800';
+          } else {
+            testResult = '❌ 紺珠伝でモード別難易度設定に問題があります';
             resultClass = 'bg-red-50 border-red-200 text-red-800';
           }
         } else {
