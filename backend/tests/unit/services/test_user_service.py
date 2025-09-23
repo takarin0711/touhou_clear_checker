@@ -12,14 +12,22 @@ class TestUserService:
         self.mock_repository = Mock()
         
         with patch('application.services.user_service.PasswordHasher') as mock_hasher_class, \
-             patch('application.services.user_service.JWTHandler') as mock_jwt_class:
+             patch('application.services.user_service.JWTHandler') as mock_jwt_class, \
+             patch('application.services.user_service.MockEmailService') as mock_email_class, \
+             patch('application.services.user_service.TokenGenerator') as mock_token_gen_class:
             
             self.mock_password_hasher = Mock()
             self.mock_jwt_handler = Mock()
+            self.mock_email_service = Mock()
+            self.mock_token_generator = Mock()
             mock_hasher_class.return_value = self.mock_password_hasher
             mock_jwt_class.return_value = self.mock_jwt_handler
+            mock_email_class.return_value = self.mock_email_service
+            mock_token_gen_class.return_value = self.mock_token_generator
+            # TokenGeneratorは静的メソッドなのでクラス自体をモック
+            mock_token_gen_class.generate_token_with_expiry.return_value = ("test_token", datetime.now())
             
-            self.service = UserService(self.mock_repository)
+            self.service = UserService(self.mock_repository, self.mock_email_service)
         
         self.sample_user = User(
             id=1,
@@ -28,6 +36,9 @@ class TestUserService:
             hashed_password="hashed_password",
             is_active=True,
             is_admin=False,
+            email_verified=True,  # テスト用は認証済みに設定
+            verification_token=None,
+            verification_token_expires_at=None,
             created_at=datetime.now(),
             updated_at=datetime.now()
         )
@@ -44,6 +55,7 @@ class TestUserService:
         self.mock_repository.get_by_email.return_value = None
         self.mock_password_hasher.hash_password.return_value = "hashed_password"
         self.mock_repository.create.return_value = self.sample_user
+        self.mock_email_service.send_verification_email.return_value = True
         
         result = self.service.create_user(create_dto)
         
@@ -130,7 +142,13 @@ class TestUserService:
             username="test_user",
             email="test@example.com",
             hashed_password="hashed_password",
-            is_active=False
+            is_active=False,
+            is_admin=False,
+            email_verified=True,
+            verification_token=None,
+            verification_token_expires_at=None,
+            created_at=datetime.now(),
+            updated_at=datetime.now()
         )
         
         login_dto = LoginRequestDto(
@@ -142,6 +160,33 @@ class TestUserService:
         self.mock_password_hasher.verify_password.return_value = True
         
         with pytest.raises(ValueError, match="User account is disabled"):
+            self.service.authenticate_user(login_dto)
+            
+    def test_authenticate_user_email_not_verified(self):
+        """メール未認証ユーザーでの認証エラーテスト"""
+        unverified_user = User(
+            id=1,
+            username="test_user",
+            email="test@example.com",
+            hashed_password="hashed_password",
+            is_active=True,
+            is_admin=False,
+            email_verified=False,  # メール未認証
+            verification_token="some_token",
+            verification_token_expires_at=datetime.now(),
+            created_at=datetime.now(),
+            updated_at=datetime.now()
+        )
+        
+        login_dto = LoginRequestDto(
+            username="test_user",
+            password="password123"
+        )
+        
+        self.mock_repository.get_by_username.return_value = unverified_user
+        self.mock_password_hasher.verify_password.return_value = True
+        
+        with pytest.raises(ValueError, match="Email address not verified"):
             self.service.authenticate_user(login_dto)
             
     def test_get_user_by_id_found(self):

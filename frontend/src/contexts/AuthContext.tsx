@@ -1,16 +1,17 @@
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { authApi } from '../features/auth/services/authApi';
-import { User, LoginCredentials, RegisterData, AuthContextType } from '../types/auth';
+import { User, LoginCredentials, RegisterData, AuthContextType, EmailVerificationState } from '../types/auth';
 
 interface AuthState {
   user: User | null;
   token: string | null;
   isLoading: boolean;
   error: string | null;
+  emailVerificationState: EmailVerificationState;
 }
 
 interface AuthAction {
-  type: 'AUTH_START' | 'AUTH_SUCCESS' | 'AUTH_ERROR' | 'LOGOUT';
+  type: 'AUTH_START' | 'AUTH_SUCCESS' | 'AUTH_ERROR' | 'LOGOUT' | 'EMAIL_VERIFICATION_START' | 'EMAIL_VERIFICATION_SUCCESS' | 'EMAIL_VERIFICATION_ERROR' | 'EMAIL_RESEND_START' | 'EMAIL_RESEND_SUCCESS' | 'EMAIL_RESEND_ERROR';
   payload?: any;
 }
 
@@ -44,6 +45,69 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
         token: null,
         error: null,
         isLoading: false,
+        emailVerificationState: initialState.emailVerificationState,
+      };
+    
+    case 'EMAIL_VERIFICATION_START':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isVerifying: true,
+          error: null,
+        },
+      };
+    
+    case 'EMAIL_VERIFICATION_SUCCESS':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isVerifying: false,
+          message: action.payload.message,
+          error: null,
+        },
+      };
+    
+    case 'EMAIL_VERIFICATION_ERROR':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isVerifying: false,
+          error: action.payload,
+        },
+      };
+    
+    case 'EMAIL_RESEND_START':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isResending: true,
+          error: null,
+        },
+      };
+    
+    case 'EMAIL_RESEND_SUCCESS':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isResending: false,
+          message: action.payload.message,
+          error: null,
+        },
+      };
+    
+    case 'EMAIL_RESEND_ERROR':
+      return {
+        ...state,
+        emailVerificationState: {
+          ...state.emailVerificationState,
+          isResending: false,
+          error: action.payload,
+        },
       };
     
     default:
@@ -56,6 +120,12 @@ const initialState: AuthState = {
   token: null,
   isLoading: false,
   error: null,
+  emailVerificationState: {
+    isVerifying: false,
+    isResending: false,
+    message: null,
+    error: null,
+  },
 };
 
 // コンテキストの作成
@@ -131,7 +201,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await authApi.register(registerData);
       const { access_token, user } = response;
 
-      // LocalStorageに保存
+      // メール未認証の場合は自動ログインしない
+      if (!user.email_verified) {
+        dispatch({
+          type: 'AUTH_ERROR', 
+          payload: null, // エラーではないのでnull
+        });
+        return { 
+          success: true, 
+          requiresEmailVerification: true 
+        };
+      }
+
+      // メール認証済みの場合（既存ユーザーや管理者作成など）
       localStorage.setItem('auth_token', access_token);
       localStorage.setItem('user', JSON.stringify(user));
 
@@ -185,15 +267,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  /**
+   * メールアドレス認証
+   */
+  const verifyEmail = async (token: string) => {
+    dispatch({ type: 'EMAIL_VERIFICATION_START' });
+    
+    try {
+      const response = await authApi.verifyEmail(token);
+      dispatch({
+        type: 'EMAIL_VERIFICATION_SUCCESS',
+        payload: { message: response.message },
+      });
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || 'メール認証に失敗しました';
+      dispatch({
+        type: 'EMAIL_VERIFICATION_ERROR',
+        payload: errorMessage,
+      });
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  /**
+   * 認証メール再送信
+   */
+  const resendVerificationEmail = async (email: string) => {
+    dispatch({ type: 'EMAIL_RESEND_START' });
+    
+    try {
+      const response = await authApi.resendVerificationEmail(email);
+      dispatch({
+        type: 'EMAIL_RESEND_SUCCESS',
+        payload: { message: response.message },
+      });
+      return { success: true };
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail || 'メール再送信に失敗しました';
+      dispatch({
+        type: 'EMAIL_RESEND_ERROR',
+        payload: errorMessage,
+      });
+      return { success: false, error: errorMessage };
+    }
+  };
+
   const value = {
     user: state.user,
     token: state.token,
     isLoading: state.isLoading,
     error: state.error,
+    emailVerificationState: state.emailVerificationState,
     login,
     register,
     logout,
     checkAuth,
+    verifyEmail,
+    resendVerificationEmail,
   };
 
   return (

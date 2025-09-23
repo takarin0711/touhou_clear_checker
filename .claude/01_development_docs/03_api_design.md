@@ -256,12 +256,188 @@
 }
 ```
 
+### ユーザー認証・メール認証関連
+
+#### POST /api/v1/users/register
+新規ユーザー登録
+
+**Request Body:**
+```json
+{
+  "username": "testuser",
+  "email": "test@example.com",
+  "password": "password123"
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "username": "testuser",
+    "email": "test@example.com",
+    "is_active": true,
+    "is_admin": false,
+    "email_verified": false,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+**注意**: `email_verified: false` のユーザーはメール認証が必要です。
+
+#### POST /api/v1/users/login
+ユーザーログイン（FormDataまたはJSON）
+
+**Request Body (multipart/form-data):**
+```
+username: testuser
+password: password123
+```
+
+**Response (200 OK):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "user": {
+    "id": 1,
+    "username": "testuser",
+    "email": "test@example.com",
+    "is_active": true,
+    "is_admin": false,
+    "email_verified": true,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-01-01T00:00:00Z"
+  }
+}
+```
+
+**Error (400 Bad Request) - メール未認証:**
+```json
+{
+  "detail": "メールアドレスの認証が必要です。メールを確認して認証を完了してください。"
+}
+```
+
+#### POST /api/v1/users/verify-email
+メールアドレス認証
+
+**Request Body:**
+```json
+{
+  "token": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzA567BCD890EFG123"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "メールアドレスの認証が完了しました。"
+}
+```
+
+**Error (400 Bad Request):**
+```json
+{
+  "detail": "認証トークンが無効または期限切れです。"
+}
+```
+
+#### POST /api/v1/users/resend-verification
+認証メール再送信
+
+**Request Body:**
+```json
+{
+  "email": "test@example.com"
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "message": "認証メールを再送信しました。"
+}
+```
+
+**Error (400 Bad Request):**
+```json
+{
+  "detail": "ユーザーが見つからないか、既に認証済みです。"
+}
+```
+
+#### GET /api/v1/users/me
+現在のユーザー情報取得
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "username": "testuser",
+  "email": "test@example.com",
+  "is_active": true,
+  "is_admin": false,
+  "email_verified": true,
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+## メール認証システムの動作フロー
+
+### 1. 新規登録フロー
+```
+POST /api/v1/users/register
+  ↓
+ユーザー作成 (email_verified: false)
+  ↓
+認証トークン生成 & メール送信
+  ↓
+認証トークン返却 (開発環境) / メール送信完了 (本番環境)
+```
+
+### 2. メール認証フロー
+```
+メール内リンククリック
+  ↓
+POST /api/v1/users/verify-email
+  ↓
+トークン検証 & ユーザー認証状態更新
+  ↓
+認証完了 (email_verified: true)
+```
+
+### 3. ログイン制限
+```
+POST /api/v1/users/login
+  ↓
+email_verified チェック
+  ↓
+false: エラー "メールアドレスの認証が必要です"
+true: ログイン成功
+```
+
 ## エラーコード
 
 | コード | 説明 |
 |--------|------|
 | GAME_NOT_FOUND | ゲームが見つかりません |
 | RECORD_NOT_FOUND | 記録が見つかりません |
+| USER_NOT_FOUND | ユーザーが見つかりません |
+| EMAIL_NOT_VERIFIED | メールアドレスが未認証です |
+| INVALID_TOKEN | 認証トークンが無効です |
+| TOKEN_EXPIRED | 認証トークンが期限切れです |
 | VALIDATION_ERROR | バリデーションエラー |
 | DATABASE_ERROR | データベースエラー |
 | INTERNAL_ERROR | 内部エラー |

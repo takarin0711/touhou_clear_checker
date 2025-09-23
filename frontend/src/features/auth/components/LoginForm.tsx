@@ -18,12 +18,13 @@ interface FormErrors {
  * ログインフォームコンポーネント
  */
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) => {
-  const { login, isLoading, error } = useAuth();
+  const { login, isLoading, error, resendVerificationEmail, emailVerificationState } = useAuth();
   const [formData, setFormData] = useState<LoginCredentials>({
     username: '',
     password: '',
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   // フォーム入力の処理
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,6 +70,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) 
     
     if (result.success) {
       onSuccess?.();
+    } else if (result.error?.includes('not verified')) {
+      // メール未認証エラーの場合、ユーザー情報を取得してメール再送信を可能にする
+      // 実際のアプリでは、ユーザー名からメールアドレスを取得するAPIが必要
+      // 今回は簡易的にユーザー名をメールアドレスと仮定
+      if (formData.username.includes('@')) {
+        setUserEmail(formData.username);
+      }
+    }
+  };
+
+  // 認証メール再送信
+  const handleResendEmail = async () => {
+    if (!userEmail) return;
+    
+    const result = await resendVerificationEmail(userEmail);
+    if (result.success) {
+      // 成功メッセージは emailVerificationState.message に含まれる
     }
   };
 
@@ -105,6 +123,40 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onSwitchToRegister }) 
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-md p-3">
             <p className="text-sm text-red-600">{error}</p>
+            {/* メール未認証エラーの場合の追加情報 */}
+            {error.includes('not verified') && (
+              <div className="mt-3 pt-3 border-t border-red-200">
+                <p className="text-xs text-red-600 mb-2">
+                  メールアドレスの認証が完了していません。
+                </p>
+                {userEmail && (
+                  <div className="space-y-2">
+                    <p className="text-xs text-gray-600">
+                      認証メールを再送信できます: <strong>{userEmail}</strong>
+                    </p>
+                    <Button
+                      onClick={handleResendEmail}
+                      variant="secondary"
+                      size="small"
+                      disabled={emailVerificationState.isResending}
+                      loading={emailVerificationState.isResending}
+                    >
+                      {emailVerificationState.isResending ? '送信中...' : '認証メールを再送信'}
+                    </Button>
+                  </div>
+                )}
+                {emailVerificationState.message && (
+                  <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded">
+                    <p className="text-xs text-green-600">{emailVerificationState.message}</p>
+                  </div>
+                )}
+                {emailVerificationState.error && (
+                  <div className="mt-2 p-2 bg-red-100 border border-red-300 rounded">
+                    <p className="text-xs text-red-600">{emailVerificationState.error}</p>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
 

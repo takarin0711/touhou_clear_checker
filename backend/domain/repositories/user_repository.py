@@ -17,6 +17,10 @@ class UserRepository(ABC):
         pass
 
     @abstractmethod
+    def get_by_verification_token(self, token: str) -> Optional[User]:
+        pass
+
+    @abstractmethod
     def get_all(self) -> List[User]:
         pass
 

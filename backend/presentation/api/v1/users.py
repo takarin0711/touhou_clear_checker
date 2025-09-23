@@ -8,7 +8,7 @@ from infrastructure.database.repositories.user_repository_impl import UserReposi
 from infrastructure.security.auth_middleware import get_current_active_user
 from application.services.user_service import UserService
 from application.dtos.user_dto import CreateUserDto, UpdateUserDto, LoginRequestDto
-from presentation.schemas.user_schema import UserCreate, UserUpdate, UserResponse, LoginRequest, TokenResponse
+from presentation.schemas.user_schema import UserCreate, UserUpdate, UserResponse, LoginRequest, TokenResponse, EmailVerificationRequest, ResendVerificationRequest, MessageResponse
 from domain.entities.user import User
 
 router = APIRouter()
@@ -47,6 +47,7 @@ def register_user(
                 email=user_response.email,
                 is_active=user_response.is_active,
                 is_admin=user_response.is_admin,
+                email_verified=user_response.email_verified,
                 created_at=user_response.created_at,
                 updated_at=user_response.updated_at
             )
@@ -82,6 +83,7 @@ def login(
                 email=user_response.email,
                 is_active=user_response.is_active,
                 is_admin=user_response.is_admin,
+                email_verified=user_response.email_verified,
                 created_at=user_response.created_at,
                 updated_at=user_response.updated_at
             )
@@ -98,6 +100,7 @@ def get_current_user_info(current_user: User = Depends(get_current_active_user))
         email=current_user.email,
         is_active=current_user.is_active,
         is_admin=current_user.is_admin,
+        email_verified=current_user.email_verified,
         created_at=current_user.created_at,
         updated_at=current_user.updated_at
     )
@@ -138,3 +141,32 @@ def delete_current_user(
     success = user_service.delete_user(current_user.id)
     if not success:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+
+@router.post("/verify-email", response_model=MessageResponse)
+def verify_email(
+    verification_data: EmailVerificationRequest,
+    user_service: UserService = Depends(get_user_service)
+):
+    """メールアドレス認証"""
+    try:
+        user_service.verify_email(verification_data.token)
+        return MessageResponse(message="Email address verified successfully")
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
+@router.post("/resend-verification", response_model=MessageResponse)
+def resend_verification_email(
+    resend_data: ResendVerificationRequest,
+    user_service: UserService = Depends(get_user_service)
+):
+    """認証メール再送信"""
+    try:
+        success = user_service.resend_verification_email(resend_data.email)
+        if success:
+            return MessageResponse(message="Verification email sent successfully")
+        else:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to send email")
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))

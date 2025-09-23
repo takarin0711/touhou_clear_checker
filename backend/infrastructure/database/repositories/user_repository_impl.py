@@ -27,6 +27,12 @@ class UserRepositoryImpl(UserRepository):
             return self._model_to_entity(user_model)
         return None
 
+    def get_by_verification_token(self, token: str) -> Optional[User]:
+        user_model = self.db.query(UserModel).filter(UserModel.verification_token == token).first()
+        if user_model:
+            return self._model_to_entity(user_model)
+        return None
+
     def get_all(self) -> List[User]:
         user_models = self.db.query(UserModel).all()
         return [self._model_to_entity(model) for model in user_models]
@@ -37,7 +43,10 @@ class UserRepositoryImpl(UserRepository):
             email=user.email,
             hashed_password=user.hashed_password,
             is_active=user.is_active,
-            is_admin=user.is_admin
+            is_admin=user.is_admin,
+            email_verified=user.email_verified,
+            verification_token=user.verification_token,
+            verification_token_expires_at=user.verification_token_expires_at
         )
         self.db.add(user_model)
         self.db.commit()
@@ -52,6 +61,9 @@ class UserRepositoryImpl(UserRepository):
             user_model.hashed_password = user.hashed_password
             user_model.is_active = user.is_active
             user_model.is_admin = user.is_admin
+            user_model.email_verified = user.email_verified
+            user_model.verification_token = user.verification_token
+            user_model.verification_token_expires_at = user.verification_token_expires_at
             self.db.commit()
             self.db.refresh(user_model)
             return self._model_to_entity(user_model)
@@ -73,6 +85,9 @@ class UserRepositoryImpl(UserRepository):
             hashed_password=model.hashed_password,
             is_active=model.is_active,
             is_admin=model.is_admin,
+            email_verified=model.email_verified,
+            verification_token=model.verification_token,
+            verification_token_expires_at=model.verification_token_expires_at,
             created_at=model.created_at,
             updated_at=model.updated_at
         )
