@@ -136,3 +136,27 @@ touhou_clear_checker/
 - **ブラウザキャッシュエラー**: ハードリフレッシュ（Cmd+Shift+R）で解決
 - **型エラー**: `npx tsc --noEmit`で型チェック実行
 - **ビルドエラー**: `npm run build`で詳細確認
+
+## セキュリティ仕様
+
+### 認証・認可
+- **パスワードハッシュ化**: Argon2使用、`backend/infrastructure/security/password_hasher.py`
+- **JWT認証**: アクセストークン30分、`backend/infrastructure/security/jwt_handler.py`
+- **トークン管理**: LocalStorageに保存、ログアウト時自動クリア
+- **認証状態管理**: React Context + useReducerパターン
+
+### セキュリティ対策
+- **XSS対策**: React標準エスケープ機能、dangerouslySetInnerHTML未使用
+- **TypeScript型安全性**: 37個のinterface定義による実行時エラー防止
+- **HTTPS**: 本番環境ではHTTPS必須（開発環境はHTTP可）
+
+### セキュリティ設定
+- **シークレットキー**: 本番環境では環境変数から取得（`JWT_SECRET_KEY`）
+- **CORS設定**: 必要なオリジンのみ許可
+- **SQLインジェクション対策**: SQLAlchemy ORMによる自動エスケープ
+
+### 今後の強化ポイント
+- **リフレッシュトークン**: HttpOnly Cookieでの実装検討
+- **CSP（Content Security Policy）**: XSS攻撃の追加防御
+- **レート制限**: API呼び出し頻度制限
+- **ログ監視**: 異常なアクセスパターンの検出
