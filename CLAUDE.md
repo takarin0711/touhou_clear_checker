@@ -45,7 +45,8 @@
 - 開発サーバー: `cd frontend && npm start`
 - 依存関係インストール: `cd frontend && npm install`
 - ビルド: `cd frontend && npm run build`
-- テスト: `cd frontend && npm test`
+- 単体テスト実行: `cd frontend && npm test`
+- 特定テスト実行: `cd frontend && npm test -- --testPathPattern="Button.test" --watchAll=false`
 - 型チェック: `cd frontend && npx tsc --noEmit`
 - **注意**: ブラウザキャッシュが原因でエラーが出る場合は、ハードリフレッシュ（Cmd+Shift+R）またはシークレットモードでアクセス
 
@@ -89,12 +90,22 @@ touhou_clear_checker/
 ```
 
 ## テスト構成
-### 単体テスト（実装済み）
+### バックエンド単体テスト（実装済み）
 - **計37個のテスト**が正常動作
 - **サービスレイヤー**: 26テスト（ゲーム・ユーザー管理のビジネスロジック）
 - **リポジトリレイヤー**: 11テスト（データアクセスの基本操作）
 - **技術スタック**: pytest + pytest-mock
 - **特徴**: 完全モック化により外部依存なし、高速実行（0.08秒）
+
+### フロントエンド単体テスト（実装済み）
+- **計13個のテストファイル**、**100+個のテスト**が正常動作
+- **共通コンポーネント**: Button、Input、Badge（UI操作・スタイリング）
+- **ゲーム機能**: GameCard、gameApi、useGames（ゲーム管理・表示）
+- **認証機能**: LoginForm、AuthContext、authApi（認証状態・フォーム）
+- **クリア記録**: clearRecordApi、useClearRecords（記録管理・API）
+- **キャラクター**: characterApi、useCharacters（キャラクター管理）
+- **技術スタック**: React Testing Library + Jest
+- **特徴**: TypeScript型安全性、UI/UX動作検証、API通信テスト
 
 ### 統合テスト（未実装）
 - APIエンドポイントの統合テスト

@@ -5,7 +5,7 @@
 
 ## テスト構成
 
-### 1. 単体テスト（Unit Test）✅実装済み
+### 1. バックエンド単体テスト（Unit Test）✅実装済み
 **対象**: サービスレイヤー、リポジトリレイヤー  
 **目的**: ビジネスロジックとデータアクセスの品質保証  
 **実装状況**: 37テスト（サービス26 + リポジトリ11）
@@ -44,7 +44,65 @@ python -m pytest tests/unit/services/ -v
 python -m pytest tests/unit/repositories/ -v
 ```
 
-### 2. 統合テスト（Integration Test）🔴未実装
+### 2. フロントエンド単体テスト（Unit Test）✅実装済み
+**対象**: コンポーネント、フック、APIサービス  
+**目的**: UI/UXとフロントエンドロジックの品質保証  
+**実装状況**: 143テスト（コンポーネント56 + フック79 + APIサービス8）
+
+#### 技術スタック
+- **React Testing Library**: コンポーネントテストライブラリ
+- **Jest**: JavaScriptテストフレームワーク
+- **@testing-library/jest-dom**: DOM要素のアサーション拡張
+- **@testing-library/user-event**: ユーザーインタラクションシミュレーション
+
+#### ディレクトリ構成
+```
+frontend/src/
+├── setupTests.ts                          # テスト共通設定・Mock設定
+├── components/common/
+│   ├── Button.test.tsx                    # Buttonコンポーネントテスト（16テスト）
+│   ├── Input.test.tsx                     # Inputコンポーネントテスト（17テスト）
+│   └── Badge.test.tsx                     # Badgeコンポーネントテスト（16テスト）
+├── features/
+│   ├── games/components/
+│   │   └── GameCard.test.tsx              # GameCardコンポーネントテスト（17テスト）
+│   └── auth/components/
+│       └── LoginForm.test.tsx             # LoginFormコンポーネントテスト（13テスト）
+├── contexts/
+│   └── AuthContext.test.tsx               # 認証コンテキストテスト（19テスト）
+├── hooks/
+│   ├── useCharacters.test.ts              # useCharactersフックテスト（26テスト）
+│   ├── useClearRecords.test.ts            # useClearRecordsフックテスト（23テスト）
+│   └── useGames.test.ts                   # useGamesフックテスト（19テスト）
+└── services/
+    ├── gameApi.test.ts                    # ゲームAPI通信テスト（11テスト）
+    ├── authApi.test.ts                    # 認証API通信テスト（4テスト）
+    ├── clearRecordApi.test.ts             # クリア記録API通信テスト（23テスト）
+    └── characterApi.test.ts               # キャラクターAPI通信テスト（8テスト）
+```
+
+#### テスト原則
+- **包括的カバレッジ**: UI要素の表示・操作・状態変更をテスト
+- **モック活用**: axios、localStorage、外部依存関係を完全モック
+- **ユーザー視点**: 実際のユーザー操作パターンを重視
+- **型安全テスト**: TypeScriptでの型安全なテストコード
+
+#### テスト実行コマンド
+```bash
+# 全フロントエンドテスト実行
+cd frontend && npm test
+
+# カバレッジレポート付き実行
+npm test -- --coverage
+
+# 特定ファイルのテスト実行
+npm test Button.test.tsx
+
+# テストファイル監視モード
+npm test -- --watch
+```
+
+### 3. 統合テスト（Integration Test）🔴未実装
 **対象**: APIエンドポイント、DB連携、認証フロー  
 **目的**: システム全体の動作確認  
 
@@ -67,13 +125,13 @@ backend/tests/integration/
     └── test_auth_flow.py
 ```
 
-### 3. E2Eテスト（End-to-End Test）🔴未実装
+### 4. E2Eテスト（End-to-End Test）🔴未実装
 **対象**: フロントエンド + バックエンドの完全結合  
 **目的**: ユーザー視点での動作確認
 
 ## テスト運用規則
 
-### APIを修正・追加・削除する際の必須手順
+### バックエンドAPI修正・追加・削除の必須手順
 
 #### 1. 新規API作成時
 1. **API実装**を行う
@@ -100,6 +158,49 @@ backend/tests/integration/
 3. 残りのテストが全て通ることを確認
    ```bash
    python -m pytest tests/unit/ -v
+   ```
+
+### フロントエンド開発・修正の必須手順
+
+#### 1. 新規コンポーネント作成時
+1. **コンポーネント実装**を行う（.tsxファイル）
+2. **対応する単体テスト**を必ず作成する
+   - `src/components/` にコンポーネントテスト
+   - プロップス、イベント、レンダリング結果をテスト
+3. テストが全て通ることを確認
+   ```bash
+   npm test
+   ```
+
+#### 2. カスタムフック作成時
+1. **フック実装**を行う（.tsファイル）
+2. **renderHookを使った単体テスト**を作成
+   - `src/hooks/` にフックテスト
+   - 状態変更、副作用、戻り値をテスト
+3. テストが全て通ることを確認
+
+#### 3. APIサービス作成時
+1. **APIサービス実装**を行う（.tsファイル）
+2. **axiosモックを使った単体テスト**を作成
+   - `src/services/` にAPIテスト
+   - リクエスト・レスポンス・エラーハンドリングをテスト
+3. テストが全て通ることを確認
+
+#### 4. 既存機能修正時
+1. **機能修正**を行う
+2. **関連テストを実行**して影響確認
+   ```bash
+   npm test -- --testPathPattern=修正対象ファイル名
+   ```
+3. テストが失敗した場合、**テストコードを修正**する
+4. 全テストが通ることを確認
+
+#### 5. 機能削除時
+1. **機能削除**を行う
+2. **不要になったテスト**を削除する
+3. 残りのテストが全て通ることを確認
+   ```bash
+   npm test
    ```
 
 ### テストコード品質基準
