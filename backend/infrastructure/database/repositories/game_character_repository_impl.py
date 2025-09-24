@@ -1,14 +1,15 @@
 """
-統合ゲーム機体リポジトリ
+ゲーム機体リポジトリ実装
 """
 from typing import List, Optional
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 from domain.entities.game_character import GameCharacter
+from domain.repositories.game_character_repository import GameCharacterRepository
 
 
-class GameCharacterRepository:
-    """統合ゲーム機体リポジトリ"""
+class GameCharacterRepositoryImpl(GameCharacterRepository):
+    """ゲーム機体リポジトリ実装"""
     
     def __init__(self, session: Session):
         self.session = session

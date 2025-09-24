@@ -4,7 +4,8 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from infrastructure.repositories.game_character_repository import GameCharacterRepository
+from infrastructure.database.repositories.game_character_repository_impl import GameCharacterRepositoryImpl
+from domain.repositories.game_character_repository import GameCharacterRepository
 from infrastructure.database.connection import get_db
 from infrastructure.security.auth_middleware import get_current_user, get_optional_current_user
 from domain.entities.user import User
@@ -16,7 +17,7 @@ router = APIRouter()
 
 def get_game_character_repository(session: Session = Depends(get_db)) -> GameCharacterRepository:
     """ゲーム機体リポジトリを取得"""
-    return GameCharacterRepository(session)
+    return GameCharacterRepositoryImpl(session)
 
 
 @router.get("/{game_id}/characters", response_model=List[dict])
