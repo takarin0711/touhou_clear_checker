@@ -73,7 +73,6 @@ frontend/src/
 ├── contexts/
 │   └── AuthContext.test.tsx               # 認証コンテキストテスト（19テスト）
 ├── hooks/
-│   ├── useCharacters.test.ts              # useCharactersフックテスト（26テスト）
 │   ├── useClearRecords.test.ts            # useClearRecordsフックテスト（23テスト）
 │   └── useGames.test.ts                   # useGamesフックテスト（19テスト）
 ├── types/
@@ -81,8 +80,7 @@ frontend/src/
 └── services/
     ├── gameApi.test.ts                    # ゲームAPI通信テスト（11テスト）
     ├── authApi.test.ts                    # 認証API通信テスト（4テスト）
-    ├── clearRecordApi.test.ts             # クリア記録API通信テスト（52テスト）
-    └── characterApi.test.ts               # キャラクターAPI通信テスト（8テスト）
+    └── clearRecordApi.test.ts             # クリア記録API通信テスト（52テスト）
 ```
 
 #### テスト原則

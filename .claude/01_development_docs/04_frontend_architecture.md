@@ -440,14 +440,12 @@ export interface ClearRecord {
 - `authApi.test.ts` (4テスト): API通信、レスポンス処理
 
 **カスタムフックテスト**:
-- `useCharacters.test.ts` (26テスト): CRUD操作、検索、状態管理
 - `useClearRecords.test.ts` (23テスト): クリア記録管理、機体別条件送信
 - `useGames.test.ts` (19テスト): ゲーム一覧、フィルタリング、ソート
 
 **APIサービステスト**:
 - `gameApi.test.ts` (11テスト): ゲーム一覧取得、詳細情報取得
 - `clearRecordApi.test.ts` (23テスト): CRUD操作、バッチ処理、機体別条件送信
-- `characterApi.test.ts` (8テスト): キャラクター管理、権限テスト
 
 #### テスト実行コマンド
 ```bash

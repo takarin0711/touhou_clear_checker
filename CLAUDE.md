@@ -96,9 +96,10 @@ touhou_clear_checker/
 
 ## テスト構成
 ### バックエンド単体テスト（実装済み）
-- **計37個のテスト**が正常動作
-- **サービスレイヤー**: 26テスト（ゲーム・ユーザー管理のビジネスロジック）
-- **リポジトリレイヤー**: 11テスト（データアクセスの基本操作）
+- **計88個のテスト**が正常動作
+- **サービスレイヤー**: 51テスト（ゲーム・ユーザー・クリア記録管理のビジネスロジック）
+- **リポジトリレイヤー**: 28テスト（データアクセスの基本操作）
+- **APIレイヤー**: 14テスト（エンドポイントのテスト）
 - **技術スタック**: pytest + pytest-mock
 - **特徴**: 完全モック化により外部依存なし、高速実行（0.08秒）
 
@@ -108,7 +109,7 @@ touhou_clear_checker/
 - **ゲーム機能**: GameCard、gameApi、useGames（ゲーム管理・表示）
 - **認証機能**: LoginForm、AuthContext、authApi（認証状態・フォーム）
 - **クリア記録**: clearRecordApi、useClearRecords、IndividualTabClearForm（記録管理・API・UI）
-- **キャラクター**: characterApi、useCharacters（キャラクター管理）
+- **ゲーム機体**: gameCharacterApi、useGameCharacters（ゲーム機体管理）
 - **難易度システム**: difficulty.ts（ゲーム別難易度制御・特殊ケース対応）
 - **妖精大戦争特殊対応**: ルート別表示・タブ切り替え・表記変更のテスト
 - **技術スタック**: React Testing Library + Jest
@@ -184,7 +185,7 @@ python scripts/initialize_database.py --verify
 # ゲームデータのみ再投入
 python scripts/initialize_database.py --games-only
 
-# キャラクターデータのみ再投入
+# ゲーム機体データのみ再投入
 python scripts/initialize_database.py --characters-only
 
 # ヘルプ表示
