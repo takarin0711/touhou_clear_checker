@@ -276,11 +276,25 @@ INSERT INTO game_characters (game_id, character_name, description, sort_order) V
 (7, '早苗B（高威力＆広範囲炸裂型）', '爆発エフェクト・近距離最強火力', 6);
 ```
 
-#### 東方妖精大戦争（12.8作目）
+#### 東方妖精大戦争（12.8作目）- 特殊仕様対応
 ```sql
 INSERT INTO game_characters (game_id, character_name, description, sort_order) VALUES
-(8, 'チルノ', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 1);
+(8, 'チルノ（Route A1）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 1),
+(8, 'チルノ（Route A2）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 2),
+(8, 'チルノ（Route B1）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 3),
+(8, 'チルノ（Route B2）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 4),
+(8, 'チルノ（Route C1）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 5),
+(8, 'チルノ（Route C2）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 6),
+(8, 'チルノ（Extra）', 'アイスバリア・フリージング機能・パワーLv.1-15→MAX', 7);
 ```
+
+**妖精大戦争特殊仕様:**
+- **データ構造**: Route A1〜C2（6機体）+ Extra（1機体）の合計7機体
+- **フロントエンド表示制御**:
+  - Easy/Normal/Hard/Lunaticタブ: Route A1〜C2のみ表示
+  - Extraタブ: Extra機体のみ表示
+- **表記変更**: 「機体別」→「ルート別」での統一表記
+- **実装箇所**: `IndividualTabClearForm.tsx`でgame_id=8による条件分岐
 
 #### 東方神霊廟（13作目）
 ```sql

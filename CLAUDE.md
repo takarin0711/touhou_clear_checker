@@ -103,12 +103,14 @@ touhou_clear_checker/
 - **特徴**: 完全モック化により外部依存なし、高速実行（0.08秒）
 
 ### フロントエンド単体テスト（実装済み）
-- **計13個のテストファイル**、**100+個のテスト**が正常動作
+- **計15個のテストファイル**、**320+個のテスト**が正常動作
 - **共通コンポーネント**: Button、Input、Badge（UI操作・スタイリング）
 - **ゲーム機能**: GameCard、gameApi、useGames（ゲーム管理・表示）
 - **認証機能**: LoginForm、AuthContext、authApi（認証状態・フォーム）
-- **クリア記録**: clearRecordApi、useClearRecords（記録管理・API）
+- **クリア記録**: clearRecordApi、useClearRecords、IndividualTabClearForm（記録管理・API・UI）
 - **キャラクター**: characterApi、useCharacters（キャラクター管理）
+- **難易度システム**: difficulty.ts（ゲーム別難易度制御・特殊ケース対応）
+- **妖精大戦争特殊対応**: ルート別表示・タブ切り替え・表記変更のテスト
 - **技術スタック**: React Testing Library + Jest
 - **特徴**: TypeScript型安全性、UI/UX動作検証、API通信テスト
 
@@ -192,10 +194,36 @@ python scripts/initialize_database.py --help
 ### データベース構成
 - **ファイル**: `backend/touhou_clear_checker.db` (SQLite3)
 - **ゲーム数**: 16作品（東方紅魔郷〜東方錦上京）
-- **機体数**: 120種類（全作品の機体を網羅）
+- **機体数**: 141種類（全作品の機体を網羅、妖精大戦争の特殊構造対応済み）
 - **テーブル**: users, games, game_characters, clear_records, game_memos
 - **メール認証**: email_verified, verification_token等のカラム対応済み
+- **妖精大戦争特殊対応**: Route A1〜C2（6機体）+ Extra（1機体）の合計7機体
 
 ### スクリプト整理状況
 - **現在**: `initialize_database.py` - 統合された一括初期化スクリプト
 - **廃止**: `deprecated_scripts/` - 旧スクリプト群を移動済み
+
+## 妖精大戦争特殊仕様対応
+
+### 概要
+妖精大戦争（ゲームID: 8）では、他の東方シリーズと異なる特殊なデータ構造と表示ロジックを採用
+
+### データ構造
+- **Route機体**: チルノ（Route A1）〜チルノ（Route C2）の6機体
+- **Extra機体**: チルノ（Extra）の1機体
+- **合計**: 7機体（他作品は通常4〜16機体）
+
+### フロントエンド表示ロジック
+- **Easy/Normal/Hard/Lunaticタブ**: Route A1〜C2の6機体のみ表示
+- **Extraタブ**: Extra機体のみ表示
+- **表記変更**: 「機体別」→「ルート別」（条件登録、条件設定、テーブルヘッダー）
+
+### 実装箇所
+- **コンポーネント**: `IndividualTabClearForm.tsx`
+- **フィルタリングロジック**: ゲームID=8での条件分岐
+- **表記変更**: `game.id === 8`での動的テキスト切り替え
+
+### テストカバレッジ
+- **UI表示テスト**: 17個のテストケース
+- **タブ切り替え**: Easy〜Extraでの機体表示確認
+- **表記変更**: ルート別表記の正確性検証

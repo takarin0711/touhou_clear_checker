@@ -224,7 +224,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
           </div>
         )}
 
-        {/* 機体別条件登録フォーム表示 */}
+        {/* 機体別条件登録フォーム表示（妖精大戦争はルート別条件登録フォーム表示） */}
         {showIndividualForm && (
           <div className="mb-6">
             <IndividualTabClearForm

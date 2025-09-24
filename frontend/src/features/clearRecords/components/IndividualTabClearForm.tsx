@@ -214,7 +214,9 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
     <div className="bg-white rounded-lg shadow-lg p-6">
       {/* ヘッダー */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xl font-bold text-gray-900">機体別条件登録</h3>
+        <h3 className="text-xl font-bold text-gray-900">
+          {game.id === 8 ? 'ルート別条件登録' : '機体別条件登録'}
+        </h3>
         <Button onClick={onClose} variant="outline" size="small">
           閉じる
         </Button>
@@ -303,17 +305,19 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
         </div>
       </div>
 
-      {/* 機体別条件設定テーブル */}
+      {/* 機体別条件設定テーブル（妖精大戦争はルート別条件設定テーブル） */}
       {currentModeData[activeTab] && (
         <div className="mb-6">
-          <h4 className="text-lg font-medium text-gray-900 mb-4">{activeTab} - 機体別条件設定</h4>
+          <h4 className="text-lg font-medium text-gray-900 mb-4">
+            {activeTab} - {game.id === 8 ? 'ルート別条件設定' : '機体別条件設定'}
+          </h4>
           
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    機体
+                    {game.id === 8 ? 'ルート' : '機体'}
                   </th>
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     クリア
@@ -347,7 +351,25 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {characters.map((character, index) => (
+                {/* 妖精大戦争の特殊表示ロジック：Easy〜LunaticはRoute A1〜C2、ExtraはExtraのみ */}
+                {(() => {
+                  let displayCharacters = characters;
+                  
+                  if (game.id === 8) { // 妖精大戦争
+                    if (activeTab === 'Extra') {
+                      // Extraタブでは「チルノ（Extra）」のみ表示
+                      displayCharacters = characters.filter(char => 
+                        char.character_name.includes('Extra')
+                      );
+                    } else {
+                      // Easy, Normal, Hard, LunaticタブではRoute A1〜C2のみ表示
+                      displayCharacters = characters.filter(char => 
+                        char.character_name.includes('Route')
+                      );
+                    }
+                  }
+                  
+                  return displayCharacters.map((character, index) => (
                   <tr key={character.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {character.character_name}
@@ -419,7 +441,8 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
                       </td>
                     )}
                   </tr>
-                ))}
+                  ));
+                })()}
               </tbody>
             </table>
           </div>

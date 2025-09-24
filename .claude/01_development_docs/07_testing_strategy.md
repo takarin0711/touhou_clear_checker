@@ -47,7 +47,7 @@ python -m pytest tests/unit/repositories/ -v
 ### 2. フロントエンド単体テスト（Unit Test）✅実装済み
 **対象**: コンポーネント、フック、APIサービス  
 **目的**: UI/UXとフロントエンドロジックの品質保証  
-**実装状況**: 143テスト（コンポーネント56 + フック79 + APIサービス8）
+**実装状況**: 320+テスト（コンポーネント95 + フック130 + APIサービス95 + ユーティリティ26）
 
 #### 技術スタック
 - **React Testing Library**: コンポーネントテストライブラリ
@@ -66,18 +66,22 @@ frontend/src/
 ├── features/
 │   ├── games/components/
 │   │   └── GameCard.test.tsx              # GameCardコンポーネントテスト（17テスト）
-│   └── auth/components/
-│       └── LoginForm.test.tsx             # LoginFormコンポーネントテスト（13テスト）
+│   ├── auth/components/
+│   │   └── LoginForm.test.tsx             # LoginFormコンポーネントテスト（13テスト）
+│   └── clearRecords/components/
+│       └── IndividualTabClearForm.test.tsx # 妖精大戦争特殊対応テスト（17テスト）
 ├── contexts/
 │   └── AuthContext.test.tsx               # 認証コンテキストテスト（19テスト）
 ├── hooks/
 │   ├── useCharacters.test.ts              # useCharactersフックテスト（26テスト）
 │   ├── useClearRecords.test.ts            # useClearRecordsフックテスト（23テスト）
 │   └── useGames.test.ts                   # useGamesフックテスト（19テスト）
+├── types/
+│   └── difficulty.test.ts                 # 難易度ユーティリティテスト（26テスト）
 └── services/
     ├── gameApi.test.ts                    # ゲームAPI通信テスト（11テスト）
     ├── authApi.test.ts                    # 認証API通信テスト（4テスト）
-    ├── clearRecordApi.test.ts             # クリア記録API通信テスト（23テスト）
+    ├── clearRecordApi.test.ts             # クリア記録API通信テスト（52テスト）
     └── characterApi.test.ts               # キャラクターAPI通信テスト（8テスト）
 ```
 
@@ -86,6 +90,18 @@ frontend/src/
 - **モック活用**: axios、localStorage、外部依存関係を完全モック
 - **ユーザー視点**: 実際のユーザー操作パターンを重視
 - **型安全テスト**: TypeScriptでの型安全なテストコード
+
+#### 妖精大戦争特殊対応テスト
+**目的**: 妖精大戦争の特殊表示ロジック・表記変更の品質保証
+
+**主要テストケース**:
+- **ルート別表示**: Easy〜Lunaticタブで Route A1〜C2 のみ表示
+- **Extra表示**: Extraタブで Extra機体のみ表示
+- **表記変更**: 「機体別」→「ルート別」の動的テキスト切り替え
+- **タブ切り替え**: 難易度タブによる表示機体の正確な変更
+- **モック対応**: useClearRecords・useGameCharactersの完全モック
+
+**実装場所**: `IndividualTabClearForm.test.tsx`（17テスト）
 
 #### テスト実行コマンド
 ```bash
