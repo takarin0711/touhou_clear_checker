@@ -1,5 +1,5 @@
 import api from '../../../services/api';
-import { GameCharacter, GameCharacterFormData, GameCharacterCount } from '../../../types/gameCharacter';
+import { GameCharacter, GameCharacterFormData, GameCharacterCount, GameCharacterListResponse } from '../../../types/gameCharacter';
 
 /**
  * ゲーム機体API関連の関数（統合game_charactersテーブル対応）
@@ -11,8 +11,8 @@ export const gameCharacterApi = {
    * @returns 機体一覧
    */
   getGameCharacters: async (gameId: number): Promise<GameCharacter[]> => {
-    const response = await api.get(`/game-characters/${gameId}/characters`);
-    return response.data;
+    const response = await api.get<GameCharacterListResponse>(`/game-characters/${gameId}/characters`);
+    return response.data.game_characters;
   },
 
   /**

@@ -6,9 +6,9 @@
 ## テスト構成
 
 ### 1. バックエンド単体テスト（Unit Test）✅実装済み
-**対象**: サービスレイヤー、リポジトリレイヤー  
+**対象**: サービスレイヤー、リポジトリレイヤー、APIレイヤー  
 **目的**: ビジネスロジックとデータアクセスの品質保証  
-**実装状況**: 37テスト（サービス26 + リポジトリ11）
+**実装状況**: 104テスト（サービス67 + リポジトリ28 + API14）
 
 #### 技術スタック
 - **pytest 8.3.4**: テストフレームワーク
@@ -22,17 +22,23 @@ backend/tests/
 ├── pytest.ini          # pytest設定
 ├── requirements-dev.txt # テスト依存関係
 └── unit/
+    ├── api/             # APIレイヤーテスト
+    │   └── test_clear_records.py
     ├── services/        # サービスレイヤーテスト
     │   ├── test_game_service.py
-    │   └── test_user_service.py
+    │   ├── test_game_character_service.py  # ゲーム機体サービステスト（16テスト）
+    │   ├── test_user_service.py
+    │   └── test_clear_record_service.py
     └── repositories/    # リポジトリレイヤーテスト
-        └── test_game_repository.py
+        ├── test_game_repository.py
+        └── test_clear_record_repository.py
 ```
 
 #### テスト原則
 - **完全モック化**: 外部依存（DB、API）を完全にモック
-- **高速実行**: 全37テストが0.08秒で完了
+- **高速実行**: 全104テストが0.22秒で完了
 - **包括的カバレッジ**: 正常系・異常系・境界値テスト
+- **レイヤード構造**: 各レイヤーの責務に対応したテスト分離
 
 #### テスト実行コマンド
 ```bash

@@ -24,11 +24,13 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── user.py         # ユーザーエンティティ
 │   │   ├── game.py         # ゲームエンティティ
+│   │   ├── game_character.py # ゲーム機体エンティティ
 │   │   └── clear_record.py # クリア記録エンティティ
 │   ├── repositories/       # リポジトリインターフェース
 │   │   ├── __init__.py
 │   │   ├── user_repository.py
 │   │   ├── game_repository.py
+│   │   ├── game_character_repository.py
 │   │   └── clear_record_repository.py
 │   └── value_objects/      # 値オブジェクト
 │       ├── __init__.py
@@ -39,11 +41,13 @@ backend/
 │   │   ├── __init__.py
 │   │   ├── user_service.py     # ユーザー管理サービス
 │   │   ├── game_service.py     # ゲーム管理サービス
+│   │   ├── game_character_service.py # ゲーム機体管理サービス
 │   │   └── clear_record_service.py # クリア記録管理サービス
 │   └── dtos/              # データ転送オブジェクト
 │       ├── __init__.py
 │       ├── user_dto.py         # ユーザーDTO
 │       ├── game_dto.py         # ゲームDTO
+│       ├── game_character_dto.py # ゲーム機体DTO
 │       └── clear_record_dto.py # クリア記録DTO
 ├── infrastructure/        # インフラストラクチャ層
 │   ├── __init__.py
@@ -54,11 +58,13 @@ backend/
 │   │   │   ├── __init__.py
 │   │   │   ├── user_model.py      # ユーザーモデル
 │   │   │   ├── game_model.py      # ゲームモデル
+│   │   │   ├── game_character_model.py # ゲーム機体モデル
 │   │   │   └── clear_record_model.py # クリア記録モデル
 │   │   └── repositories/ # リポジトリ実装
 │   │       ├── __init__.py
 │   │       ├── user_repository_impl.py
 │   │       ├── game_repository_impl.py
+│   │       ├── game_character_repository_impl.py
 │   │       └── clear_record_repository_impl.py
 │   └── security/         # セキュリティ関連
 │       ├── __init__.py
@@ -73,6 +79,7 @@ backend/
 │   │   │   ├── __init__.py
 │   │   │   ├── users.py       # ユーザーAPI（自分の情報のみ）
 │   │   │   ├── games.py       # ゲームAPI（読み取り専用）
+│   │   │   ├── game_characters.py # ゲーム機体API
 │   │   │   ├── clear_records.py # クリア記録API
 │   │   │   └── admin.py       # 管理者専用API
 │   │   └── dependencies.py    # 依存関係注入
@@ -80,6 +87,7 @@ backend/
 │       ├── __init__.py
 │       ├── user_schema.py     # ユーザースキーマ
 │       ├── game_schema.py     # ゲームスキーマ
+│       ├── game_character_schema.py # ゲーム機体スキーマ
 │       └── clear_record_schema.py # クリア記録スキーマ
 ├── scripts/              # マイグレーション・ユーティリティ
 │   ├── __init__.py
@@ -192,9 +200,9 @@ const authState = {
 - 管理者専用API
 
 ✅ **テスト**
-- 単体テスト（37テスト、サービス層・リポジトリ層）
+- 単体テスト（104テスト、サービス層・リポジトリ層・API層）
 - pytest + モック化
-- 高速実行（0.08秒）
+- 高速実行（0.22秒）
 
 ### フロントエンド
 ✅ **認証システム**

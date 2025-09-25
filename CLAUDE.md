@@ -96,12 +96,12 @@ touhou_clear_checker/
 
 ## テスト構成
 ### バックエンド単体テスト（実装済み）
-- **計88個のテスト**が正常動作
-- **サービスレイヤー**: 51テスト（ゲーム・ユーザー・クリア記録管理のビジネスロジック）
+- **計104個のテスト**が正常動作
+- **サービスレイヤー**: 67テスト（ゲーム・ユーザー・クリア記録・ゲーム機体管理のビジネスロジック）
 - **リポジトリレイヤー**: 28テスト（データアクセスの基本操作）
 - **APIレイヤー**: 14テスト（エンドポイントのテスト）
 - **技術スタック**: pytest + pytest-mock
-- **特徴**: 完全モック化により外部依存なし、高速実行（0.08秒）
+- **特徴**: 完全モック化により外部依存なし、高速実行（0.22秒）
 
 ### フロントエンド単体テスト（実装済み）
 - **計15個のテストファイル**、**320+個のテスト**が正常動作
@@ -131,7 +131,7 @@ touhou_clear_checker/
 
 ### 主要な型定義
 - **認証系**: User, LoginCredentials, RegisterData, AuthContextType
-- **ゲーム系**: Game, GameFilter, GameListResponse, GameCharacter
+- **ゲーム系**: Game, GameFilter, GameListResponse, GameCharacter, GameCharacterListResponse
 - **クリア記録系**: ClearRecord, ClearRecordFormData, IndividualConditionData
 - **共通コンポーネント**: ButtonProps, InputProps, BadgeProps
 
@@ -228,3 +228,35 @@ python scripts/initialize_database.py --help
 - **UI表示テスト**: 17個のテストケース
 - **タブ切り替え**: Easy〜Extraでの機体表示確認
 - **表記変更**: ルート別表記の正確性検証
+
+## ゲーム機体レイヤード構造改善（2025年9月完了）
+
+### 改善概要
+game_characterエンティティのアーキテクチャを他のエンティティと統一し、レイヤード設計原則に準拠
+
+### 改善前の問題
+- **設計原則違反**: Presentation層がDomain層を直接呼び出し
+- **Application層欠如**: ビジネスロジックが分散、DTOが未実装
+- **型安全性不足**: Pydanticスキーマによる検証が不十分
+- **テスト不足**: 単体テストが全く存在しない状態
+
+### 改善後の構造
+#### バックエンド（完全レイヤード化）
+- **Application層**: `game_character_service.py`（ビジネスロジック）、`game_character_dto.py`（データ転送）
+- **Infrastructure層**: `game_character_model.py`（SQLAlchemyモデル）
+- **Presentation層**: `game_character_schema.py`（入力検証）、APIをService経由に修正
+- **テスト層**: `test_game_character_service.py`（16個の包括的テスト）
+
+#### フロントエンド（API連携修正）
+- **型定義**: `GameCharacterListResponse`追加（新しいAPIレスポンス形式対応）
+- **API修正**: `gameCharacterApi.ts`でレスポンス形式変更に対応
+
+### 効果・利点
+- **統一性**: 他エンティティ（game、user、clear_record）と同じ層構成を実現
+- **保守性**: ビジネスロジックがService層に集約、責務が明確化
+- **品質向上**: 16個のテストでエラーケース含む全機能を網羅
+- **型安全性**: バックエンドとフロントエンド間のデータ形式検証強化
+
+### テスト結果
+- **新規テスト**: 16個 ✅ 全成功（game_character_service）
+- **全体テスト**: 104個 ✅ 全成功（既存機能に影響なし）

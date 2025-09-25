@@ -35,6 +35,16 @@ export interface GameCharacterFormData {
 }
 
 /**
+ * ゲーム機体一覧レスポンス
+ */
+export interface GameCharacterListResponse {
+  /** ゲーム機体一覧 */
+  game_characters: GameCharacter[];
+  /** 総数 */
+  total_count: number;
+}
+
+/**
  * ゲーム機体数情報
  */
 export interface GameCharacterCount {

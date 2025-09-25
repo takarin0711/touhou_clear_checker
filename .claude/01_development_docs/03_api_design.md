@@ -117,6 +117,103 @@
 }
 ```
 
+### ゲーム機体関連
+
+#### GET /api/v1/game-characters/{game_id}/characters
+指定ゲームの機体一覧を取得（認証不要）
+
+**Path Parameters:**
+- `game_id` (int): ゲームID
+
+**Response:**
+```json
+{
+  "game_characters": [
+    {
+      "id": 1,
+      "game_id": 1,
+      "character_name": "霊夢A（霊の御札）",
+      "description": "ホーミングアミュレット・霊力重視タイプ",
+      "sort_order": 1,
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ],
+  "total_count": 4
+}
+```
+
+#### GET /api/v1/game-characters/characters/{character_id}
+機体IDで機体詳細を取得（認証不要）
+
+**Path Parameters:**
+- `character_id` (int): 機体ID
+
+**Response:**
+```json
+{
+  "id": 1,
+  "game_id": 1,
+  "character_name": "霊夢A（霊の御札）",
+  "description": "ホーミングアミュレット・霊力重視タイプ",
+  "sort_order": 1,
+  "created_at": "2024-01-01T00:00:00Z"
+}
+```
+
+#### POST /api/v1/game-characters/{game_id}/characters
+新しいゲーム機体を作成（管理者のみ）
+
+**Path Parameters:**
+- `game_id` (int): ゲームID
+
+**Request Body:**
+```json
+{
+  "character_name": "魔理沙A（魔の御札）",
+  "description": "マジックミサイル・魔力重視タイプ",
+  "sort_order": 3
+}
+```
+
+**Response:** 作成された機体情報（上記GET詳細と同形式）
+
+#### PUT /api/v1/game-characters/characters/{character_id}
+ゲーム機体を更新（管理者のみ）
+
+**Path Parameters:**
+- `character_id` (int): 機体ID
+
+**Request Body:** POST時と同形式
+
+**Response:** 更新された機体情報
+
+#### DELETE /api/v1/game-characters/characters/{character_id}
+ゲーム機体を削除（管理者のみ）
+
+**Path Parameters:**
+- `character_id` (int): 機体ID
+
+**Response:**
+```json
+{
+  "message": "機体が削除されました"
+}
+```
+
+#### GET /api/v1/game-characters/{game_id}/characters/count
+ゲーム別機体数を取得（認証不要）
+
+**Path Parameters:**
+- `game_id` (int): ゲームID
+
+**Response:**
+```json
+{
+  "game_id": 1,
+  "character_count": 4
+}
+```
+
 ### クリア記録関連
 
 #### GET /api/clear-records
