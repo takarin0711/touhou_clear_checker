@@ -4,15 +4,17 @@
 
 メール認証システムは、新規ユーザー登録時にメールアドレスの有効性を確認し、認証済みユーザーのみログインを許可するセキュリティ機能です。
 
-### 実装アーキテクチャ
-- **バックエンド**: FastAPI + SQLAlchemy + MockEmailService/SMTPEmailService
+### 実装アーキテクチャ（2025年9月レイヤード化対応）
+- **Application層**: EmailService（ビジネスロジック）
+- **Infrastructure層**: SMTPEmailSender（SMTP技術実装）、MockEmailSender（開発用モック）
+- **バックエンド**: FastAPI + SQLAlchemy + レイヤード設計
 - **フロントエンド**: React + TypeScript + カスタムURL処理
 - **データベース**: SQLite (usersテーブル拡張)
 - **認証方式**: 64文字の安全なトークン + 24時間有効期限
 
 ### 環境別動作
-- **開発環境**: MockEmailService（実メール送信なし、コンソール出力）
-- **本番環境**: SMTPEmailService（実際のメール送信）
+- **開発環境**: MockEmailSender（実メール送信なし、コンソール出力）
+- **本番環境**: SMTPEmailSender（実際のメール送信）
 
 ## 開発環境でのテスト手順
 

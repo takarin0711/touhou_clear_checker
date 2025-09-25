@@ -5,7 +5,8 @@ from application.dtos.user_dto import CreateUserDto, UpdateUserDto, UserResponse
 from infrastructure.security.password_hasher import PasswordHasher
 from infrastructure.security.jwt_handler import JWTHandler
 from infrastructure.security.token_generator import TokenGenerator
-from infrastructure.email.email_service import EmailService, MockEmailService
+from application.services.email_service import EmailService, EmailSender, MockEmailSender
+from infrastructure.email.smtp_email_sender import SMTPEmailSender
 import os
 
 
@@ -19,10 +20,11 @@ class UserService:
         if email_service:
             self.email_service = email_service
         elif os.getenv("ENVIRONMENT") == "production":
-            from infrastructure.email.email_service import SMTPEmailService
-            self.email_service = SMTPEmailService()
+            smtp_sender = SMTPEmailSender()
+            self.email_service = EmailService(smtp_sender)
         else:
-            self.email_service = MockEmailService()
+            mock_sender = MockEmailSender()
+            self.email_service = EmailService(mock_sender)
 
     def create_user(self, create_dto: CreateUserDto) -> UserResponseDto:
         existing_user = self.user_repository.get_by_username(create_dto.username)

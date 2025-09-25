@@ -13,16 +13,17 @@ class TestUserService:
         
         with patch('application.services.user_service.PasswordHasher') as mock_hasher_class, \
              patch('application.services.user_service.JWTHandler') as mock_jwt_class, \
-             patch('application.services.user_service.MockEmailService') as mock_email_class, \
+             patch('application.services.user_service.MockEmailSender') as mock_email_sender_class, \
              patch('application.services.user_service.TokenGenerator') as mock_token_gen_class:
             
             self.mock_password_hasher = Mock()
             self.mock_jwt_handler = Mock()
+            self.mock_email_sender = Mock()
             self.mock_email_service = Mock()
             self.mock_token_generator = Mock()
             mock_hasher_class.return_value = self.mock_password_hasher
             mock_jwt_class.return_value = self.mock_jwt_handler
-            mock_email_class.return_value = self.mock_email_service
+            mock_email_sender_class.return_value = self.mock_email_sender
             mock_token_gen_class.return_value = self.mock_token_generator
             # TokenGeneratorは静的メソッドなのでクラス自体をモック
             mock_token_gen_class.generate_token_with_expiry.return_value = ("test_token", datetime.now())

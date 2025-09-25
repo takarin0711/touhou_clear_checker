@@ -42,7 +42,8 @@ backend/
 │   │   ├── user_service.py     # ユーザー管理サービス
 │   │   ├── game_service.py     # ゲーム管理サービス
 │   │   ├── game_character_service.py # ゲーム機体管理サービス
-│   │   └── clear_record_service.py # クリア記録管理サービス
+│   │   ├── clear_record_service.py # クリア記録管理サービス
+│   │   └── email_service.py    # メール送信サービス
 │   └── dtos/              # データ転送オブジェクト
 │       ├── __init__.py
 │       ├── user_dto.py         # ユーザーDTO
@@ -66,11 +67,15 @@ backend/
 │   │       ├── game_repository_impl.py
 │   │       ├── game_character_repository_impl.py
 │   │       └── clear_record_repository_impl.py
+│   ├── email/             # メール送信関連
+│   │   ├── __init__.py
+│   │   └── smtp_email_sender.py # SMTP実装
 │   └── security/         # セキュリティ関連
 │       ├── __init__.py
 │       ├── auth_middleware.py  # JWT認証ミドルウェア
 │       ├── password_hasher.py  # パスワードハッシュ化
-│       └── jwt_handler.py      # JWTトークン処理
+│       ├── jwt_handler.py      # JWTトークン処理
+│       └── token_generator.py  # 認証トークン生成
 ├── presentation/          # プレゼンテーション層
 │   ├── __init__.py
 │   ├── api/
