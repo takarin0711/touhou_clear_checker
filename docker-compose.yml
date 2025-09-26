@@ -1,0 +1,65 @@
+services:
+  # バックエンド（FastAPI）
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      # ソースコードのホットリロード用
+      - ./backend:/app
+      # SQLiteデータベースの永続化
+      - ./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db
+      # venv313は除外（Dockerコンテナ内でPython環境を管理）
+      - /app/venv313
+      - /app/venv39
+    environment:
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    depends_on:
+      - db-init
+    networks:
+      - touhou-network
+
+  # フロントエンド（React）
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      # ソースコードのホットリロード用
+      - ./frontend:/app
+      # node_modulesは除外（Dockerコンテナ内で管理）
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - CHOKIDAR_USEPOLLING=true  # ファイル変更検知の改善
+    depends_on:
+      - backend
+    networks:
+      - touhou-network
+
+  # データベース初期化サービス（一回のみ実行）
+  db-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+      - ./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db
+    environment:
+      - PYTHONPATH=/app
+    command: python scripts/initialize_database.py --verify
+    networks:
+      - touhou-network
+
+networks:
+  touhou-network:
+    driver: bridge
+
+volumes:
+  # SQLiteデータベース永続化用（名前付きボリューム）
+  db-data:
