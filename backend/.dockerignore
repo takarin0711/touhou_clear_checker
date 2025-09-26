@@ -1,0 +1,45 @@
+# Python仮想環境
+venv313/
+venv39/
+venv/
+.venv/
+
+# Python キャッシュファイル
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# テストカバレッジ
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+
+# IDEファイル
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ログファイル
+*.log
+logs/
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# ドキュメント
+README.md
+CLAUDE.md
+
+# Docker関連
+Dockerfile
+.dockerignore

@@ -6,13 +6,14 @@
 ```
 
 ## 技術スタック
-- **フロントエンド**: React 18.2.0, axios, CSS
+- **フロントエンド**: React 18.2.0, TypeScript 5.9.2, axios
 - **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9
 - **認証**: JWT (python-jose), Argon2 (argon2-cffi), passlib
 - **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性
 - **データベース**: SQLite（開発環境）
 - **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
+- **コンテナ**: Docker + Docker Compose
 
 ## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
 ```
@@ -140,8 +141,15 @@ frontend/
 ```
 touhou_clear_checker/
 ├── backend/               # DDD/Clean Architecture
+│   ├── Dockerfile        # バックエンドコンテナ設定
+│   └── .dockerignore     # Docker除外設定
 ├── frontend/              # Feature-Based + React Context
-└── .claude/              # Claude用ドキュメント
+│   ├── Dockerfile        # フロントエンドコンテナ設定
+│   └── .dockerignore     # Docker除外設定
+├── docker-compose.yml     # 開発環境Docker構成
+├── .claude/              # Claude用ドキュメント
+├── CLAUDE.md             # 詳細開発ドキュメント
+└── README.md             # プロジェクト概要
 ```
 
 ## APIエンドポイント設計
@@ -230,3 +238,56 @@ const authState = {
 🔄 **ゲーム一覧表示機能**
 🔄 **クリア状況管理機能**
 🔄 **管理者画面**
+
+## Docker環境設計（2025年9月実装完了）
+
+### 開発環境アーキテクチャ
+```
+Docker Compose Environment
+├── backend (Python 3.13)
+│   ├── FastAPI Application (Port: 8000)
+│   ├── SQLite Database (Volume Mounted)
+│   └── Hot Reload Enabled
+├── frontend (Node.js 18)
+│   ├── React + TypeScript (Port: 3000)
+│   ├── Development Server
+│   └── Hot Reload Enabled
+└── Network: touhou-network
+    └── Internal Communication
+```
+
+### Docker構成仕様
+
+#### バックエンドコンテナ
+- **ベースイメージ**: `python:3.13-slim`
+- **作業ディレクトリ**: `/app`
+- **ポートマッピング**: `8000:8000`
+- **ボリューム**:
+  - ソースコード: `./backend:/app`
+  - データベース: `./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db`
+- **環境変数**: `PYTHONPATH=/app`, `ENVIRONMENT=development`
+- **特徴**: ホットリロード、依存関係分離
+
+#### フロントエンドコンテナ
+- **ベースイメージ**: `node:18-alpine`
+- **作業ディレクトリ**: `/app`
+- **ポートマッピング**: `3000:3000`
+- **ボリューム**:
+  - ソースコード: `./frontend:/app`
+  - Node modules除外: `/app/node_modules`
+- **環境変数**: 
+  - `REACT_APP_API_URL=http://localhost:8000`
+  - `CHOKIDAR_USEPOLLING=true`
+- **特徴**: TypeScript 5.x対応、react-scripts警告解消
+
+### 環境選択肢
+1. **ネイティブ環境** (従来): 直接Python/Node.js実行
+2. **Docker環境** (新規): コンテナ化統一環境
+3. **ハイブリッド** (推奨): 開発ネイティブ、本番Docker
+
+### 運用上の利点
+- **環境統一**: Mac開発→Linux本番の差異解消
+- **依存関係管理**: ホスト環境汚染の回避
+- **チーム開発**: 開発者間環境差異の完全排除
+- **CI/CD**: 本番環境との一貫性確保
+- **スケーラビリティ**: 水平スケーリング対応準備

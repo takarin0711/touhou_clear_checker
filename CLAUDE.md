@@ -30,6 +30,12 @@
 - パッケージマネージャー：npm (frontend), pip (backend)
 - **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 2.11.9で互換性問題解決
 - **TypeScript化完了**: 2025年1月にフロントエンドを完全TypeScript化、型安全性と保守性が向上
+- **Docker対応済み**: 開発環境のコンテナ化完了、本番デプロイ準備完了
+
+### 開発環境の選択肢
+1. **ネイティブ環境** (従来): Python 3.13 + venv313, Node.js + npm
+2. **Docker環境** (新規): コンテナ化された統一環境
+3. **併用**: 開発はネイティブ、本番デプロイはDocker
 
 ## よく使用するコマンド
 
@@ -48,6 +54,16 @@
 - 依存関係インストール: `cd frontend && npm install`
 - ビルド: `cd frontend && npm run build`
 - 単体テスト実行: `cd frontend && npm test`
+
+### Docker開発環境
+- **全体起動**: `docker compose up --build`
+- **バックグラウンド起動**: `docker compose up -d --build`
+- **停止**: `docker compose down`
+- **ログ確認**: `docker compose logs -f [service名]`
+- **サービス別起動**: `docker compose up [backend|frontend]`
+- **データベース初期化**: `docker compose run --rm backend python scripts/initialize_database.py --fresh`
+- **コンテナ内シェル**: `docker compose exec [backend|frontend] sh`
+- **アクセスURL**: フロントエンド http://localhost:3000, バックエンド http://localhost:8000
 - 特定テスト実行: `cd frontend && npm test -- --testPathPattern="Button.test" --watchAll=false`
 - 型チェック: `cd frontend && npx tsc --noEmit`
 - **注意**: ブラウザキャッシュが原因でエラーが出る場合は、ハードリフレッシュ（Cmd+Shift+R）またはシークレットモードでアクセス
@@ -287,3 +303,48 @@ EmailServiceのアーキテクチャを他のエンティティと統一し、�
 ### テスト結果
 - **新規テスト**: 7個 ✅ 全成功（EmailService、MockEmailSender）
 - **全体テスト**: 111個 ✅ 全成功（既存機能に影響なし）
+
+## Docker環境仕様（2025年9月完了）
+
+### 概要
+開発環境のコンテナ化により、環境差異を解消し、本番デプロイの準備を完了
+
+### Docker構成
+- **docker-compose.yml**: 開発環境の統合構成
+- **backend/Dockerfile**: Python 3.13 + FastAPI環境
+- **frontend/Dockerfile**: Node.js 18 + React + TypeScript環境
+- **.dockerignore**: 各環境の最適化設定
+
+### 技術仕様
+#### バックエンドコンテナ
+- **ベースイメージ**: python:3.13-slim
+- **ポート**: 8000（ホスト側も同一）
+- **ボリューム**: ソースコード + SQLiteデータベース永続化
+- **特徴**: ホットリロード、完全な依存関係分離
+
+#### フロントエンドコンテナ
+- **ベースイメージ**: node:18-alpine
+- **ポート**: 3000（ホスト側も同一）
+- **ボリューム**: ソースコード（node_modules除外）
+- **特徴**: TypeScript 5.x対応、react-scripts警告解消
+
+### ネットワーク構成
+- **プライベートネットワーク**: `touhou-network`
+- **サービス間通信**: コンテナ名での名前解決
+- **外部アクセス**: localhost経由でのポートマッピング
+
+### データ永続化
+- **SQLite**: ホスト側ファイルシステムに永続保存
+- **開発データ**: コンテナ再作成時も保持
+- **ログ**: `docker compose logs`で統合確認可能
+
+### 運用上の利点
+- **環境統一**: Mac開発 → Linux本番の差異解消
+- **依存関係管理**: コンテナ内で完結、ホスト環境への影響なし
+- **スケーラビリティ**: 本番環境への段階的移行が容易
+- **チーム開発**: 開発者間での環境差異を完全排除
+
+### 既存環境との関係
+- **併用可能**: ネイティブ環境（venv313）と並行利用
+- **ポート競合回避**: 既存プロセス停止後にDocker起動
+- **段階的移行**: 開発段階での選択的利用が可能
