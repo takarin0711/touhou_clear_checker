@@ -1,5 +1,27 @@
 # データベース設計
 
+## データベース環境対応
+
+### 対応データベース
+- **SQLite**: 開発環境用（軽量・高速）
+- **MySQL 8.0**: 本番環境用（スケーラブル・高性能）
+
+### 環境切り替え
+- 環境変数 `DATABASE_URL` で切り替え
+- SQLite: `sqlite:///./touhou_clear_checker.db`
+- MySQL: `mysql+pymysql://user:password@host:port/database?charset=utf8mb4`
+
+### MySQL設定
+- **文字エンコーディング**: UTF-8 (utf8mb4) 完全対応
+- **照合順序**: utf8mb4_unicode_ci
+- **接続ライブラリ**: PyMySQL 1.1.1
+- **文字化け対策**: 接続時charset指定、サーバー設定の統一
+
+### データ移行
+- SQLite → MySQL移行スクリプト: `migrate_sqlite_to_mysql.py`
+- 141機体データの完全移行対応
+- 外部キー制約を考慮した安全な移行
+
 ## 実装済みテーブル構造
 
 ### users テーブル

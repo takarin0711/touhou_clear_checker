@@ -6,6 +6,8 @@
 - **言語**: すべてのやり取りは日本語で行う
 - **コミット**: ユーザーが明示的に要求しない限りgitコミットしない
 - **設計資料**: `.claude/`ディレクトリ内の設計書を参照して開発を行う
+  - ドキュメントマップ: [.claude/README.md](./.claude/README.md) で全体構成を確認
+  - 環境構築: [.claude/02_deployment_docs/](./.claude/02_deployment_docs/) でMySQL・セキュリティ設定
 - **設計原則**: `.claude/01_development_docs/05_design_principles.md`の設計方針を遵守する
 - **DRY原則**: 同じコードの重複を避ける
 - **SOLID原則**: 単一責任、開放閉鎖、リスコフ置換、インターフェース分離、依存性逆転の各原則に従う
@@ -26,26 +28,29 @@
 
 ## 開発環境
 - フロントエンド：React 18.2.0, TypeScript 5.9.2, axios
-- バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy, SQLite
+- バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy
+- データベース：SQLite (開発)、MySQL 8.0 (本番対応)
 - パッケージマネージャー：npm (frontend), pip (backend)
 - **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 2.11.9で互換性問題解決
 - **TypeScript化完了**: 2025年1月にフロントエンドを完全TypeScript化、型安全性と保守性が向上
 - **Docker対応済み**: 開発環境のコンテナ化完了、本番デプロイ準備完了
+- **MySQL対応完了**: 2025年9月にMySQL Docker環境構築、SQLite互換性維持
 
 ### 開発環境の選択肢
-1. **ネイティブ環境** (従来): Python 3.13 + venv313, Node.js + npm
-2. **Docker環境** (新規): コンテナ化された統一環境
-3. **併用**: 開発はネイティブ、本番デプロイはDocker
+1. **ネイティブ環境** (従来): Python 3.13 + venv313, Node.js + npm + SQLite
+2. **Docker SQLite環境**: コンテナ化された軽量開発環境
+3. **Docker MySQL環境**: 本番環境に近い開発環境
+4. **併用**: 開発はSQLite、本番デプロイはMySQL
 
 ## よく使用するコマンド
 
-### バックエンド
+### バックエンド (ネイティブ環境)
 - 開発サーバー: `cd backend && source venv313/bin/activate && python main.py &`
 - 依存関係インストール: `cd backend && source venv313/bin/activate && pip install -r requirements.txt`
 - テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
 - 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
 - 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
-- **データベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --fresh`
+- **SQLiteデータベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --fresh`
 - **データベース確認**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --verify`
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
@@ -56,14 +61,32 @@
 - 単体テスト実行: `cd frontend && npm test`
 
 ### Docker開発環境
-- **全体起動**: `docker compose up --build`
-- **バックグラウンド起動**: `docker compose up -d --build`
-- **停止**: `docker compose down`
+
+#### SQLite環境（軽量開発用）
+- **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up --build`
+- **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up -d --build`
+- **停止**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml down`
+- **データベース初期化**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml run --rm backend python scripts/initialize_database.py --fresh`
+
+#### MySQL環境（本番環境相当）
+- **環境変数設定**: `.env.mysql.example`を`.env.mysql`にコピーしてパスワード設定
+- **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build`
+- **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up -d --build`
+- **停止**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml down`
+- **MySQL初期化のみ**: `docker compose --profile mysql run --rm mysql-init`
+- **SQLite→MySQL移行**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml exec backend python scripts/migrate_sqlite_to_mysql.py`
+- **MySQL接続**: `localhost:3306` (接続情報は`.env.mysql`で設定)
+- **MySQL文字化け対策済み**: UTF-8 (utf8mb4) 完全対応
+
+#### レガシー環境（非推奨）
+- **旧Docker起動**: `docker compose up --build` ※設定ファイル指定なし（動作不安定）
+
+#### 共通操作
 - **ログ確認**: `docker compose logs -f [service名]`
-- **サービス別起動**: `docker compose up [backend|frontend]`
-- **データベース初期化**: `docker compose run --rm backend python scripts/initialize_database.py --fresh`
+- **サービス別起動**: `docker compose up [backend|frontend|mysql]`
 - **コンテナ内シェル**: `docker compose exec [backend|frontend] sh`
 - **アクセスURL**: フロントエンド http://localhost:3000, バックエンド http://localhost:8000
+- **MySQL管理画面**: phpMyAdmin等は未導入（必要時は追加構成）
 - 特定テスト実行: `cd frontend && npm test -- --testPathPattern="Button.test" --watchAll=false`
 - 型チェック: `cd frontend && npx tsc --noEmit`
 - **注意**: ブラウザキャッシュが原因でエラーが出る場合は、ハードリフレッシュ（Cmd+Shift+R）またはシークレットモードでアクセス

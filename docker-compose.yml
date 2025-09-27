@@ -1,4 +1,28 @@
 services:
+  # MySQL データベース
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-touhou_clear_checker}
+      MYSQL_USER: ${MYSQL_USER:-touhou_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - touhou-network
+    command: --default-authentication-plugin=mysql_native_password 
+             --character-set-server=utf8mb4 
+             --collation-server=utf8mb4_unicode_ci
+             --init-connect='SET NAMES utf8mb4;'
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+      interval: 10s
+
   # バックエンド（FastAPI）
   backend:
     build:
@@ -17,8 +41,9 @@ services:
     environment:
       - PYTHONPATH=/app
       - ENVIRONMENT=development
-    depends_on:
-      - db-init
+      # デフォルトはSQLite、MySQLに切り替える場合は以下をコメントアウト
+      # - DATABASE_URL=${DATABASE_URL}
+    # 依存関係はoverride fileで設定
     networks:
       - touhou-network
 
@@ -56,6 +81,25 @@ services:
     networks:
       - touhou-network
 
+  # MySQL データベース初期化サービス
+  mysql-init:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app
+    environment:
+      - PYTHONPATH=/app
+      - DATABASE_URL=${DATABASE_URL}
+    command: python scripts/initialize_database.py --fresh
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - touhou-network
+    profiles:
+      - mysql
+
 networks:
   touhou-network:
     driver: bridge
@@ -63,3 +107,5 @@ networks:
 volumes:
   # SQLiteデータベース永続化用（名前付きボリューム）
   db-data:
+  # MySQLデータベース永続化用
+  mysql-data:
