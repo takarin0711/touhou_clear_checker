@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { authApi } from '../services/authApi';
 import Button from '../../../components/common/Button';
+import { TIME_CONSTANTS } from '../../../constants/timeConstants';
 
 interface EmailVerificationPendingPageProps {
   email: string;
@@ -28,9 +29,9 @@ const EmailVerificationPendingPage: React.FC<EmailVerificationPendingPageProps> 
       const response = await authApi.resendVerificationEmail(email);
       setResendMessage(response.message || '認証メールを再送信しました。');
       
-      // 再送信制限（60秒）
+      // 再送信制限
       setCanResend(false);
-      setCountdown(60);
+      setCountdown(TIME_CONSTANTS.EMAIL_RESEND_COOLDOWN_SECONDS);
       
       const timer = setInterval(() => {
         setCountdown((prev) => {
@@ -41,7 +42,7 @@ const EmailVerificationPendingPage: React.FC<EmailVerificationPendingPageProps> 
           }
           return prev - 1;
         });
-      }, 1000);
+      }, TIME_CONSTANTS.TIMER_INTERVAL_MS);
       
     } catch (error: any) {
       setResendError(

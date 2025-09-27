@@ -1,6 +1,7 @@
 /**
  * ゲームメモ関連の型定義
  */
+import { MEMO_CONSTANTS } from '../constants/gameFeatureConstants';
 
 /**
  * ゲームメモ
@@ -31,12 +32,12 @@ export interface GameMemoFormData {
 /**
  * メモの最大文字数
  */
-export const MEMO_MAX_LENGTH = 2000;
+export const MEMO_MAX_LENGTH = MEMO_CONSTANTS.MAX_LENGTH;
 
 /**
  * メモの警告文字数（最大文字数の80%）
  */
-export const MEMO_WARNING_LENGTH = Math.floor(MEMO_MAX_LENGTH * 0.8);
+export const MEMO_WARNING_LENGTH = Math.floor(MEMO_CONSTANTS.MAX_LENGTH * MEMO_CONSTANTS.WARNING_RATIO);
 
 /**
  * メモが空でないかチェック

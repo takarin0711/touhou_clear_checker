@@ -1,6 +1,7 @@
 /**
  * API関連の定数定義
  */
+import { TIME_CONSTANTS } from './timeConstants';
 
 /**
  * API設定の定数
@@ -10,7 +11,7 @@ export const API_CONFIG = {
   BASE_URL: 'http://localhost:8000/api/v1',
   
   // タイムアウト設定（ミリ秒）
-  TIMEOUT: 5000,
+  TIMEOUT: TIME_CONSTANTS.API_TIMEOUT_MS,
   
   // HTTPステータスコード
   STATUS_CODES: {

@@ -10,6 +10,7 @@ import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 import { Game } from '../../../types/game';
 import { GameCharacter } from '../../../types/gameCharacter';
+import { SPECIAL_CLEAR_GAME_IDS } from '../../../constants/gameFeatureConstants';
 
 interface IndividualTabClearFormProps {
   game: Game;
@@ -43,8 +44,8 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
   const isNoContinueAvailableForCurrentTab = isNoContinueAvailable(game?.id, selectedMode, activeTab);
   
   // 特殊クリア条件が利用可能かチェック
-  const hasSpecialClear1 = [7, 8, 9, 12, 13, 14].includes(game?.id);
-  const hasSpecialClear2 = [13].includes(game?.id); // 鬼形獣のみ
+  const hasSpecialClear1 = SPECIAL_CLEAR_GAME_IDS.SPECIAL_CLEAR_1_GAMES.includes(game?.id);
+  const hasSpecialClear2 = SPECIAL_CLEAR_GAME_IDS.SPECIAL_CLEAR_2_GAMES.includes(game?.id); // 鬼形獣のみ
   
   // 現在のモードのデータ
   const currentModeData = modeData[selectedMode] || {};
