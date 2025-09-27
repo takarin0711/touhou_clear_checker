@@ -12,14 +12,14 @@
 ### パスワード管理ファイル構成
 
 #### パスワードファイル（機密情報）
-- `.mysql_root_password` - MySQLルートパスワード
-- `.mysql_password` - MySQLユーザーパスワード
-- `.env.sqlite` - SQLite環境設定
-- `.env.mysql` - MySQL環境設定（パスワード除く）
-- これらのファイルは **.gitignore に含まれており、Gitで管理されません**
+- `secrets/.mysql_root_password` - MySQLルートパスワード
+- `secrets/.mysql_password` - MySQLユーザーパスワード
+- `env/.env.sqlite` - SQLite環境設定
+- `env/.env.mysql` - MySQL環境設定（パスワード除く）
+- これらのディレクトリは **.gitignore に含まれており、Gitで管理されません**
 
 #### テンプレートファイル
-- `.env.mysql.example` - MySQL設定のテンプレート
+- `env/.env.mysql.example` - MySQL設定のテンプレート
 - このファイルは **Gitで管理されており、パスワードは含まれません**
 
 ### 初期設定手順
@@ -27,25 +27,25 @@
 #### 1. パスワードファイルの作成
 ```bash
 # MySQL環境用設定ファイル
-cp .env.mysql.example .env.mysql
+cp env/.env.mysql.example env/.env.mysql
 
 # パスワードファイルの作成
-echo "your_secure_root_password_here" > .mysql_root_password
-echo "your_secure_user_password_here" > .mysql_password
+echo "your_secure_root_password_here" > secrets/.mysql_root_password
+echo "your_secure_user_password_here" > secrets/.mysql_password
 
 # パスワードファイルの権限設定（重要！）
-chmod 600 .mysql_root_password
-chmod 600 .mysql_password
+chmod 600 secrets/.mysql_root_password
+chmod 600 secrets/.mysql_password
 ```
 
 #### 2. セキュアなパスワードの設定
 ```bash
 # 強固なパスワードの生成と設定
-openssl rand -base64 32 > .mysql_root_password
-openssl rand -base64 24 > .mysql_password
+openssl rand -base64 32 > secrets/.mysql_root_password
+openssl rand -base64 24 > secrets/.mysql_password
 
-# .env.mysql でJWT秘密鍵を設定
-echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" >> .env.mysql
+# env/.env.mysql でJWT秘密鍵を設定
+echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" >> env/.env.mysql
 ```
 
 #### 3. パスワード要件
@@ -59,19 +59,22 @@ echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" >> .env.mysql
 #### Unix/Linux/macOS
 ```bash
 # パスワードファイルと環境設定ファイルの権限を制限（所有者のみ読み書き可能）
-chmod 600 .mysql_root_password
-chmod 600 .mysql_password
-chmod 600 .env.mysql
-chmod 600 .env.sqlite
+chmod 600 secrets/.mysql_root_password
+chmod 600 secrets/.mysql_password
+chmod 600 env/.env.mysql
+chmod 600 env/.env.sqlite
 
 # ディレクトリ確認
-ls -la .mysql* .env.*
+ls -la secrets/ env/
 ```
 
 #### 期待される出力
 ```
+secrets/:
 -rw-------  1 user  group   45 date .mysql_password
 -rw-------  1 user  group   45 date .mysql_root_password
+
+env/:
 -rw-------  1 user  group  234 date .env.mysql
 -rw-------  1 user  group  156 date .env.sqlite
 ```
@@ -86,9 +89,9 @@ ls -la .mysql* .env.*
 #### 2. データベースパスワード
 ```bash
 # 本番環境では以下のような強固なパスワードを使用
-openssl rand -base64 32 > .mysql_root_password
-openssl rand -base64 24 > .mysql_password
-echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" > .env.mysql
+openssl rand -base64 32 > secrets/.mysql_root_password
+openssl rand -base64 24 > secrets/.mysql_password
+echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" > env/.env.mysql
 
 # Docker Secretsまたはクラウドサービスのシークレット管理を推奨
 ```
@@ -106,28 +109,28 @@ echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" > .env.mysql
 ERROR 1045 (28000): Access denied for user 'touhou_user'@'%' (using password: YES)
 
 # 対処法
-1. .mysql_password ファイルの内容を確認
-2. .mysql_root_password ファイルの内容を確認
+1. secrets/.mysql_password ファイルの内容を確認
+2. secrets/.mysql_root_password ファイルの内容を確認
 3. ファイル権限の確認（600になっているか）
 4. Docker環境を完全に再起動
 5. MySQL volumeのリセット（データ消失注意）
 
 # パスワードファイル確認
-cat .mysql_password
-cat .mysql_root_password
-ls -la .mysql*
+cat secrets/.mysql_password
+cat secrets/.mysql_root_password
+ls -la secrets/
 ```
 
 #### 環境変数が反映されない
 ```bash
 # 対処法
 1. --env-file オプションが正しく指定されているか確認
-2. .env.mysql ファイルの形式確認（等号の前後にスペースなし）
+2. env/.env.mysql ファイルの形式確認（等号の前後にスペースなし）
 3. パスワードファイルの存在確認
 4. Docker Composeの再起動
 
 # ファイル存在確認
-ls -la .mysql_password .mysql_root_password .env.mysql
+ls -la secrets/ env/
 ```
 
 ### 緊急時対応

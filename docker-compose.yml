@@ -115,6 +115,6 @@ volumes:
 
 secrets:
   mysql_root_password:
-    file: .mysql_root_password
+    file: secrets/.mysql_root_password
   mysql_password:
-    file: .mysql_password
+    file: secrets/.mysql_password

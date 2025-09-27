@@ -18,26 +18,30 @@ cd frontend && npm start
 #### 初期設定
 ```bash
 # 環境変数ファイルのセットアップ（初回のみ）
-cp .env.mysql.example .env.mysql
-# .env.mysql を編集してパスワードを設定
+cp env/.env.mysql.example env/.env.mysql
+
+# パスワードファイルの作成
+echo "your_secure_root_password" > secrets/.mysql_root_password
+echo "your_secure_user_password" > secrets/.mysql_password
+chmod 600 secrets/.mysql_root_password secrets/.mysql_password
 ```
 
 #### SQLite環境（軽量開発用）
 ```bash
 # SQLite環境で起動
-docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up --build
+docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file env/.env.sqlite up --build
 ```
 
 #### MySQL環境（本番環境相当）
 ```bash
 # MySQL環境で起動
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up --build
 ```
 
 #### アクセス
 - **フロントエンド**: http://localhost:3000
 - **バックエンド**: http://localhost:8000
-- **MySQL**: localhost:3306 (接続情報は`.env.mysql`で設定)
+- **MySQL**: localhost:3306 (接続情報は`env/.env.mysql`で設定)
 
 ## 📦 技術スタック
 - **フロントエンド**: React 18.2.0 + TypeScript 5.9.2
@@ -50,16 +54,16 @@ docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env
 ### SQLite → MySQL 移行
 ```bash
 # MySQL環境でデータ移行実行
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
 ```
 
 ### データベース初期化
 ```bash
 # SQLite環境
-docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite run --rm backend python scripts/initialize_database.py --fresh
+docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file env/.env.sqlite run --rm backend python scripts/initialize_database.py --fresh
 
 # MySQL環境（移行スクリプト推奨）
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
 ```
 
 ## 📚 詳細ドキュメント

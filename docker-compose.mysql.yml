@@ -1,11 +1,11 @@
 # MySQL環境用のDocker Compose override設定
-# 使用方法: docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up
+# 使用方法: docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up
 
 services:
   # バックエンドをMySQL環境用に設定変更
   backend:
     env_file:
-      - .env.mysql
+      - env/.env.mysql
     environment:
       - PYTHONPATH=/app
       - ENVIRONMENT=development

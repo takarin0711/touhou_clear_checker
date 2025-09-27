@@ -1,11 +1,11 @@
 # SQLite環境用のDocker Compose override設定
-# 使用方法: docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up
+# 使用方法: docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file env/.env.sqlite up
 
 services:
   # バックエンドをSQLite環境用に設定変更
   backend:
     env_file:
-      - .env.sqlite
+      - env/.env.sqlite
     environment:
       - PYTHONPATH=/app
       - ENVIRONMENT=development

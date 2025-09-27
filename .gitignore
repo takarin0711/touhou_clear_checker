@@ -78,7 +78,12 @@ frontend/tsconfig.tsbuildinfo
 .env.test.local
 .env.production.local
 
-# Database environment files (contain sensitive passwords)
+# Configuration directories (contain sensitive information)
+env/
+!env/.env.mysql.example
+secrets/
+
+# Legacy environment files (if any remain)
 .env.mysql
 .env.sqlite
 .mysql_root_password
