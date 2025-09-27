@@ -81,6 +81,7 @@ frontend/tsconfig.tsbuildinfo
 # Database environment files (contain sensitive passwords)
 .env.mysql
 .env.sqlite
+.mysql_root_password
 .mysql_password
 .postgresql_password
 

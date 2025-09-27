@@ -57,9 +57,11 @@ engine = create_engine(
 
 2. **MySQL環境** (本番環境相当)
    ```bash
-   # 初回は環境変数設定が必要
+   # 初回はパスワードファイルと環境変数設定が必要
    cp .env.mysql.example .env.mysql
-   # .env.mysql を編集してパスワード設定
+   echo "your_secure_root_password" > .mysql_root_password
+   echo "your_secure_user_password" > .mysql_password
+   chmod 600 .mysql_root_password .mysql_password
    
    docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build
    ```
@@ -70,40 +72,58 @@ engine = create_engine(
 ```bash
 # 環境変数ファイルのセットアップ
 cp .env.mysql.example .env.mysql
-# .env.mysql を編集してセキュアなパスワードを設定
+
+# パスワードファイルの作成（セキュアなパスワードを設定）
+echo "your_secure_root_password" > .mysql_root_password
+echo "your_secure_user_password" > .mysql_password
+chmod 600 .mysql_root_password .mysql_password
 ```
 
 #### .env.mysql.example の内容
 ```bash
 # MySQL接続情報
-MYSQL_ROOT_PASSWORD=your_secure_root_password_here
 MYSQL_DATABASE=touhou_clear_checker
 MYSQL_USER=touhou_user
-MYSQL_PASSWORD=your_secure_password_here
 
-# バックエンド接続用
-DATABASE_URL=mysql+pymysql://touhou_user:your_secure_password_here@mysql:3306/touhou_clear_checker?charset=utf8mb4
+# バックエンド接続用（パスワードはファイルから読み取り）
+DATABASE_URL=mysql+pymysql://touhou_user:$(cat .mysql_password)@mysql:3306/touhou_clear_checker?charset=utf8mb4
+
+# セキュリティ設定
+JWT_SECRET_KEY=your_jwt_secret_key_here
+
+# 開発環境設定
+ENVIRONMENT=development
+PYTHONPATH=/app
 ```
 
 ### MySQL設定ファイル
 ```yaml
-# docker-compose.yml - MySQL基本設定（環境変数対応）
+# docker-compose.yml - MySQL基本設定（Docker Secrets対応）
 mysql:
   image: mysql:8.0
   environment:
-    MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql_root_password
     MYSQL_DATABASE: ${MYSQL_DATABASE:-touhou_clear_checker}
     MYSQL_USER: ${MYSQL_USER:-touhou_user}
-    MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    MYSQL_PASSWORD_FILE: /run/secrets/mysql_password
   ports:
     - "3306:3306"
   volumes:
     - mysql-data:/var/lib/mysql
+  secrets:
+    - mysql_root_password
+    - mysql_password
   healthcheck:
     test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
     timeout: 5s
     retries: 10
     interval: 10s
+
+secrets:
+  mysql_root_password:
+    file: .mysql_root_password
+  mysql_password:
+    file: .mysql_password
 ```
 
 ```yaml
@@ -240,7 +260,8 @@ character_set_server     | utf8mb4
 
 ### 定期バックアップ
 ```bash
-# MySQLダンプ作成
+# MySQLダンプ作成（パスワードファイルを使用）
+MYSQL_PASSWORD=$(cat .mysql_password)
 docker compose exec mysql mysqldump -u $MYSQL_USER -p$MYSQL_PASSWORD $MYSQL_DATABASE > backup_$(date +%Y%m%d).sql
 
 # SQLiteバックアップ
