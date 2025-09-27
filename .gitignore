@@ -78,6 +78,12 @@ frontend/tsconfig.tsbuildinfo
 .env.test.local
 .env.production.local
 
+# Database environment files (contain sensitive passwords)
+.env.mysql
+.env.sqlite
+.mysql_password
+.postgresql_password
+
 # Testing
 .coverage
 .pytest_cache/

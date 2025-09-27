@@ -1,0 +1,23 @@
+# MySQL環境用のDocker Compose override設定
+# 使用方法: docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up
+
+services:
+  # バックエンドをMySQL環境用に設定変更
+  backend:
+    env_file:
+      - .env.mysql
+    environment:
+      - PYTHONPATH=/app
+      - ENVIRONMENT=development
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # SQLite用のdb-initサービスを無効化
+  db-init:
+    profiles:
+      - disabled
+
+  # MySQL初期化サービスを有効化
+  mysql-init:
+    profiles: []

@@ -14,20 +14,62 @@ cd frontend && npm start
 ```
 
 ### Docker環境（推奨）
-```bash
-# 全体起動
-docker compose up --build
 
-# アクセス
-# フロントエンド: http://localhost:3000
-# バックエンド: http://localhost:8000
+#### 初期設定
+```bash
+# 環境変数ファイルのセットアップ（初回のみ）
+cp .env.mysql.example .env.mysql
+# .env.mysql を編集してパスワードを設定
 ```
+
+#### SQLite環境（軽量開発用）
+```bash
+# SQLite環境で起動
+docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up --build
+```
+
+#### MySQL環境（本番環境相当）
+```bash
+# MySQL環境で起動
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build
+```
+
+#### アクセス
+- **フロントエンド**: http://localhost:3000
+- **バックエンド**: http://localhost:8000
+- **MySQL**: localhost:3306 (接続情報は`.env.mysql`で設定)
 
 ## 📦 技術スタック
 - **フロントエンド**: React 18.2.0 + TypeScript 5.9.2
 - **バックエンド**: FastAPI 0.117.1 + Python 3.13
-- **データベース**: SQLite3
+- **データベース**: SQLite3 (開発) / MySQL 8.0 (本番)
 - **コンテナ**: Docker + Docker Compose
 
+## 🗄️ データベース管理
+
+### SQLite → MySQL 移行
+```bash
+# MySQL環境でデータ移行実行
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
+```
+
+### データベース初期化
+```bash
+# SQLite環境
+docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite run --rm backend python scripts/initialize_database.py --fresh
+
+# MySQL環境（移行スクリプト推奨）
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
+```
+
 ## 📚 詳細ドキュメント
-詳細な開発手順、アーキテクチャ、運用方法については [CLAUDE.md](./CLAUDE.md) を参照してください。
+
+### 開発・運用ガイド
+- **開発手順**: [CLAUDE.md](./CLAUDE.md)
+- **MySQL環境設定**: [.claude/02_deployment_docs/01_mysql_setup.md](./.claude/02_deployment_docs/01_mysql_setup.md)
+- **セキュリティ設定**: [.claude/02_deployment_docs/02_security_setup.md](./.claude/02_deployment_docs/02_security_setup.md)
+
+### 設計・アーキテクチャ
+- **システム設計**: [.claude/01_development_docs/01_architecture_design.md](./.claude/01_development_docs/01_architecture_design.md)
+- **データベース設計**: [.claude/01_development_docs/02_database_design.md](./.claude/01_development_docs/02_database_design.md)
+- **MySQL移行ガイド**: [.claude/01_development_docs/10_mysql_migration_guide.md](./.claude/01_development_docs/10_mysql_migration_guide.md)

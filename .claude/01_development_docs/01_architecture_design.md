@@ -2,18 +2,20 @@
 
 ## システム構成
 ```
-[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: SQLite]
+[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: SQLite/MySQL]
+                                                                            ↑
+                                                                   環境変数による切り替え
 ```
 
 ## 技術スタック
 - **フロントエンド**: React 18.2.0, TypeScript 5.9.2, axios
-- **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9
+- **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9, PyMySQL 1.1.1
 - **認証**: JWT (python-jose), Argon2 (argon2-cffi), passlib
-- **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性
-- **データベース**: SQLite（開発環境）
+- **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性, UTF-8エンコーディング対応
+- **データベース**: SQLite（開発環境）, MySQL 8.0（本番環境）
 - **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
-- **コンテナ**: Docker + Docker Compose
+- **コンテナ**: Docker + Docker Compose（SQLite/MySQL環境選択可能）
 
 ## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
 ```
