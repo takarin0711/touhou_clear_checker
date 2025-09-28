@@ -366,11 +366,6 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-bold text-gray-900">ゲームメモ</h3>
             <div className="flex items-center space-x-2">
-              {hasMemo() && (
-                <span className="text-sm text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                  メモあり
-                </span>
-              )}
               <Button
                 onClick={handleMemoToggle}
                 variant={showMemoForm ? "outline" : "secondary"}
