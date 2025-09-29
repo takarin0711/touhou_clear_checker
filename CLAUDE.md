@@ -50,8 +50,11 @@
 - テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
 - 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
 - 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
+- **MySQLデータベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --fresh`
 - **SQLiteデータベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --fresh`
-- **データベース確認**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --verify`
+- **adminユーザーのみ作成**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --admin-only`
+- **データベース確認**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --verify`
+- **adminログイン情報**: ユーザー名 `admin`、パスワードは `secrets/.admin_password` ファイルを参照（権限600で保護）
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
 ### フロントエンド (TypeScript + React)
@@ -67,12 +70,16 @@
 - **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up -d --build`
 - **停止**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml down`
 - **データベース初期化**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml run --rm backend python scripts/initialize_database.py --fresh`
+- **adminユーザーのみ作成**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml run --rm backend python scripts/initialize_database.py --admin-only`
 
 #### MySQL環境（本番環境相当）
 - **環境変数設定**: `.env.mysql.example`を`.env.mysql`にコピーしてパスワード設定
 - **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build`
 - **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up -d --build`
 - **停止**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml down`
+- **MySQL完全初期化**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/initialize_database_mysql.py --fresh`
+- **adminログイン情報**: ユーザー名 `admin`、パスワードは `secrets/.admin_password` ファイルを参照（権限600で保護）
+- **adminユーザーのみ作成**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml exec backend python scripts/initialize_database_mysql.py --admin-only`
 - **MySQL初期化のみ**: `docker compose --profile mysql run --rm mysql-init`
 - **SQLite→MySQL移行**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml exec backend python scripts/migrate_sqlite_to_mysql.py`
 - **MySQL接続**: `localhost:3306` (接続情報は`.env.mysql`で設定)
@@ -212,36 +219,69 @@ touhou_clear_checker/
 ## データベース管理
 
 ### 統合初期化スクリプト
-新しい`initialize_database.py`スクリプトにより、データベースの作成・管理が一括で可能：
+**メイン**: `initialize_database_mysql.py`（MySQL環境用）
 
 ```bash
-# 完全初期化（既存DB削除 → テーブル作成 → 全データ投入）
-python scripts/initialize_database.py --fresh
+# MySQL完全初期化（既存テーブル削除 → 作成 → 全データ投入 → adminユーザー作成）
+python scripts/initialize_database_mysql.py --fresh
 
-# 現在のDB状態確認
-python scripts/initialize_database.py --verify
+# MySQL現在のDB状態確認
+python scripts/initialize_database_mysql.py --verify
 
-# ゲームデータのみ再投入
-python scripts/initialize_database.py --games-only
-
-# ゲーム機体データのみ再投入
-python scripts/initialize_database.py --characters-only
+# adminユーザーのみ作成
+python scripts/initialize_database_mysql.py --admin-only
 
 # ヘルプ表示
-python scripts/initialize_database.py --help
+python scripts/initialize_database_mysql.py --help
+```
+
+**サブ**: `initialize_database.py`（SQLite環境用）
+
+```bash
+# SQLite完全初期化（既存DB削除 → テーブル作成 → 全データ投入 → adminユーザー作成）
+python scripts/initialize_database.py --fresh
+
+# SQLite現在のDB状態確認
+python scripts/initialize_database.py --verify
+
+# adminユーザーのみ作成
+python scripts/initialize_database.py --admin-only
 ```
 
 ### データベース構成
-- **ファイル**: `backend/touhou_clear_checker.db` (SQLite3)
+- **メイン**: MySQL 8.0（本番・開発環境）
+- **サブ**: SQLite3（軽量開発環境）
 - **ゲーム数**: 16作品（東方紅魔郷〜東方錦上京）
 - **機体数**: 141種類（全作品の機体を網羅、妖精大戦争の特殊構造対応済み）
 - **テーブル**: users, games, game_characters, clear_records, game_memos
-- **メール認証**: email_verified, verification_token等のカラム対応済み
+- **初期ユーザー**: adminユーザー（管理者権限、認証済み）
+- **文字エンコーディング**: UTF-8 (utf8mb4) 完全対応
 - **妖精大戦争特殊対応**: Route A1〜C2（6機体）+ Extra（1機体）の合計7機体
 
 ### スクリプト整理状況
-- **現在**: `initialize_database.py` - 統合された一括初期化スクリプト
+- **メイン**: `initialize_database_mysql.py` - MySQL環境用統合スクリプト（adminユーザー作成機能内蔵）
+- **サブ**: `initialize_database.py` - SQLite環境用統合スクリプト（adminユーザー作成機能内蔵）
+- **管理用**: `create_admin_user.py` - adminユーザー専用管理スクリプト（対話的作成可能）
 - **廃止**: `deprecated_scripts/` - 旧スクリプト群を移動済み
+
+### adminユーザー管理
+- **パスワード管理**: `secrets/.admin_password`ファイルから読み込み
+- **初期情報**: ユーザー名=admin、メール=admin@touhou-clear-checker.com
+- **フォールバック**: パスワードファイルが無い場合はデフォルト（admin123）を使用
+- **自動作成**: `--fresh`オプション実行時に自動でadminユーザー作成
+- **個別管理**: `create_admin_user.py --create`で対話的にadminユーザー作成可能
+- **重複チェック**: 既存adminユーザーが存在する場合はスキップ
+- **セキュリティ**: パスワードファイルはgitignoreで除外、本番では強力なパスワード設定必須
+
+### Docker環境でのsecretsマウント
+- **マウント設定**: `secrets/`ディレクトリが`/app/secrets`にマウント設定済み
+- **再起動必要**: `docker-compose.yml`の変更反映には環境再起動が必要
+  ```bash
+  # 環境停止・再起動してsecretsマウントを有効化
+  docker compose -f docker-compose.yml -f docker-compose.mysql.yml down
+  docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up -d --build
+  ```
+- **パス対応**: Docker・ネイティブ両環境で自動的に適切なパスを選択
 
 ## 妖精大戦争特殊仕様対応
 

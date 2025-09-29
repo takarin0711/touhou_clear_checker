@@ -7,17 +7,24 @@ Usage:
     python scripts/initialize_database.py [options]
     
 Options:
-    --fresh: 既存データベースを削除して新規作成
+    --fresh: 既存データベースを削除して新規作成（adminユーザーも自動作成）
     --games-only: ゲームデータのみ追加
     --characters-only: キャラクターデータのみ追加
+    --admin-only: adminユーザーのみ作成
     --verify: データベース内容を確認
 """
 import sqlite3
 import os
 import argparse
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import List, Tuple
+
+# パスを設定してモジュールをインポート
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from infrastructure.security.password_hasher import PasswordHasher
+from infrastructure.security.token_generator import TokenGenerator
 
 # データベースファイルのパス
 DB_PATH = Path(__file__).parent.parent / "touhou_clear_checker.db"
@@ -439,6 +446,105 @@ class DatabaseInitializer:
         
         return characters
     
+    def load_admin_password(self) -> str:
+        """secrets/.admin_passwordからパスワードを読み込む"""
+        # Docker環境とネイティブ環境両方に対応
+        password_paths = [
+            Path(__file__).parent.parent.parent / "secrets" / ".admin_password",  # ネイティブ環境
+            Path("/app/secrets/.admin_password"),  # Docker環境（マウント想定）
+            Path("/secrets/.admin_password"),     # Docker環境（代替パス）
+        ]
+        
+        password_file = None
+        for path in password_paths:
+            if path.exists():
+                password_file = path
+                break
+        
+        if password_file is None:
+            print(f"⚠️ パスワードファイルが見つかりません。確認したパス:")
+            for path in password_paths:
+                print(f"   - {path}")
+            print("   デフォルトパスワードを使用します: admin123")
+            return "admin123"
+            
+        try:
+            password = password_file.read_text().strip()
+            if not password:
+                print("⚠️ パスワードファイルが空です。デフォルトパスワードを使用します。")
+                return "admin123"
+            print(f"🔐 パスワードファイルから読み込み完了: {password_file}")
+            return password
+        except Exception as e:
+            print(f"❌ パスワードファイル読み込みエラー: {e}")
+            print("   デフォルトパスワードを使用します: admin123")
+            return "admin123"
+    
+    def insert_admin_user(self):
+        """初期adminユーザーを作成する"""
+        conn = sqlite3.connect(self.db_path)
+        cursor = conn.cursor()
+        
+        try:
+            print("👑 adminユーザーを作成中...")
+            
+            # 既存のadminユーザーを確認
+            cursor.execute("SELECT id, username, email, is_admin FROM users WHERE username = ? OR is_admin = 1", ("admin",))
+            existing_admin = cursor.fetchone()
+            
+            if existing_admin:
+                print(f"ℹ️ adminユーザーが既に存在します: ID={existing_admin[0]}, ユーザー名={existing_admin[1]}, メール={existing_admin[2]}, 管理者={existing_admin[3]}")
+                return
+            
+            # adminユーザー情報
+            username = "admin"
+            email = "admin@touhou-clear-checker.com"
+            password = self.load_admin_password()
+            
+            # パスワードハッシュ化
+            password_hasher = PasswordHasher()
+            hashed_password = password_hasher.hash_password(password)
+            
+            # 認証トークン生成
+            verification_token = TokenGenerator.generate_verification_token()
+            
+            # adminユーザー作成
+            cursor.execute("""
+                INSERT INTO users (
+                    username, email, hashed_password, is_active, is_admin, 
+                    email_verified, verification_token, created_at, updated_at
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                username,
+                email,
+                hashed_password,
+                True,        # is_active
+                True,        # is_admin
+                True,        # email_verified (adminは認証済み)
+                verification_token,
+                datetime.now(),
+                datetime.now()
+            ))
+            
+            admin_id = cursor.lastrowid
+            conn.commit()
+            
+            print(f"✅ adminユーザーが作成されました:")
+            print(f"   - ID: {admin_id}")
+            print(f"   - ユーザー名: {username}")
+            print(f"   - メール: {email}")
+            print(f"   - パスワード: {password}")
+            print(f"   - 管理者権限: ✅")
+            print(f"   - 認証済み: ✅")
+            
+        except Exception as e:
+            print(f"❌ adminユーザー作成エラー: {e}")
+            conn.rollback()
+            raise
+        finally:
+            conn.close()
+    
     def verify_database(self):
         """データベース内容確認"""
         conn = sqlite3.connect(self.db_path)
@@ -490,6 +596,9 @@ class DatabaseInitializer:
         self.insert_games_data()
         self.insert_characters_data()
         
+        # adminユーザー作成
+        self.insert_admin_user()
+        
         # 検証
         self.verify_database()
         
@@ -502,6 +611,7 @@ def main():
     parser.add_argument('--fresh', action='store_true', help='既存データベースを削除して新規作成')
     parser.add_argument('--games-only', action='store_true', help='ゲームデータのみ追加')
     parser.add_argument('--characters-only', action='store_true', help='キャラクターデータのみ追加')
+    parser.add_argument('--admin-only', action='store_true', help='adminユーザーのみ作成')
     parser.add_argument('--verify', action='store_true', help='データベース内容を確認')
     
     args = parser.parse_args()
@@ -520,6 +630,11 @@ def main():
                 print("❌ データベースが存在しません。まず --fresh で初期化してください。")
                 return
             initializer.insert_characters_data()
+        elif args.admin_only:
+            if not DB_PATH.exists():
+                print("❌ データベースが存在しません。まず --fresh で初期化してください。")
+                return
+            initializer.insert_admin_user()
         elif args.verify:
             if not DB_PATH.exists():
                 print("❌ データベースが存在しません。")

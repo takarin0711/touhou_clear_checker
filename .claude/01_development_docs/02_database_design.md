@@ -53,9 +53,20 @@ CREATE INDEX idx_users_verification_token ON users(verification_token);
 |---------|---------|------|------|
 | id | INTEGER | PRIMARY KEY | ゲームID |
 | title | VARCHAR(255) | NOT NULL | ゲームタイトル |
-| series_number | DECIMAL(4,1) | NOT NULL | シリーズ番号（7.5作等に対応） |
+| series_number | DECIMAL(4,1) | NOT NULL | シリーズ番号（12.8作等に対応） |
 | release_year | INTEGER | NOT NULL | リリース年 |
 | game_type | VARCHAR(50) | NOT NULL DEFAULT 'main_series' | ゲームタイプ |
+
+#### ゲーム種別（game_type）
+- `main_series`: 本編STG（東方紅魔郷〜東方錦上京）
+- `spin_off_stg`: 外伝STG（妖精大戦争）
+- `versus`: 対戦型STG（東方花映塚、東方獣王園）
+- `fighting`: 格闘ゲーム（将来対応予定）
+- `photography`: 撮影STG（将来対応予定）
+
+#### データ取得順序
+- デフォルト: `ORDER BY series_number ASC`（妖精大戦争12.8が正しい位置）
+- series_numberによる正しい時系列順での取得・表示
 
 ## 新設計テーブル構造（機体別条件式対応）
 

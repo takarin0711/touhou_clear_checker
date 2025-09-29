@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Numeric
+from sqlalchemy.orm import relationship
 from ..connection import Base
 
 class GameModel(Base):
@@ -9,3 +10,6 @@ class GameModel(Base):
     series_number = Column(Numeric(4, 1), nullable=False)  # 19.5まで対応
     release_year = Column(Integer, nullable=False)
     game_type = Column(String(50), nullable=False, default="main_series")
+    
+    # リレーションシップ
+    characters = relationship("GameCharacterModel", back_populates="game", lazy="dynamic")

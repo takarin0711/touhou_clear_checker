@@ -36,6 +36,8 @@ services:
     volumes:
       # ソースコードのホットリロード用
       - ./backend:/app
+      # secretsディレクトリのマウント
+      - ./secrets:/app/secrets
       # SQLiteデータベースの永続化
       - ./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db
       # venv313は除外（Dockerコンテナ内でPython環境を管理）
@@ -77,6 +79,7 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
+      - ./secrets:/app/secrets
       - ./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db
     environment:
       - PYTHONPATH=/app
@@ -91,10 +94,11 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./backend:/app
+      - ./secrets:/app/secrets
     environment:
       - PYTHONPATH=/app
       - DATABASE_URL=${DATABASE_URL}
-    command: python scripts/initialize_database.py --fresh
+    command: python scripts/initialize_database_mysql.py --fresh
     depends_on:
       mysql:
         condition: service_healthy

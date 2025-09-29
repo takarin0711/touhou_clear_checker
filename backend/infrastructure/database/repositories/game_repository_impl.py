@@ -11,7 +11,7 @@ class GameRepositoryImpl(GameRepository):
         self.session = session
     
     def find_all(self) -> List[Game]:
-        models = self.session.query(GameModel).all()
+        models = self.session.query(GameModel).order_by(GameModel.series_number).all()
         return [self._to_entity(model) for model in models]
     
     def find_filtered(self, 
@@ -25,7 +25,7 @@ class GameRepositoryImpl(GameRepository):
         if game_type is not None:
             query = query.filter(GameModel.game_type == game_type.value)
         
-        models = query.all()
+        models = query.order_by(GameModel.series_number).all()
         return [self._to_entity(model) for model in models]
     
     def find_by_id(self, game_id: int) -> Optional[Game]:
