@@ -122,6 +122,16 @@ export const GAME_IDS = {
 - **命名規則**: スネークケース（`clear_records`）
 - **タイムスタンプ**: 必ず`created_at`, `updated_at`を設定
 
+### 識別子使用原則
+- **ビジネスロジックでは意味のあるIDを使用**: `series_number`（作品番号）等の不変値を優先
+- **技術的IDは最小限に**: `game_id`等の連番は純粋な技術的目的のみ
+- **将来のメンテナンス性を考慮**: データ再構築時にも影響を受けない識別子を選択
+
+#### TODO: ゲーム判定の改善
+**現状の問題**: フロントエンドでゲーム判定に`game_id`（連番）を使用  
+**改善方針**: `series_number`（公式作品番号）を使用した判定に変更  
+**対象**: gameConstants.ts, difficulty.ts, IndividualTabClearForm.tsx等
+
 ### API設計
 - **RESTful**: REST原則に従ったURL設計
 - **一貫性**: レスポンス形式の統一

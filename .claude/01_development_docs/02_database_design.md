@@ -51,11 +51,51 @@ CREATE INDEX idx_users_verification_token ON users(verification_token);
 
 | カラム名 | データ型 | 制約 | 説明 |
 |---------|---------|------|------|
-| id | INTEGER | PRIMARY KEY | ゲームID |
+| id | INTEGER | PRIMARY KEY | ゲームID（連番：1-16） |
 | title | VARCHAR(255) | NOT NULL | ゲームタイトル |
 | series_number | DECIMAL(4,1) | NOT NULL | シリーズ番号（12.8作等に対応） |
 | release_year | INTEGER | NOT NULL | リリース年 |
 | game_type | VARCHAR(50) | NOT NULL DEFAULT 'main_series' | ゲームタイプ |
+
+#### ゲームID設計ルール
+**重要**: `id`は連番（1-16）、`series_number`は作品のシリーズ番号（6.0-20.0）
+- フロントエンドは**連番ID**を前提とした設計
+- シリーズ番号とIDは**別物**として管理
+- データベース初期化スクリプトで`enumerate(games_data, 1)`により連番IDを自動生成
+
+#### TODO: コードリファクタリング方針
+**将来の改善予定**: コード内でのゲーム判定を`game_id`から`series_number`に変更
+- **現状**: フロントエンドで`game.id === 8`（妖精大戦争）、`game.id === 11`（紺珠伝）などで判定
+- **理想**: `game.series_number === 12.8`（妖精大戦争）、`game.series_number === 15.0`（紺珠伝）で判定
+- **理由**: 
+  - `game_id`は単なる連番で本質的な意味がない（データ投入順序に依存）
+  - `series_number`は公式の作品番号で不変の値
+  - 新作追加時やデータ再構築時に影響を受けない堅牢な設計となる
+- **対象ファイル**: 
+  - `frontend/src/constants/gameConstants.ts`
+  - `frontend/src/types/difficulty.ts` 
+  - `frontend/src/features/clearRecords/components/IndividualTabClearForm.tsx`
+  - その他ゲーム判定を行う全てのコンポーネント
+
+#### 現在のIDマッピング（2025年9月30日現在）
+| ID | タイトル | シリーズ番号 | 備考 |
+|----|----------|------------|------|
+| 1 | 東方紅魔郷 | 6.0 | |
+| 2 | 東方妖々夢 | 7.0 | |
+| 3 | 東方永夜抄 | 8.0 | |
+| 4 | 東方花映塚 | 9.0 | 対戦型STG |
+| 5 | 東方風神録 | 10.0 | |
+| 6 | 東方地霊殿 | 11.0 | |
+| 7 | 東方星蓮船 | 12.0 | |
+| 8 | 妖精大戦争 | 12.8 | 外伝STG・特殊ルート構造 |
+| 9 | 東方神霊廟 | 13.0 | |
+| 10 | 東方輝針城 | 14.0 | |
+| 11 | 東方紺珠伝 | 15.0 | モード分岐あり |
+| 12 | 東方天空璋 | 16.0 | |
+| 13 | 東方鬼形獣 | 17.0 | |
+| 14 | 東方虹龍洞 | 18.0 | |
+| 15 | 東方獣王園 | 19.0 | 対戦型STG |
+| 16 | 東方錦上京 | 20.0 | |
 
 #### ゲーム種別（game_type）
 - `main_series`: 本編STG（東方紅魔郷〜東方錦上京）
