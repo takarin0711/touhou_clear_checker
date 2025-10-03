@@ -63,19 +63,18 @@ CREATE INDEX idx_users_verification_token ON users(verification_token);
 - シリーズ番号とIDは**別物**として管理
 - データベース初期化スクリプトで`enumerate(games_data, 1)`により連番IDを自動生成
 
-#### TODO: コードリファクタリング方針
-**将来の改善予定**: コード内でのゲーム判定を`game_id`から`series_number`に変更
-- **現状**: フロントエンドで`game.id === 8`（妖精大戦争）、`game.id === 11`（紺珠伝）などで判定
-- **理想**: `game.series_number === 12.8`（妖精大戦争）、`game.series_number === 15.0`（紺珠伝）で判定
-- **理由**: 
-  - `game_id`は単なる連番で本質的な意味がない（データ投入順序に依存）
-  - `series_number`は公式の作品番号で不変の値
-  - 新作追加時やデータ再構築時に影響を受けない堅牢な設計となる
-- **対象ファイル**: 
-  - `frontend/src/constants/gameConstants.ts`
-  - `frontend/src/types/difficulty.ts` 
-  - `frontend/src/features/clearRecords/components/IndividualTabClearForm.tsx`
-  - その他ゲーム判定を行う全てのコンポーネント
+#### ✅ 完了: コードリファクタリング方針（2025年10月実装）
+**実装完了**: コード内でのゲーム判定を`game_id`から`series_number`に変更完了
+- **変更前**: `game.id === 8`（妖精大戦争）、`game.id === 11`（紺珠伝）などで判定
+- **変更後**: `game.series_number === 12.8`（妖精大戦争）、`game.series_number === 15.0`（紺珠伝）で判定
+- **実装済みファイル**: 
+  - `frontend/src/constants/gameConstants.ts` - series_number版関数群を新規実装、旧版削除
+  - `frontend/src/types/difficulty.ts` - `getDifficultyOrderForGameBySeries`関数実装
+  - `frontend/src/features/clearRecords/components/IndividualTabClearForm.tsx` - 全判定ロジックをseries_numberベースに変更
+  - `frontend/src/constants/gameFeatureConstants.ts` - SPECIAL_CLEAR_SERIES_NUMBERS定数で管理
+  - `frontend/src/features/games/components/GameDetail.tsx` - 新版関数使用に変更
+- **効果**: データ再構築時にも影響を受けない堅牢な設計を実現
+- **テスト**: 30個のテストケースで新版関数の動作を保証
 
 #### 現在のIDマッピング（2025年9月30日現在）
 | ID | タイトル | シリーズ番号 | 備考 |

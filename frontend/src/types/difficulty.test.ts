@@ -4,7 +4,7 @@ import {
   DIFFICULTY_COLORS,
   BASE_DIFFICULTY_ORDER,
   DIFFICULTY_ORDER,
-  getDifficultyOrderForGame
+  getDifficultyOrderForGameBySeries
 } from './difficulty';
 
 describe('difficulty utilities', () => {
@@ -60,29 +60,72 @@ describe('difficulty utilities', () => {
     });
   });
 
-  describe('getDifficultyOrderForGame', () => {
-    it('gameがnullの場合は基本難易度を返す', () => {
-      const result = getDifficultyOrderForGame(null);
-      expect(result).toEqual(BASE_DIFFICULTY_ORDER);
+  describe('getDifficultyOrderForGameBySeries', () => {
+    describe('nullゲーム', () => {
+      it('nullの場合は基本難易度を返す', () => {
+        const result = getDifficultyOrderForGameBySeries(null);
+        expect(result).toEqual(BASE_DIFFICULTY_ORDER);
+      });
     });
 
-    it('通常のゲームでは基本難易度にExtraを含む', () => {
-      const game = { id: 1 }; // 東方紅魔郷
-      const result = getDifficultyOrderForGame(game);
-      const expected = [
-        DIFFICULTIES.EASY,
-        DIFFICULTIES.NORMAL,
-        DIFFICULTIES.HARD,
-        DIFFICULTIES.LUNATIC,
-        DIFFICULTIES.EXTRA
-      ];
-      expect(result).toEqual(expected);
+    describe('紺珠伝（シリーズ番号: 15）', () => {
+      const lolkGame = { series_number: 15 };
+
+      it('レガシーモードではExtra難易度を含む', () => {
+        const result = getDifficultyOrderForGameBySeries(lolkGame, 'legacy');
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC,
+          DIFFICULTIES.EXTRA
+        ];
+        expect(result).toEqual(expected);
+      });
+
+      it('完全無欠モードではExtra難易度を除外', () => {
+        const result = getDifficultyOrderForGameBySeries(lolkGame, 'pointdevice');
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC
+        ];
+        expect(result).toEqual(expected);
+      });
+
+      it('デフォルトモード（normal）では基本難易度にExtraを含む', () => {
+        const result = getDifficultyOrderForGameBySeries(lolkGame);
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC,
+          DIFFICULTIES.EXTRA
+        ];
+        expect(result).toEqual(expected);
+      });
     });
 
-    describe('妖々夢（ID: 2）の特殊ケース', () => {
-      it('Phantasm難易度が追加される', () => {
-        const game = { id: 2 }; // 東方妖々夢
-        const result = getDifficultyOrderForGame(game);
+    describe('妖々夢（シリーズ番号: 7）', () => {
+      const pcbGame = { series_number: 7 };
+
+      it('Phantasm難易度を含む', () => {
+        const result = getDifficultyOrderForGameBySeries(pcbGame);
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC,
+          DIFFICULTIES.EXTRA,
+          DIFFICULTIES.PHANTASM
+        ];
+        expect(result).toEqual(expected);
+      });
+
+      it('文字列のシリーズ番号でも正しく動作する', () => {
+        const pcbGameStr = { series_number: '7.0' };
+        const result = getDifficultyOrderForGameBySeries(pcbGameStr);
         const expected = [
           DIFFICULTIES.EASY,
           DIFFICULTIES.NORMAL,
@@ -95,36 +138,11 @@ describe('difficulty utilities', () => {
       });
     });
 
-    describe('紺珠伝（ID: 11）の特殊モード対応', () => {
-      it('normalモードでは基本難易度にExtraを含む', () => {
-        const game = { id: 11 }; // 東方紺珠伝
-        const result = getDifficultyOrderForGame(game, 'normal');
-        const expected = [
-          DIFFICULTIES.EASY,
-          DIFFICULTIES.NORMAL,
-          DIFFICULTIES.HARD,
-          DIFFICULTIES.LUNATIC,
-          DIFFICULTIES.EXTRA
-        ];
-        expect(result).toEqual(expected);
-      });
+    describe('獣王園（シリーズ番号: 19）', () => {
+      const udoalgGame = { series_number: 19 };
 
-      it('legacyモードでは基本難易度にExtraを含む', () => {
-        const game = { id: 11 }; // 東方紺珠伝
-        const result = getDifficultyOrderForGame(game, 'legacy');
-        const expected = [
-          DIFFICULTIES.EASY,
-          DIFFICULTIES.NORMAL,
-          DIFFICULTIES.HARD,
-          DIFFICULTIES.LUNATIC,
-          DIFFICULTIES.EXTRA
-        ];
-        expect(result).toEqual(expected);
-      });
-
-      it('pointdeviceモードではExtraなしの基本難易度のみ', () => {
-        const game = { id: 11 }; // 東方紺珠伝
-        const result = getDifficultyOrderForGame(game, 'pointdevice');
+      it('Extra難易度を除外する', () => {
+        const result = getDifficultyOrderForGameBySeries(udoalgGame);
         const expected = [
           DIFFICULTIES.EASY,
           DIFFICULTIES.NORMAL,
@@ -133,44 +151,27 @@ describe('difficulty utilities', () => {
         ];
         expect(result).toEqual(expected);
       });
-    });
 
-    describe('獣王園（ID: 15）の特殊ケース', () => {
-      it('Extra難易度が除外される', () => {
-        const game = { id: 15 }; // 東方獣王園
-        const result = getDifficultyOrderForGame(game);
+      it('文字列のシリーズ番号でも正しく動作する', () => {
+        const udoalgGameStr = { series_number: '19.0' };
+        const result = getDifficultyOrderForGameBySeries(udoalgGameStr);
         const expected = [
           DIFFICULTIES.EASY,
           DIFFICULTIES.NORMAL,
           DIFFICULTIES.HARD,
           DIFFICULTIES.LUNATIC
-        ];
-        expect(result).toEqual(expected);
-      });
-    });
-
-    describe('妖精大戦争（ID: 8）', () => {
-      it('通常の基本難易度にExtraが含まれる', () => {
-        const game = { id: 8 }; // 妖精大戦争
-        const result = getDifficultyOrderForGame(game);
-        const expected = [
-          DIFFICULTIES.EASY,
-          DIFFICULTIES.NORMAL,
-          DIFFICULTIES.HARD,
-          DIFFICULTIES.LUNATIC,
-          DIFFICULTIES.EXTRA
         ];
         expect(result).toEqual(expected);
       });
     });
 
     describe('その他のゲーム', () => {
-      const gameIds = [3, 4, 5, 6, 7, 9, 10, 12, 13, 14, 16]; // 一般的なゲームID
+      const gameIds = [6, 8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 20];
 
-      gameIds.forEach(gameId => {
-        it(`ゲームID ${gameId} では基本難易度にExtraを含む`, () => {
-          const game = { id: gameId };
-          const result = getDifficultyOrderForGame(game);
+      gameIds.forEach(seriesNumber => {
+        it(`シリーズ番号 ${seriesNumber} では基本難易度にExtraを含む`, () => {
+          const game = { series_number: seriesNumber };
+          const result = getDifficultyOrderForGameBySeries(game);
           const expected = [
             DIFFICULTIES.EASY,
             DIFFICULTIES.NORMAL,
@@ -184,9 +185,9 @@ describe('difficulty utilities', () => {
     });
 
     describe('エッジケース', () => {
-      it('存在しないゲームIDでは基本難易度にExtraを含む', () => {
-        const game = { id: 999 };
-        const result = getDifficultyOrderForGame(game);
+      it('存在しないシリーズ番号では基本難易度にExtraを含む', () => {
+        const game = { series_number: 999 };
+        const result = getDifficultyOrderForGameBySeries(game);
         const expected = [
           DIFFICULTIES.EASY,
           DIFFICULTIES.NORMAL,
@@ -198,8 +199,8 @@ describe('difficulty utilities', () => {
       });
 
       it('紺珠伝で不明なモードの場合は基本難易度にExtraを含む', () => {
-        const game = { id: 11 };
-        const result = getDifficultyOrderForGame(game, 'unknown');
+        const game = { series_number: 15 };
+        const result = getDifficultyOrderForGameBySeries(game, 'unknown');
         const expected = [
           DIFFICULTIES.EASY,
           DIFFICULTIES.NORMAL,
@@ -208,6 +209,47 @@ describe('difficulty utilities', () => {
           DIFFICULTIES.EXTRA
         ];
         expect(result).toEqual(expected);
+      });
+
+      it('小数点付きシリーズ番号でも正しく処理される', () => {
+        const game = { series_number: 7.5 }; // 萃夢想
+        const result = getDifficultyOrderForGameBySeries(game);
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC,
+          DIFFICULTIES.EXTRA
+        ];
+        expect(result).toEqual(expected);
+      });
+
+      it('文字列の小数点シリーズ番号も正しく処理される', () => {
+        const game = { series_number: '12.8' }; // 妖精大戦争
+        const result = getDifficultyOrderForGameBySeries(game);
+        const expected = [
+          DIFFICULTIES.EASY,
+          DIFFICULTIES.NORMAL,
+          DIFFICULTIES.HARD,
+          DIFFICULTIES.LUNATIC,
+          DIFFICULTIES.EXTRA
+        ];
+        expect(result).toEqual(expected);
+      });
+    });
+
+    describe('型安全性のテスト', () => {
+      it('series_numberが数値型でも文字列型でも同じ結果を返す', () => {
+        const gameNum = { series_number: 15 };
+        const gameStr = { series_number: '15' };
+        const gameFloat = { series_number: '15.0' };
+        
+        const resultNum = getDifficultyOrderForGameBySeries(gameNum);
+        const resultStr = getDifficultyOrderForGameBySeries(gameStr);
+        const resultFloat = getDifficultyOrderForGameBySeries(gameFloat);
+        
+        expect(resultNum).toEqual(resultStr);
+        expect(resultStr).toEqual(resultFloat);
       });
     });
   });

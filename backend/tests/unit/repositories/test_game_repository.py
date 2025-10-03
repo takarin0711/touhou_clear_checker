@@ -31,7 +31,9 @@ class TestGameRepository:
         
     def test_find_all(self):
         """全ゲーム取得のテスト"""
-        self.mock_session.query.return_value.all.return_value = [self.sample_model]
+        mock_query = Mock()
+        self.mock_session.query.return_value = mock_query
+        mock_query.order_by.return_value.all.return_value = [self.sample_model]
         
         result = self.repository.find_all()
         
@@ -39,12 +41,13 @@ class TestGameRepository:
         assert result[0].title == "東方紅魔郷"
         assert result[0].series_number == Decimal("6.0")
         self.mock_session.query.assert_called_with(GameModel)
+        mock_query.order_by.assert_called_once()
         
     def test_find_filtered_by_series_number(self):
         """シリーズ番号でフィルタリングされたゲーム取得のテスト"""
         mock_query = Mock()
         self.mock_session.query.return_value = mock_query
-        mock_query.filter.return_value.all.return_value = [self.sample_model]
+        mock_query.filter.return_value.order_by.return_value.all.return_value = [self.sample_model]
         
         result = self.repository.find_filtered(series_number=Decimal("6.0"))
         
@@ -56,7 +59,7 @@ class TestGameRepository:
         """ゲームタイプでフィルタリングされたゲーム取得のテスト"""
         mock_query = Mock()
         self.mock_session.query.return_value = mock_query
-        mock_query.filter.return_value.all.return_value = [self.sample_model]
+        mock_query.filter.return_value.order_by.return_value.all.return_value = [self.sample_model]
         
         result = self.repository.find_filtered(game_type=GameType.MAIN_SERIES)
         

@@ -127,10 +127,14 @@ export const GAME_IDS = {
 - **技術的IDは最小限に**: `game_id`等の連番は純粋な技術的目的のみ
 - **将来のメンテナンス性を考慮**: データ再構築時にも影響を受けない識別子を選択
 
-#### TODO: ゲーム判定の改善
-**現状の問題**: フロントエンドでゲーム判定に`game_id`（連番）を使用  
-**改善方針**: `series_number`（公式作品番号）を使用した判定に変更  
-**対象**: gameConstants.ts, difficulty.ts, IndividualTabClearForm.tsx等
+#### ✅ 完了: ゲーム判定の改善（2025年10月実装）
+**実装内容**: フロントエンドのゲーム判定を`game_id`から`series_number`に変更完了  
+**対応済みファイル**: 
+- `gameConstants.ts` - 新しいseries_number版関数を追加、旧版@deprecated関数を削除
+- `difficulty.ts` - `getDifficultyOrderForGameBySeries`関数を実装、包括的テスト追加
+- `IndividualTabClearForm.tsx` - series_number判定に変更済み
+- `gameFeatureConstants.ts` - SPECIAL_CLEAR_SERIES_NUMBERS定数で管理
+**効果**: データ再構築時にも影響を受けない堅牢な設計を実現
 
 ### API設計
 - **RESTful**: REST原則に従ったURL設計

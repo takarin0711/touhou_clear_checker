@@ -266,12 +266,15 @@ python scripts/initialize_database.py --admin-only
 - データベース初期化時に`enumerate(games_data, 1)`で自動生成
 - **シリーズ番号とIDを混同しないよう注意**（過去にトラブル発生）
 
-#### TODO: コードリファクタリング方針
-**将来改善**: ゲーム判定を`game_id`→`series_number`に変更予定
-- 現状: `game.id === 8`（妖精大戦争）、`game.id === 11`（紺珠伝）
-- 理想: `game.series_number === 12.8`、`game.series_number === 15.0`
-- 理由: series_numberは公式番号で不変、game_idは単なる連番
-- 効果: 新作追加・データ再構築時の影響を回避、堅牢な設計
+#### ✅ 完了: コードリファクタリング方針（2025年10月実装）
+**実装完了**: ゲーム判定を`game_id`から`series_number`に変更完了
+- 変更前: `game.id === 8`（妖精大戦争）、`game.id === 11`（紺珠伝）
+- 変更後: `game.series_number === 12.8`（妖精大戦争）、`game.series_number === 15.0`（紺珠伝）
+- **実装内容**: 
+  - 新版series_numberベース関数群を全体に展開
+  - 旧版@deprecated関数を全て削除
+  - 30個のテストケースで動作保証
+- **効果**: 新作追加・データ再構築時の影響を回避、堅牢な設計を実現
 
 ### スクリプト整理状況
 - **メイン**: `initialize_database_mysql.py` - MySQL環境用統合スクリプト（adminユーザー作成機能内蔵）

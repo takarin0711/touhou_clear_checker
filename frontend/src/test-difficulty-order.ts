@@ -1,7 +1,7 @@
 /**
  * 獣王園のExtra難易度除外テスト用ファイル
  */
-import { getDifficultyOrderForGame, DIFFICULTIES } from './types/difficulty';
+import { getDifficultyOrderForGameBySeries, DIFFICULTIES } from './types/difficulty';
 
 // テスト用ゲームデータ（実際のデータベースIDに合わせたもの）
 const testGames = [
@@ -40,7 +40,7 @@ export const testDifficultyOrder = () => {
   console.log('=== 難易度順序テスト ===');
   
   testGames.forEach(game => {
-    const difficulties = getDifficultyOrderForGame(game);
+    const difficulties = getDifficultyOrderForGameBySeries(game);
     console.log(`\n${game.title} (シリーズ番号: ${game.series_number}):`);
     console.log('利用可能な難易度:', difficulties);
     

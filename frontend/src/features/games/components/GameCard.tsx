@@ -31,10 +31,11 @@ const GameCard: React.FC<GameCardProps> = ({ game, onClick, className = '' }) =>
     }
   };
 
-  const getSeriesDisplay = (seriesNumber: number): string => {
-    return seriesNumber % 1 === 0 
-      ? `第${Math.floor(seriesNumber)}作` 
-      : `第${seriesNumber}作`;
+  const getSeriesDisplay = (seriesNumber: string | number): string => {
+    const num = typeof seriesNumber === 'string' ? parseFloat(seriesNumber) : seriesNumber;
+    return num % 1 === 0 
+      ? `第${Math.floor(num)}作` 
+      : `第${num}作`;
   };
 
   const cardClass = `

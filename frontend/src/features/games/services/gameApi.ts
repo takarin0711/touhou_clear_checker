@@ -53,9 +53,9 @@ export const gameApi = {
    * @returns フィルタリング後のゲーム一覧
    */
   filterGamesByTitle: (games: Game[], searchTerm: string): Game[] => {
-    if (!searchTerm) return games;
+    if (!searchTerm || !searchTerm.trim()) return games;
     
-    const term = searchTerm.toLowerCase();
+    const term = searchTerm.toLowerCase().trim();
     return games.filter(game => 
       game.title.toLowerCase().includes(term) ||
       game.series_number.toString().includes(term)

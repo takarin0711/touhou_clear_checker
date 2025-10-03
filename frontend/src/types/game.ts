@@ -1,10 +1,19 @@
 export interface Game {
   id: number;
   title: string;
-  series_number: number;
+  series_number: string | number; // APIからは文字列、フロントエンドでは数値として扱う
   release_year: number;
   game_type: string;
 }
+
+/**
+ * series_numberを数値として取得（API互換性対応）
+ */
+export const getSeriesNumber = (game: Game): number => {
+  return typeof game.series_number === 'string' 
+    ? parseFloat(game.series_number) 
+    : game.series_number;
+};
 
 export interface GameListResponse {
   games: Game[];

@@ -62,13 +62,15 @@ export const DIFFICULTY_ORDER = [
 ];
 
 /**
- * ゲームに応じた難易度順序を取得
+ * ゲームに応じた難易度順序を取得（series_number版）
  */
-export const getDifficultyOrderForGame = (game: { id: number } | null, mode: string = 'normal'): string[] => {
+export const getDifficultyOrderForGameBySeries = (game: { series_number: string | number } | null, mode: string = 'normal'): string[] => {
   if (!game) return BASE_DIFFICULTY_ORDER;
   
-  // 紺珠伝の特殊モード対応（ゲームID: 11）
-  if (game.id === 11) { // 紺珠伝
+  const seriesNumber = typeof game.series_number === 'string' ? parseFloat(game.series_number) : game.series_number;
+  
+  // 紺珠伝の特殊モード対応（シリーズ番号: 15.0）
+  if (seriesNumber === 15.0) { // 紺珠伝
     if (mode === 'legacy') {
       return [DIFFICULTIES.EASY, DIFFICULTIES.NORMAL, DIFFICULTIES.HARD, DIFFICULTIES.LUNATIC, DIFFICULTIES.EXTRA];
     } else if (mode === 'pointdevice') {
@@ -84,15 +86,16 @@ export const getDifficultyOrderForGame = (game: { id: number } | null, mode: str
     DIFFICULTIES.LUNATIC
   ];
   
-  // Extra難易度は獣王園（ゲームID: 15）以外で追加
-  if (game.id !== 15) {
+  // Extra難易度は獣王園（シリーズ番号: 19.0）以外で追加
+  if (seriesNumber !== 19.0) {
     difficulties.push(DIFFICULTIES.EXTRA);
   }
   
-  // Phantasm難易度は妖々夢（ゲームID: 2）のみで追加
-  if (game.id === 2) {
+  // Phantasm難易度は妖々夢（シリーズ番号: 7.0）のみで追加
+  if (seriesNumber === 7.0) {
     difficulties.push(DIFFICULTIES.PHANTASM);
   }
   
   return difficulties;
 };
+

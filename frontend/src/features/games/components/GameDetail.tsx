@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import Badge from '../../../components/common/Badge';
 import Button from '../../../components/common/Button';
 import { GAME_TYPE_LABELS, Game } from '../../../types/game';
-import { DIFFICULTIES, getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../../types/difficulty';
+import { DIFFICULTIES, getDifficultyOrderForGameBySeries, DIFFICULTY_COLORS } from '../../../types/difficulty';
 import { useClearRecords } from '../../../hooks/useClearRecords';
 import { useGameMemo } from '../../../hooks/useGameMemo';
 import IndividualTabClearForm from '../../clearRecords/components/IndividualTabClearForm';
-import { GAME_MODES, isModeAvailableForGame } from '../../../constants/gameConstants';
+import { GAME_MODES, isModeAvailableForSeries } from '../../../constants/gameConstants';
+import { getSeriesNumber } from '../../../types/game';
 import { useGameCharacters } from '../hooks/useGameCharacters';
 import { getSpecialClearLabel } from '../../../types/clearRecord';
+import { SPECIAL_CLEAR_SERIES_NUMBERS } from '../../../constants/gameFeatureConstants';
 
 interface GameDetailProps {
   game: Game;
@@ -66,10 +68,11 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
     }
   };
 
-  const getSeriesDisplay = (seriesNumber: number): string => {
-    return seriesNumber % 1 === 0 
-      ? `第${Math.floor(seriesNumber)}作` 
-      : `第${seriesNumber}作`;
+  const getSeriesDisplay = (seriesNumber: string | number): string => {
+    const num = typeof seriesNumber === 'string' ? parseFloat(seriesNumber) : seriesNumber;
+    return num % 1 === 0 
+      ? `第${Math.floor(num)}作` 
+      : `第${num}作`;
   };
 
   const getDifficultyColorClasses = (difficulty: string): string => {
@@ -87,17 +90,19 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
 
 
   const getAvailableDifficulties = (): string[] => {
+    const seriesNumber = game ? getSeriesNumber(game) : 0;
+    
     // 紺珠伝の場合は両モードの難易度を統合表示
-    if (isModeAvailableForGame(game?.id)) {
-      const legacyDifficulties = getDifficultyOrderForGame(game, GAME_MODES.LEGACY);
-      const pointdeviceDifficulties = getDifficultyOrderForGame(game, GAME_MODES.POINTDEVICE);
+    if (isModeAvailableForSeries(seriesNumber)) {
+      const legacyDifficulties = getDifficultyOrderForGameBySeries(game, GAME_MODES.LEGACY);
+      const pointdeviceDifficulties = getDifficultyOrderForGameBySeries(game, GAME_MODES.POINTDEVICE);
       
       // 重複を除いてマージ（Legacy + Pointdevice の難易度を全て表示）
       const allDifficulties = Array.from(new Set([...pointdeviceDifficulties, ...legacyDifficulties]));
       return allDifficulties;
     }
     
-    return getDifficultyOrderForGame(game);
+    return getDifficultyOrderForGameBySeries(game);
   };
 
 
@@ -181,7 +186,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
                   {difficulty}
                 </span>
                 {/* 紺珠伝のExtraはLegacyモードのみの注釈 */}
-                {isModeAvailableForGame(game?.id) && difficulty === 'Extra' && (
+                {isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) && difficulty === 'Extra' && (
                   <span className="ml-1 text-xs text-gray-500">(Legacy)</span>
                 )}
               </div>
@@ -189,7 +194,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
           </div>
           
           {/* 紺珠伝用のモード説明 */}
-          {isModeAvailableForGame(game?.id) && (
+          {isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) && (
             <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <p className="text-sm text-blue-800 font-medium mb-1">
                 紺珠伝では2つのモードが選択可能です：
@@ -266,7 +271,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
                       records: any[];
                     }> = filteredRecords.reduce((groups, record) => {
                     // 紺珠伝の場合はモードも考慮
-                    const groupKey = isModeAvailableForGame(game?.id) 
+                    const groupKey = isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) 
                       ? `${record.difficulty}_${record.mode || 'normal'}`
                       : record.difficulty;
                     
@@ -307,7 +312,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
                       <div className={`px-4 py-3 font-medium text-sm ${getDifficultyColorClasses(group.difficulty)}`}>
                         <div className="flex items-center space-x-3">
                           <span>{group.difficulty}</span>
-                          {isModeAvailableForGame(game?.id) && (
+                          {isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) && (
                             <span className="text-xs px-2 py-1 bg-white bg-opacity-70 rounded-full">
                               {group.mode === 'legacy' ? 'レガシーモード' : '完全無欠モード'}
                             </span>
@@ -334,8 +339,8 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
                                 {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
                                 {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
                                 {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
-                                {[7, 8, 9, 12, 13, 14].includes(game?.id) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
-                                {[13].includes(game?.id) && record.is_special_clear_2 && <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_2')}</span>}
+                                {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_1_GAMES.includes(game ? getSeriesNumber(game) : 0) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
+                                {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_2_GAMES.includes(game ? getSeriesNumber(game) : 0) && record.is_special_clear_2 && <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_2')}</span>}
                                 {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
                               </div>
                             </div>

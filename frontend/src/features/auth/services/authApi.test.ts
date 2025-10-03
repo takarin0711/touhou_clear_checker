@@ -69,19 +69,19 @@ describe('authApi', () => {
 
       const result = await authApi.login(credentials);
 
-      // FormDataが正しく作成されて送信されることを確認
+      // URLSearchParamsが正しく作成されて送信されることを確認
       expect(mockedApi.post).toHaveBeenCalledWith(
         '/users/login',
-        expect.any(FormData),
+        expect.any(URLSearchParams),
         {
           headers: {
-            'Content-Type': 'multipart/form-data',
+            'Content-Type': 'application/x-www-form-urlencoded',
           },
         }
       );
 
-      // FormDataの内容を確認
-      const formDataCall = mockedApi.post.mock.calls[0][1] as FormData;
+      // URLSearchParamsの内容を確認
+      const formDataCall = mockedApi.post.mock.calls[0][1] as URLSearchParams;
       expect(formDataCall.get('username')).toBe('testuser');
       expect(formDataCall.get('password')).toBe('password123');
 

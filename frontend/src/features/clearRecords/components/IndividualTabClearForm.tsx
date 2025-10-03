@@ -3,14 +3,14 @@
  */
 import React, { useState, useEffect } from 'react';
 import Button from '../../../components/common/Button';
-import { getDifficultyOrderForGame } from '../../../types/difficulty';
-import { isModeAvailableForGame, isFullSpellCardAvailable, isNoContinueAvailable } from '../../../constants/gameConstants';
+import { getDifficultyOrderForGameBySeries } from '../../../types/difficulty';
+import { isModeAvailableForSeries, isFullSpellCardAvailableBySeries, isNoContinueAvailableBySeries } from '../../../constants/gameConstants';
 import { getSpecialClearLabel, getSpecialClearDescription, DifficultyData, IndividualConditionData } from '../../../types/clearRecord';
 import { useGameCharacters } from '../../games/hooks/useGameCharacters';
 import { useClearRecords } from '../../../hooks/useClearRecords';
-import { Game } from '../../../types/game';
+import { Game, getSeriesNumber } from '../../../types/game';
 import { GameCharacter } from '../../../types/gameCharacter';
-import { SPECIAL_CLEAR_GAME_IDS } from '../../../constants/gameFeatureConstants';
+import { SPECIAL_CLEAR_SERIES_NUMBERS } from '../../../constants/gameFeatureConstants';
 
 interface IndividualTabClearFormProps {
   game: Game;
@@ -36,16 +36,19 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
   const { characters, loading: charactersLoading } = useGameCharacters(game.id);
   const { clearRecords, submitIndividualConditions } = useClearRecords(game.id);
 
+  // series_numberを数値として取得
+  const seriesNumber = game ? getSeriesNumber(game) : 0;
+  
   // 現在選択中のモードでの利用可能な難易度を取得
-  const availableDifficulties = getDifficultyOrderForGame(game, selectedMode);
-  const isModeGame = isModeAvailableForGame(game?.id);
-  const isFullSpellAvailable = isFullSpellCardAvailable(game?.id);
+  const availableDifficulties = getDifficultyOrderForGameBySeries(game, selectedMode);
+  const isModeGame = isModeAvailableForSeries(seriesNumber);
+  const isFullSpellAvailable = isFullSpellCardAvailableBySeries(seriesNumber);
   // ヘッダー表示用：現在選択中の難易度でノーコンが利用可能かを判定
-  const isNoContinueAvailableForCurrentTab = isNoContinueAvailable(game?.id, selectedMode, activeTab);
+  const isNoContinueAvailableForCurrentTab = isNoContinueAvailableBySeries(seriesNumber, selectedMode, activeTab);
   
   // 特殊クリア条件が利用可能かチェック
-  const hasSpecialClear1 = SPECIAL_CLEAR_GAME_IDS.SPECIAL_CLEAR_1_GAMES.includes(game?.id);
-  const hasSpecialClear2 = SPECIAL_CLEAR_GAME_IDS.SPECIAL_CLEAR_2_GAMES.includes(game?.id); // 鬼形獣のみ
+  const hasSpecialClear1 = SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_1_GAMES.includes(seriesNumber);
+  const hasSpecialClear2 = SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_2_GAMES.includes(seriesNumber); // 鬼形獣のみ
   
   // 現在のモードのデータ
   const currentModeData = modeData[selectedMode] || {};
@@ -99,7 +102,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
       
       // 両モードの初期データを作成
       ['pointdevice', 'legacy'].forEach(mode => {
-        const modeDifficulties = getDifficultyOrderForGame(game, mode);
+        const modeDifficulties = getDifficultyOrderForGameBySeries(game, mode);
         modeDifficulties.forEach(difficulty => {
           newModeData[mode][difficulty] = {
             characters: {}
@@ -125,7 +128,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
       setModeData(newModeData);
       
       // 最初の難易度をアクティブタブに設定
-      const firstDifficulty = getDifficultyOrderForGame(game, selectedMode)[0];
+      const firstDifficulty = getDifficultyOrderForGameBySeries(game, selectedMode)[0];
       if (firstDifficulty) {
         setActiveTab(firstDifficulty);
       }
@@ -163,7 +166,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
       
       // 両モードのデータを確認・送信
       ['pointdevice', 'legacy'].forEach(mode => {
-        const modeDifficulties = getDifficultyOrderForGame(game, mode);
+        const modeDifficulties = getDifficultyOrderForGameBySeries(game, mode);
         
         modeDifficulties.forEach(difficulty => {
           const data = modeData[mode]?.[difficulty];
@@ -216,7 +219,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
       {/* ヘッダー */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">
-          {game.id === 8 ? 'ルート別条件登録' : '機体別条件登録'}
+          {seriesNumber === 12.8 ? 'ルート別条件登録' : '機体別条件登録'}
         </h3>
         <Button onClick={onClose} variant="outline" size="small">
           閉じる
@@ -310,7 +313,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
       {currentModeData[activeTab] && (
         <div className="mb-6">
           <h4 className="text-lg font-medium text-gray-900 mb-4">
-            {activeTab} - {game.id === 8 ? 'ルート別条件設定' : '機体別条件設定'}
+            {activeTab} - {seriesNumber === 12.8 ? 'ルート別条件設定' : '機体別条件設定'}
           </h4>
           
           <div className="overflow-x-auto">
@@ -318,7 +321,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    {game.id === 8 ? 'ルート' : '機体'}
+                    {seriesNumber === 12.8 ? 'ルート' : '機体'}
                   </th>
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     クリア
@@ -356,7 +359,7 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
                 {(() => {
                   let displayCharacters = characters;
                   
-                  if (game.id === 8) { // 妖精大戦争
+                  if (seriesNumber === 12.8) { // 妖精大戦争
                     if (activeTab === 'Extra') {
                       // Extraタブでは「チルノ（Extra）」のみ表示
                       displayCharacters = characters.filter(char => 

@@ -21,6 +21,9 @@ export const SERIES_NUMBERS = {
   TOUHOU_06_EOSD: 6,    // 東方紅魔郷
   TOUHOU_07_PCB: 7,     // 東方妖々夢
   TOUHOU_08_IN: 8,      // 東方永夜抄
+  TOUHOU_09_PoFV: 9,    // 東方花映塚
+  TOUHOU_15_LoLK: 15,   // 東方紺珠伝
+  TOUHOU_19_UDoALG: 19, // 東方獣王園
 };
 
 /**
@@ -127,34 +130,36 @@ export const LOLK_SETTINGS = {
 };
 
 /**
- * 指定ゲームでモード選択が利用可能かチェック
- * @param gameId - ゲームID
+ * 指定ゲームでモード選択が利用可能かチェック（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @returns モード選択が利用可能な場合true
  */
-export const isModeAvailableForGame = (gameId: number): boolean => {
-  return gameId === LOLK_SETTINGS.GAME_ID;
+export const isModeAvailableForSeries = (seriesNumber: number): boolean => {
+  return seriesNumber === LOLK_SETTINGS.SERIES_NUMBER;
 };
 
+
 /**
- * 指定ゲームで利用可能なモード一覧を取得
- * @param gameId - ゲームID
+ * 指定ゲームで利用可能なモード一覧を取得（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @returns 利用可能なモード一覧
  */
-export const getAvailableModesForGame = (gameId: number): string[] => {
-  if (gameId === LOLK_SETTINGS.GAME_ID) {
+export const getAvailableModesForSeries = (seriesNumber: number): string[] => {
+  if (seriesNumber === LOLK_SETTINGS.SERIES_NUMBER) {
     return LOLK_SETTINGS.MODES;
   }
   return [GAME_MODES.NORMAL];
 };
 
+
 /**
- * 指定ゲーム・モードで利用可能な難易度一覧を取得
- * @param gameId - ゲームID
+ * 指定ゲーム・モードで利用可能な難易度一覧を取得（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @param mode - ゲームモード
  * @returns 利用可能な難易度一覧
  */
-export const getAvailableDifficultiesForGameAndMode = (gameId: number, mode: string): string[] => {
-  if (gameId === LOLK_SETTINGS.GAME_ID && LOLK_SETTINGS.MODES.includes(mode)) {
+export const getAvailableDifficultiesForSeriesAndMode = (seriesNumber: number, mode: string): string[] => {
+  if (seriesNumber === SERIES_NUMBERS.TOUHOU_15_LoLK && LOLK_SETTINGS.MODES.includes(mode)) {
     return LOLK_SETTINGS.DIFFICULTY_SETTINGS[mode];
   }
   
@@ -162,51 +167,54 @@ export const getAvailableDifficultiesForGameAndMode = (gameId: number, mode: str
   const baseDifficulties = ['Easy', 'Normal', 'Hard', 'Lunatic'];
   
   // 獣王園以外はExtra追加
-  if (gameId !== GAME_IDS.TOUHOU_19_UDoALG) {
+  if (seriesNumber !== SERIES_NUMBERS.TOUHOU_19_UDoALG) {
     baseDifficulties.push('Extra');
   }
   
   // 妖々夢はPhantasm追加  
-  if (gameId === GAME_IDS.TOUHOU_07_PCB) {
+  if (seriesNumber === SERIES_NUMBERS.TOUHOU_07_PCB) {
     baseDifficulties.push('Phantasm');
   }
   
   return baseDifficulties;
 };
 
+
 /**
- * 対戦型STGかどうかを判定
- * @param gameId - ゲームID
+ * 対戦型STGかどうかを判定（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @returns 対戦型STGの場合true
  */
-export const isVersusGame = (gameId: number): boolean => {
-  const versusGameIds = [
-    GAME_IDS.TOUHOU_09_PoFV,   // 東方花映塚
-    GAME_IDS.TOUHOU_19_UDoALG  // 東方獣王園
+export const isVersusGameBySeries = (seriesNumber: number): boolean => {
+  const versusSeriesNumbers = [
+    SERIES_NUMBERS.TOUHOU_09_PoFV,   // 東方花映塚
+    SERIES_NUMBERS.TOUHOU_19_UDoALG  // 東方獣王園
   ];
-  return versusGameIds.includes(gameId);
+  return versusSeriesNumbers.includes(seriesNumber);
 };
 
+
 /**
- * フルスペカが利用可能かどうかを判定
- * @param gameId - ゲームID
+ * フルスペカが利用可能かどうかを判定（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @returns フルスペカが利用可能な場合true
  */
-export const isFullSpellCardAvailable = (gameId: number): boolean => {
+export const isFullSpellCardAvailableBySeries = (seriesNumber: number): boolean => {
   // 対戦型STGはフルスペカなし
-  return !isVersusGame(gameId);
+  return !isVersusGameBySeries(seriesNumber);
 };
 
+
 /**
- * ノーコンティニューが利用可能かどうかを判定
- * @param gameId - ゲームID
+ * ノーコンティニューが利用可能かどうかを判定（series_number版）
+ * @param seriesNumber - シリーズ番号
  * @param mode - ゲームモード
  * @param difficulty - 難易度（オプション）
  * @returns ノーコンティニューが利用可能な場合true
  */
-export const isNoContinueAvailable = (gameId: number, mode: string, difficulty: string | null = null): boolean => {
+export const isNoContinueAvailableBySeries = (seriesNumber: number, mode: string, difficulty: string | null = null): boolean => {
   // 紺珠伝の完全無欠モードはチェックポイント制なのでノーコン概念なし
-  if (gameId === GAME_IDS.TOUHOU_15_LoLK && mode === GAME_MODES.POINTDEVICE) {
+  if (seriesNumber === SERIES_NUMBERS.TOUHOU_15_LoLK && mode === GAME_MODES.POINTDEVICE) {
     return false;
   }
   
@@ -217,3 +225,4 @@ export const isNoContinueAvailable = (gameId: number, mode: string, difficulty: 
   
   return true;
 };
+

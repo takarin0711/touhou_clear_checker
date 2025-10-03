@@ -1,5 +1,5 @@
 import React from 'react';
-import { getDifficultyOrderForGame, DIFFICULTY_COLORS } from '../../types/difficulty';
+import { getDifficultyOrderForGameBySeries, DIFFICULTY_COLORS } from '../../types/difficulty';
 
 // テスト用ゲームデータ（実際のデータベースIDに合わせたもの）
 const testGames = [
@@ -67,7 +67,7 @@ const DifficultyTestMockup = () => {
       </div>
 
       {testGames.map(game => {
-        const difficulties = getDifficultyOrderForGame(game);
+        const difficulties = getDifficultyOrderForGameBySeries(game);
         const hasExtra = difficulties.includes('Extra');
         const hasPhantasm = difficulties.includes('Phantasm');
         
@@ -92,8 +92,8 @@ const DifficultyTestMockup = () => {
           }
         } else if (game.id === 11) { // 紺珠伝
           // 紺珠伝はモード別テストが必要（ここではlegacyモードでテスト）
-          const legacyDifficulties = getDifficultyOrderForGame(game, 'legacy');
-          const pointdeviceDifficulties = getDifficultyOrderForGame(game, 'pointdevice');
+          const legacyDifficulties = getDifficultyOrderForGameBySeries(game, 'legacy');
+          const pointdeviceDifficulties = getDifficultyOrderForGameBySeries(game, 'pointdevice');
           const legacyHasExtra = legacyDifficulties.includes('Extra');
           const pointdeviceHasExtra = pointdeviceDifficulties.includes('Extra');
           
@@ -154,7 +154,7 @@ const DifficultyTestMockup = () => {
       <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-lg font-medium text-blue-800 mb-2">実装詳細</h3>
         <div className="text-sm text-blue-700 space-y-1">
-          <div>・GameDetail.js の58-59行目で getDifficultyOrderForGame(game) を使用</div>
+          <div>・GameDetail.js の58-59行目で getDifficultyOrderForGameBySeries(game) を使用</div>
           <div>・getDifficultyOrderForGame関数はゲーム固有の難易度ルールを適用</div>
           <div>・獣王園（シリーズ番号19）: Extra難易度を除外</div>
           <div>・妖々夢（シリーズ番号7）: Extra + Phantasm難易度を含む</div>
