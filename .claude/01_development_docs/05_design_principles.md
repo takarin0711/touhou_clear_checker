@@ -22,7 +22,61 @@
 - データベース関連の数値も定数化
 - 設定値は環境変数または定数として管理
 
-**例:**
+#### フロントエンド
+- `src/constants/` ディレクトリに定数ファイルを配置
+- API関連の設定は `apiConstants.js` で管理
+- ゲーム関連の定数は `gameConstants.js` で管理
+- UI関連の数値も定数化
+
+### 実装状況（2025年10月更新）
+
+#### 新規作成済み定数ファイル
+- `backend/infrastructure/security/constants.py` - JWT、認証トークン、暗号化設定
+- `backend/domain/constants/validation_constants.py` - バリデーション制約値
+- `backend/infrastructure/config/network_constants.py` - サーバー、CORS設定
+- `frontend/src/constants/validation.ts` - フロントエンド用バリデーション定数
+
+#### 使用例
+
+**セキュリティ設定:**
+```python
+# ❌ マジックナンバー
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+argon2__memory_cost=65536
+self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+
+# ✅ 定数使用
+from infrastructure.security.constants import SecurityConstants
+ACCESS_TOKEN_EXPIRE_MINUTES = SecurityConstants.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+argon2__memory_cost=SecurityConstants.ARGON2_MEMORY_COST
+self.smtp_port = int(os.getenv("SMTP_PORT", str(SecurityConstants.SMTP_DEFAULT_PORT)))
+```
+
+**バリデーション設定:**
+```python
+# ❌ マジックナンバー
+username = Column(String(50), unique=True, nullable=False)
+if formData.username.length < 3:
+
+# ✅ 定数使用
+from domain.constants.validation_constants import ValidationConstants
+username = Column(String(ValidationConstants.USERNAME_MAX_LENGTH), unique=True, nullable=False)
+if formData.username.length < VALIDATION_CONSTANTS.USERNAME_MIN_LENGTH:
+```
+
+**ネットワーク設定:**
+```python
+# ❌ マジックナンバー
+allow_origins=["http://localhost:3000", "http://localhost:3001"]
+uvicorn.run(app, host="0.0.0.0", port=8000)
+
+# ✅ 定数使用
+from infrastructure.config.network_constants import NetworkConstants
+allow_origins=NetworkConstants.ALLOWED_ORIGINS
+uvicorn.run(app, host=NetworkConstants.DEFAULT_HOST, port=NetworkConstants.DEFAULT_PORT)
+```
+
+**ゲーム判定（既存）:**
 ```python
 # ❌ マジックナンバー使用
 if game_id == 1:
@@ -32,23 +86,6 @@ elif game_id == 2:
 
 # ✅ 定数使用
 char_range = get_character_range_for_game(game_id)
-```
-
-#### フロントエンド
-- `src/constants/` ディレクトリに定数ファイルを配置
-- API関連の設定は `apiConstants.js` で管理
-- ゲーム関連の定数は `gameConstants.js` で管理
-- UI関連の数値も定数化
-
-**例:**
-```javascript
-// ❌ マジックナンバー使用
-timeout: 5000,
-if (game.series_number === 7) {
-
-// ✅ 定数使用
-timeout: API_CONFIG.TIMEOUT,
-if (isPhantasmAvailable(game.series_number)) {
 ```
 
 ## 2. コーディング原則

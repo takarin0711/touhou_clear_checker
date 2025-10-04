@@ -4,6 +4,7 @@ import Button from '../../../components/common/Button';
 import Input from '../../../components/common/Input';
 import { RegisterData } from '../../../types/auth';
 import EmailVerificationPendingPage from './EmailVerificationPendingPage';
+import { VALIDATION_CONSTANTS } from '../../../constants/validation';
 
 interface RegisterFormProps {
   onSuccess?: () => void;
@@ -57,8 +58,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
     
     if (!formData.username.trim()) {
       errors.username = 'ユーザー名を入力してください';
-    } else if (formData.username.length < 3) {
-      errors.username = 'ユーザー名は3文字以上で入力してください';
+    } else if (formData.username.length < VALIDATION_CONSTANTS.USERNAME_MIN_LENGTH) {
+      errors.username = `ユーザー名は${VALIDATION_CONSTANTS.USERNAME_MIN_LENGTH}文字以上で入力してください`;
     }
     
     if (!formData.email.trim()) {
@@ -69,8 +70,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess, onSwitchToLogin 
     
     if (!formData.password) {
       errors.password = 'パスワードを入力してください';
-    } else if (formData.password.length < 6) {
-      errors.password = 'パスワードは6文字以上で入力してください';
+    } else if (formData.password.length < VALIDATION_CONSTANTS.PASSWORD_MIN_LENGTH) {
+      errors.password = `パスワードは${VALIDATION_CONSTANTS.PASSWORD_MIN_LENGTH}文字以上で入力してください`;
     }
     
     if (!formData.confirmPassword) {

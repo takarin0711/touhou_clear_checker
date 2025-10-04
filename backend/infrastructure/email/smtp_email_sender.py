@@ -3,6 +3,7 @@ import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from application.services.email_service import EmailSender
+from infrastructure.security.constants import SecurityConstants
 
 
 class SMTPEmailSender(EmailSender):
@@ -10,7 +11,7 @@ class SMTPEmailSender(EmailSender):
     
     def __init__(self):
         self.smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-        self.smtp_port = int(os.getenv("SMTP_PORT", "587"))
+        self.smtp_port = int(os.getenv("SMTP_PORT", str(SecurityConstants.SMTP_DEFAULT_PORT)))
         self.smtp_username = os.getenv("SMTP_USERNAME")
         self.smtp_password = os.getenv("SMTP_PASSWORD")
         self.from_email = os.getenv("FROM_EMAIL", self.smtp_username)

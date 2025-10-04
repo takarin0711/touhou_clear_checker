@@ -2,6 +2,7 @@
  * ゲームメモAPI サービス
  */
 import apiClient from './api';
+import { VALIDATION_CONSTANTS } from '../constants/validation';
 
 /**
  * ゲームメモ関連のAPI呼び出し
@@ -17,7 +18,7 @@ export const gameMemoApi = {
       const response = await apiClient.get(`/game-memos/${gameId}`);
       return response.data;
     } catch (error) {
-      if ((error as any).response && (error as any).response.status === 404) {
+      if ((error as any).response && (error as any).response.status === VALIDATION_CONSTANTS.HTTP_NOT_FOUND) {
         return null; // メモが存在しない場合
       }
       throw error;

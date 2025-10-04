@@ -35,6 +35,11 @@ backend/
 │   │   ├── game_repository.py
 │   │   ├── game_character_repository.py
 │   │   └── clear_record_repository.py
+│   ├── constants/          # ドメイン定数
+│   │   ├── __init__.py
+│   │   ├── validation_constants.py # バリデーション設定定数
+│   │   ├── game_constants.py       # ゲーム関連定数
+│   │   └── clear_condition_constants.py # クリア条件定数
 │   └── value_objects/      # 値オブジェクト
 │       ├── __init__.py
 │       └── difficulty.py
@@ -55,6 +60,9 @@ backend/
 │       └── clear_record_dto.py # クリア記録DTO
 ├── infrastructure/        # インフラストラクチャ層
 │   ├── __init__.py
+│   ├── config/           # 設定関連
+│   │   ├── __init__.py
+│   │   └── network_constants.py # ネットワーク・CORS設定定数
 │   ├── database/         # データベース関連
 │   │   ├── __init__.py
 │   │   ├── connection.py # SQLite接続設定
@@ -75,6 +83,7 @@ backend/
 │   │   └── smtp_email_sender.py # SMTP実装
 │   └── security/         # セキュリティ関連
 │       ├── __init__.py
+│       ├── constants.py  # セキュリティ設定定数（JWT、認証トークン等）
 │       ├── auth_middleware.py  # JWT認証ミドルウェア
 │       ├── password_hasher.py  # パスワードハッシュ化
 │       ├── jwt_handler.py      # JWTトークン処理
@@ -132,7 +141,9 @@ frontend/
 │   │   └── AuthContext.js # 認証状態管理
 │   ├── services/          # 共通API設定
 │   │   └── api.js         # Axios設定・トークン管理
-│   ├── types/             # 型定義（JSDoc）
+│   ├── constants/         # 定数定義
+│   │   └── validation.ts  # バリデーション定数
+│   ├── types/             # 型定義（TypeScript）
 │   ├── utils/             # ユーティリティ関数
 │   └── App.js             # ルーティング・レイアウト
 ├── package.json

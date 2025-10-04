@@ -3,15 +3,17 @@ from typing import Optional
 from jose import JWTError, jwt
 from pydantic import BaseModel
 
+from .constants import SecurityConstants
+
 
 class TokenData(BaseModel):
     username: Optional[str] = None
 
 
 class JWTHandler:
-    SECRET_KEY = "your-secret-key-here-change-in-production"
-    ALGORITHM = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES = 30
+    SECRET_KEY = SecurityConstants.JWT_SECRET_KEY
+    ALGORITHM = SecurityConstants.JWT_ALGORITHM
+    ACCESS_TOKEN_EXPIRE_MINUTES = SecurityConstants.JWT_ACCESS_TOKEN_EXPIRE_MINUTES
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         to_encode = data.copy()

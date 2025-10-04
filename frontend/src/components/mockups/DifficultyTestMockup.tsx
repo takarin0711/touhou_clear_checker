@@ -74,7 +74,7 @@ const DifficultyTestMockup = () => {
         let testResult = '';
         let resultClass = '';
         
-        if (game.id === 15) { // 獣王園
+        if (game.series_number === 19) { // 獣王園
           if (!hasExtra) {
             testResult = '✅ 獣王園でExtra難易度が正しく除外されています';
             resultClass = 'bg-green-50 border-green-200 text-green-800';
@@ -82,7 +82,7 @@ const DifficultyTestMockup = () => {
             testResult = '❌ 獣王園でExtra難易度が除外されていません';
             resultClass = 'bg-red-50 border-red-200 text-red-800';
           }
-        } else if (game.id === 2) { // 妖々夢
+        } else if (game.series_number === 7) { // 妖々夢
           if (hasExtra && hasPhantasm) {
             testResult = '✅ 妖々夢でExtra・Phantasm難易度が正しく含まれています';
             resultClass = 'bg-green-50 border-green-200 text-green-800';
@@ -90,7 +90,7 @@ const DifficultyTestMockup = () => {
             testResult = '❌ 妖々夢で難易度設定に問題があります';
             resultClass = 'bg-red-50 border-red-200 text-red-800';
           }
-        } else if (game.id === 11) { // 紺珠伝
+        } else if (game.series_number === 15) { // 紺珠伝
           // 紺珠伝はモード別テストが必要（ここではlegacyモードでテスト）
           const legacyDifficulties = getDifficultyOrderForGameBySeries(game, 'legacy');
           const pointdeviceDifficulties = getDifficultyOrderForGameBySeries(game, 'pointdevice');

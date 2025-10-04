@@ -1,5 +1,7 @@
 from passlib.context import CryptContext
 
+from .constants import SecurityConstants
+
 
 class PasswordHasher:
     def __init__(self):
@@ -8,11 +10,11 @@ class PasswordHasher:
             schemes=["argon2", "bcrypt"], 
             deprecated="auto",
             # Argon2設定（セキュリティと性能のバランス）
-            argon2__memory_cost=65536,    # 64MB メモリ使用
-            argon2__time_cost=3,          # 3回反復
-            argon2__parallelism=1,        # 1並列処理
+            argon2__memory_cost=SecurityConstants.ARGON2_MEMORY_COST,
+            argon2__time_cost=SecurityConstants.ARGON2_TIME_COST,
+            argon2__parallelism=SecurityConstants.ARGON2_PARALLELISM,
             # bcrypt設定（既存ハッシュ用）
-            bcrypt__rounds=12
+            bcrypt__rounds=SecurityConstants.BCRYPT_ROUNDS
         )
 
     def hash_password(self, password: str) -> str:

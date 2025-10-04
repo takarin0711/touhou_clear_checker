@@ -17,7 +17,8 @@
 │   ├── 07_testing_strategy.md          # テスト戦略
 │   ├── 08_security_design.md           # セキュリティ設計
 │   ├── 09_email_verification_dev_guide.md # メール認証開発ガイド
-│   └── 10_mysql_migration_guide.md     # MySQL移行ガイド
+│   ├── 10_mysql_migration_guide.md     # MySQL移行ガイド
+│   └── 11_constants_management_guide.md # 定数管理ガイドライン
 ├── 02_deployment_docs/                 # デプロイメント・運用
 │   ├── 01_mysql_setup.md               # MySQL環境設定
 │   └── 02_security_setup.md            # セキュリティ設定
@@ -81,6 +82,12 @@
 2. [API設計](./01_development_docs/03_api_design.md)
 
 ## 更新履歴
+
+### 2025年10月4日
+- **マジックナンバー完全排除**: プロジェクト全体のマジックナンバーを定数化により排除
+- **新規定数ファイル作成**: セキュリティ・バリデーション・ネットワーク設定の定数ファイル追加
+- **設計書更新**: アーキテクチャ設計書・設計原則文書の定数管理セクション強化
+- **定数管理ガイドライン新規作成**: 包括的な定数管理ドキュメントを追加
 
 ### 2025年9月30日
 - **ゲームID設計ルール明確化**: gameIDは連番（1-16）、series_numberは作品番号（6.0-20.0）の分離ルールを確立

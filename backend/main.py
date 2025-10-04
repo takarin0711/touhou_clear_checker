@@ -7,15 +7,16 @@ from presentation.api.v1.admin import router as admin_router
 from presentation.api.v1.game_characters import router as game_characters_router
 from presentation.api.v1.game_memos import router as game_memos_router
 from infrastructure.database.connection import engine, Base
+from infrastructure.config.network_constants import NetworkConstants
 
 app = FastAPI(title="Touhou Clear Checker API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
+    allow_origins=NetworkConstants.ALLOWED_ORIGINS,
+    allow_credentials=NetworkConstants.ALLOW_CREDENTIALS,
+    allow_methods=NetworkConstants.ALLOWED_METHODS,
+    allow_headers=NetworkConstants.ALLOWED_HEADERS,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -33,4 +34,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=NetworkConstants.DEFAULT_HOST, port=NetworkConstants.DEFAULT_PORT)

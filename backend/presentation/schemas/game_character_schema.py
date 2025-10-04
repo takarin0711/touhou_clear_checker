@@ -1,12 +1,13 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
+from domain.constants.validation_constants import ValidationConstants
 
 
 class GameCharacterBase(BaseModel):
     """ゲーム機体基底スキーマ"""
-    character_name: str = Field(..., min_length=1, max_length=100, description="機体名")
-    description: Optional[str] = Field(None, max_length=500, description="機体説明")
+    character_name: str = Field(..., min_length=ValidationConstants.CHARACTER_NAME_MIN_LENGTH, max_length=ValidationConstants.CHARACTER_NAME_MAX_LENGTH, description="機体名")
+    description: Optional[str] = Field(None, max_length=ValidationConstants.CHARACTER_DESCRIPTION_MAX_LENGTH, description="機体説明")
     sort_order: int = Field(default=0, description="表示順序")
 
 
