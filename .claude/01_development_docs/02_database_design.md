@@ -145,9 +145,9 @@ CREATE INDEX idx_game_characters_sort ON game_characters(game_id, sort_order);
 | is_no_bomb_clear | BOOLEAN | DEFAULT FALSE | ノーボムクリア達成 |
 | is_no_miss_clear | BOOLEAN | DEFAULT FALSE | ノーミスクリア達成 |
 | is_full_spell_card | BOOLEAN | DEFAULT FALSE | フルスペルカード取得（全作品共通） |
-| is_special_clear_1 | BOOLEAN | DEFAULT FALSE | 作品特有条件1（例: ノーロアリング） |
-| is_special_clear_2 | BOOLEAN | DEFAULT FALSE | 作品特有条件2（例: ノー季節解放） |
-| is_special_clear_3 | BOOLEAN | DEFAULT FALSE | 作品特有条件3（例: その他特殊条件） |
+| is_special_clear_1 | BOOLEAN | DEFAULT FALSE | 作品特有条件1（例: ノー結界、ノーベントラー、ノー暴走） |
+| is_special_clear_2 | BOOLEAN | DEFAULT FALSE | 作品特有条件2（例: ノー霊撃） |
+| is_special_clear_3 | BOOLEAN | DEFAULT FALSE | 作品特有条件3（予備） |
 | cleared_at | DATE | NULL | 最初にクリアした日（日付のみ） |
 | last_updated_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 最終更新日時 |
 | created_at | TIMESTAMP | DEFAULT CURRENT_TIMESTAMP | 作成日時 |
@@ -197,7 +197,14 @@ CREATE INDEX idx_game_memos_user_game ON game_memos(user_id, game_id);
 
 ### 3. 作品固有システム対応
 - **ゲームモード**: 紺珠伝のLegacy/Pointdeviceモード対応
-- **特殊クリア条件**: 作品特有の条件（ノーロアリング、ノー季節解放等）を3つまで対応
+- **特殊クリア条件**: 作品特有の条件を3つまで対応
+  - **妖々夢**: ノー結界
+  - **星蓮船**: ノーベントラー
+  - **妖精大戦争**: ノーアイス
+  - **神霊廟**: ノートランス
+  - **天空璋**: ノー季節解放
+  - **鬼形獣**: ノー暴走、ノー霊撃
+  - **虹龍洞**: ノーカード
 - **フルスペルカード**: 全作品共通のスペルカード取得フラグ
 
 ### 4. 柔軟な機体管理
