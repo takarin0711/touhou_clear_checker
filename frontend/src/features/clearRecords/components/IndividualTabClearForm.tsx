@@ -332,10 +332,10 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
                     </th>
                   )}
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ノーボム
+                    ノーミス
                   </th>
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    ノーミス
+                    ノーボム
                   </th>
                   {hasSpecialClear1 && (
                     <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -399,16 +399,16 @@ const IndividualTabClearForm: React.FC<IndividualTabClearFormProps> = ({ game, o
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={currentModeData[activeTab].characters[character.id]?.no_bomb || false}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_bomb', e.target.checked)}
+                        checked={currentModeData[activeTab].characters[character.id]?.no_miss || false}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_miss', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
                     <td className="px-3 py-4 text-center">
                       <input
                         type="checkbox"
-                        checked={currentModeData[activeTab].characters[character.id]?.no_miss || false}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_miss', e.target.checked)}
+                        checked={currentModeData[activeTab].characters[character.id]?.no_bomb || false}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateCharacterCondition(activeTab, character.id, 'no_bomb', e.target.checked)}
                         className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                       />
                     </td>
