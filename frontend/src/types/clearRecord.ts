@@ -154,7 +154,10 @@ export const getClearConditionsForGameType = (gameType: string, gameId: number |
   }
   
   // 特殊クリア条件を持つゲーム
-  if (gameId === 7) {
+  if (gameId === 2) {
+    // 妖々夢：ノー結界
+    conditions = [...conditions, CLEAR_CONDITIONS.SPECIAL_CLEAR_1];
+  } else if (gameId === 7) {
     // 星蓮船：ノーベントラー
     conditions = [...conditions, CLEAR_CONDITIONS.SPECIAL_CLEAR_1];
   } else if (gameId === 8) {
@@ -196,6 +199,9 @@ export const CLEAR_CONDITION_LABELS = {
  */
 export const getSpecialClearLabel = (gameId: number, specialType: string): string => {
   const labels = {
+    2: { // 妖々夢
+      special_clear_1: 'ノー結界'
+    },
     7: { // 星蓮船
       special_clear_1: 'ノーベントラー'
     },
@@ -216,7 +222,7 @@ export const getSpecialClearLabel = (gameId: number, specialType: string): strin
       special_clear_1: 'ノーカード'
     }
   };
-  
+
   return labels[gameId]?.[specialType] || `特殊条件${specialType.slice(-1)}`;
 };
 
@@ -239,6 +245,9 @@ export const CLEAR_CONDITION_DESCRIPTIONS = {
  */
 export const getSpecialClearDescription = (gameId: number, specialType: string): string => {
   const descriptions = {
+    2: { // 妖々夢
+      special_clear_1: '結界を使用せずにクリア'
+    },
     7: { // 星蓮船
       special_clear_1: 'ベントラーを使用せずにクリア'
     },
@@ -259,7 +268,7 @@ export const getSpecialClearDescription = (gameId: number, specialType: string):
       special_clear_1: 'アビリティカードを使用せずにクリア'
     }
   };
-  
+
   return descriptions[gameId]?.[specialType] || `特殊クリア条件${specialType.slice(-1)}`;
 };
 
