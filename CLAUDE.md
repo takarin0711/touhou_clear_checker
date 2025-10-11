@@ -150,9 +150,9 @@ touhou_clear_checker/
 - **特徴**: 完全モック化により外部依存なし、高速実行（0.22秒）
 
 ### フロントエンド単体テスト（実装済み）
-- **計15個のテストファイル**、**320+個のテスト**が正常動作
+- **計16個のテストファイル**、**339個のテスト**が正常動作
 - **共通コンポーネント**: Button、Input、Badge（UI操作・スタイリング）
-- **ゲーム機能**: GameCard、gameApi、useGames（ゲーム管理・表示）
+- **ゲーム機能**: GameCard、GameDetail、gameApi、useGames（ゲーム管理・表示・詳細）
 - **認証機能**: LoginForm、AuthContext、authApi（認証状態・フォーム）
 - **クリア記録**: clearRecordApi、useClearRecords、IndividualTabClearForm（記録管理・API・UI）
 - **ゲーム機体**: gameCharacterApi、useGameCharacters（ゲーム機体管理）

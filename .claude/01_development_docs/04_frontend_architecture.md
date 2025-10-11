@@ -238,36 +238,55 @@ const validateForm = () => {
 ```
 src/features/games/
 ├── components/
-│   ├── GameList.js       # ゲーム一覧表示（グリッドレイアウト）
-│   ├── GameCard.js       # ゲーム個別カード
-│   ├── GameDetail.js     # ゲーム詳細・クリア状況管理画面
-│   └── GameFilter.js     # 検索・フィルター（将来実装予定）
+│   ├── GameList.tsx      # ゲーム一覧表示（グリッドレイアウト）
+│   ├── GameCard.tsx      # ゲーム個別カード
+│   ├── GameDetail.tsx    # ゲーム詳細・クリア状況管理画面
+│   └── GameFilter.tsx    # 検索・フィルター（将来実装予定）
 ├── hooks/
-│   └── useGames.js       # ゲーム一覧取得・フィルター管理フック
+│   └── useGames.ts       # ゲーム一覧取得・フィルター管理フック
 └── services/
-    └── gameApi.js        # ゲームAPI通信
+    └── gameApi.ts        # ゲームAPI通信
 ```
 
 **主要機能**:
 - 全ゲーム一覧表示（カードベース）
 - ゲーム詳細表示
 - 「クリア状況を編集」機能
+- **クリア記録表示（難易度タブ）**: 難易度ごとにタブで分けて見やすく表示
 - レスポンシブデザイン
+
+#### クリア記録表示システム（2025年10月実装）
+
+**難易度タブ機能** (`GameDetail.tsx`):
+- **通常作品**: Easy/Normal/Hard/Lunatic/Extraの5つのタブで難易度別表示
+- **紺珠伝（2階層タブ）**:
+  - 第1階層：完全無欠モード/レガシーモードのタブ
+  - 第2階層：各モード内で難易度タブ
+  - モード切り替えで難易度タブも動的に変更
+- **妖精大戦争**: Easy〜LunaticタブにRoute A1〜C2、ExtraタブにExtra機体を表示
+- **色分けデザイン**: Easy=緑、Normal=青、Hard=赤、Lunatic=ピンク、Extra=紫
+- **機体別条件表示**: タブ内に各機体のクリア条件バッジを表示
+
+**利点**:
+- **視認性向上**: 1画面に表示する情報量を削減
+- **操作性向上**: 目的の難易度にワンクリックでアクセス
+- **拡張性**: 新作品追加時も同じパターンで対応可能
 
 ### 2. クリア記録管理機能
 ```
 src/features/clearRecords/
 ├── components/
-│   ├── IndividualTabClearForm.js # 機体別クリア記録登録フォーム
-│   └── index.js                  # コンポーネント集約
+│   ├── IndividualTabClearForm.tsx # 機体別クリア記録登録フォーム
+│   └── index.ts                   # コンポーネント集約
 ├── hooks/
-│   └── useClearRecords.js        # クリア記録管理フック
+│   └── useClearRecords.ts         # クリア記録管理フック
 └── services/
-    └── clearRecordsApi.js        # クリア記録API通信
+    └── clearRecordsApi.ts         # クリア記録API通信
 ```
 
 **主要機能**:
 - **機体別クリア記録登録**：機体ごとに個別の条件（クリア・ノーコン・ノーボム・ノーミス・フルスペカ）を選択可能
+- **クリア記録表示（タブ形式）**：難易度ごとにタブで分けて見やすく表示（GameDetail.tsx）
 - **ゲーム固有難易度制限**：妖々夢のPhantasm、獣王園のExtra制限など
 - **リアルタイム更新**：クリア状況変更時の自動反映
 - **詳細クリア条件**：ノーコンティニュー・ノーボム・ノーミス記録
@@ -415,11 +434,14 @@ export interface ClearRecord {
 ## テスト環境・テスト戦略
 
 ### 単体テスト（Unit Test）✅実装済み
-**実装状況**: 320+テスト（コンポーネント95 + フック130 + APIサービス95）
+**実装状況**: 339テスト（コンポーネント114 + フック130 + APIサービス95）
 
-**妖精大戦争特殊対応テスト**: 
+**妖精大戦争特殊対応テスト**:
 - `IndividualTabClearForm.test.tsx` (17テスト): ルート別表示・タブ切り替え・表記変更
 - `difficulty.test.ts` (26テスト): ゲーム別難易度制御・特殊ケース対応
+
+**ゲーム詳細・クリア記録表示テスト**:
+- `GameDetail.test.tsx` (19テスト): 難易度タブ切り替え、紺珠伝モード対応、クリア記録表示、フォーム連携
 
 #### 技術スタック
 - **React Testing Library 16.0.0**: コンポーネントテストライブラリ
@@ -433,6 +455,7 @@ export interface ClearRecord {
 - `Input.test.tsx` (17テスト): バリデーション、エラー表示、フォーム連携
 - `Badge.test.tsx` (16テスト): バリアント、サイズ、条件付きレンダリング
 - `GameCard.test.tsx` (17テスト): ゲーム情報表示、クリックイベント、バッジ表示
+- `GameDetail.test.tsx` (19テスト): ゲーム詳細表示、難易度タブ、紺珠伝モード切り替え、クリア記録表示
 
 **認証システムテスト**:
 - `AuthContext.test.tsx` (19テスト): ログイン、登録、ログアウト、状態管理

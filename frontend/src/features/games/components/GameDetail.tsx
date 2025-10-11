@@ -24,6 +24,8 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
   const [showIndividualForm, setShowIndividualForm] = useState<boolean>(false);
   const [showMemoForm, setShowMemoForm] = useState<boolean>(false);
   const [memoText, setMemoText] = useState<string>('');
+  const [activeRecordTab, setActiveRecordTab] = useState<string>('');
+  const [activeModeTab, setActiveModeTab] = useState<string>('pointdevice');
 
   const {
     clearRecords,
@@ -91,18 +93,44 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
 
   const getAvailableDifficulties = (): string[] => {
     const seriesNumber = game ? getSeriesNumber(game) : 0;
-    
-    // 紺珠伝の場合は両モードの難易度を統合表示
+
+    // 紺珠伝の場合はモードに応じた難易度を返す
     if (isModeAvailableForSeries(seriesNumber)) {
-      const legacyDifficulties = getDifficultyOrderForGameBySeries(game, GAME_MODES.LEGACY);
-      const pointdeviceDifficulties = getDifficultyOrderForGameBySeries(game, GAME_MODES.POINTDEVICE);
-      
-      // 重複を除いてマージ（Legacy + Pointdevice の難易度を全て表示）
-      const allDifficulties = Array.from(new Set([...pointdeviceDifficulties, ...legacyDifficulties]));
-      return allDifficulties;
+      return getDifficultyOrderForGameBySeries(game, activeModeTab);
     }
-    
+
     return getDifficultyOrderForGameBySeries(game);
+  };
+
+  // クリア記録表示用：現在のタブとモードのレコードを取得
+  const getCurrentTabRecords = () => {
+    const seriesNumber = game ? getSeriesNumber(game) : 0;
+
+    // 全てのクリア条件がfalseのレコードを除外
+    const filteredRecords = clearRecords.filter(record =>
+      record.is_cleared ||
+      record.is_no_continue_clear ||
+      record.is_no_bomb_clear ||
+      record.is_no_miss_clear ||
+      record.is_full_spell_card ||
+      record.is_special_clear_1 ||
+      record.is_special_clear_2 ||
+      record.is_special_clear_3
+    );
+
+    // 難易度とモードでフィルタリング
+    return filteredRecords.filter(record => {
+      const difficultyMatch = record.difficulty === activeRecordTab;
+
+      // 紺珠伝の場合はモードも考慮
+      if (isModeAvailableForSeries(seriesNumber)) {
+        const recordMode = record.mode || 'normal';
+        const modeMatch = recordMode === activeModeTab;
+        return difficultyMatch && modeMatch;
+      }
+
+      return difficultyMatch;
+    });
   };
 
 
@@ -118,6 +146,45 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
     setShowIndividualForm(false);
     // クリア記録を再取得
     fetchClearRecords();
+  };
+
+  // 初回レンダリング時にデフォルトのタブを設定
+  React.useEffect(() => {
+    const difficulties = getAvailableDifficulties();
+    if (difficulties.length > 0 && !activeRecordTab) {
+      setActiveRecordTab(difficulties[0]);
+    }
+  }, [game, activeModeTab]);
+
+  // 難易度タブの色を取得
+  const getDifficultyTabColors = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy':
+        return activeRecordTab === difficulty
+          ? 'border-green-500 text-green-600 bg-green-50'
+          : 'border-transparent text-green-600 hover:text-green-700 hover:border-green-300 hover:bg-green-50';
+      case 'Normal':
+        return activeRecordTab === difficulty
+          ? 'border-blue-500 text-blue-600 bg-blue-50'
+          : 'border-transparent text-blue-600 hover:text-blue-700 hover:border-blue-300 hover:bg-blue-50';
+      case 'Hard':
+        return activeRecordTab === difficulty
+          ? 'border-red-500 text-red-600 bg-red-50'
+          : 'border-transparent text-red-600 hover:text-red-700 hover:border-red-300 hover:bg-red-50';
+      case 'Lunatic':
+        return activeRecordTab === difficulty
+          ? 'border-pink-500 text-pink-600 bg-pink-50'
+          : 'border-transparent text-pink-600 hover:text-pink-700 hover:border-pink-300 hover:bg-pink-50';
+      case 'Extra':
+      case 'Phantasm':
+        return activeRecordTab === difficulty
+          ? 'border-purple-500 text-purple-600 bg-purple-50'
+          : 'border-transparent text-purple-600 hover:text-purple-700 hover:border-purple-300 hover:bg-purple-50';
+      default:
+        return activeRecordTab === difficulty
+          ? 'border-gray-500 text-gray-600 bg-gray-50'
+          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 hover:bg-gray-50';
+    }
   };
 
   const handleMemoToggle = () => {
@@ -252,114 +319,138 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
         {!recordsLoading && (
           <div className="space-y-4">
             {(() => {
+              const seriesNumber = game ? getSeriesNumber(game) : 0;
+              const isModeGame = isModeAvailableForSeries(seriesNumber);
+
               // 全てのクリア条件がfalseのレコードを除外
-              const filteredRecords = clearRecords.filter(record => 
-                record.is_cleared || 
-                record.is_no_continue_clear || 
-                record.is_no_bomb_clear || 
-                record.is_no_miss_clear || 
-                record.is_full_spell_card
+              const filteredRecords = clearRecords.filter(record =>
+                record.is_cleared ||
+                record.is_no_continue_clear ||
+                record.is_no_bomb_clear ||
+                record.is_no_miss_clear ||
+                record.is_full_spell_card ||
+                record.is_special_clear_1 ||
+                record.is_special_clear_2 ||
+                record.is_special_clear_3
               );
-              
-              return filteredRecords.length > 0 ? (
-                <div className="space-y-6">
-                  {(() => {
-                    // 難易度とモードでグルーピング
-                    const groupedRecords: Record<string, {
-                      difficulty: string;
-                      mode: string;
-                      records: any[];
-                    }> = filteredRecords.reduce((groups, record) => {
-                    // 紺珠伝の場合はモードも考慮
-                    const groupKey = isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) 
-                      ? `${record.difficulty}_${record.mode || 'normal'}`
-                      : record.difficulty;
-                    
-                    if (!groups[groupKey]) {
-                      groups[groupKey] = {
-                        difficulty: record.difficulty,
-                        mode: record.mode || 'normal',
-                        records: []
-                      };
-                    }
-                    groups[groupKey].records.push(record);
-                    return groups;
-                  }, {} as Record<string, {
-                    difficulty: string;
-                    mode: string;
-                    records: any[];
-                  }>);
 
-                  // 難易度順でソート
-                  const availableDifficulties = getAvailableDifficulties();
-                  const sortedGroups = Object.values(groupedRecords).sort((a, b) => {
-                    const diffIndexA = availableDifficulties.indexOf(a.difficulty);
-                    const diffIndexB = availableDifficulties.indexOf(b.difficulty);
-                    
-                    if (diffIndexA !== diffIndexB) {
-                      return diffIndexA - diffIndexB;
-                    }
-                    
-                    // 同じ難易度の場合、モード順でソート（完全無欠→レガシー）
-                    if (a.mode === 'normal' && b.mode === 'legacy') return -1;
-                    if (a.mode === 'legacy' && b.mode === 'normal') return 1;
-                    return 0;
-                  });
+              if (filteredRecords.length === 0) {
+                return (
+                  <div className="text-center py-8">
+                    <div className="text-gray-400 text-6xl mb-4">🎯</div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      まだクリア記録が登録されていません
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      「クリア記録登録」ボタンからクリア記録を登録しましょう。
+                    </p>
+                  </div>
+                );
+              }
 
-                  return sortedGroups.map((group) => (
-                    <div key={`${group.difficulty}_${group.mode}`} className="border border-gray-200 rounded-lg overflow-hidden">
-                      {/* グループヘッダー */}
-                      <div className={`px-4 py-3 font-medium text-sm ${getDifficultyColorClasses(group.difficulty)}`}>
-                        <div className="flex items-center space-x-3">
-                          <span>{group.difficulty}</span>
-                          {isModeAvailableForSeries(game ? getSeriesNumber(game) : 0) && (
-                            <span className="text-xs px-2 py-1 bg-white bg-opacity-70 rounded-full">
-                              {group.mode === 'legacy' ? 'レガシーモード' : '完全無欠モード'}
-                            </span>
-                          )}
-                          <span className="text-xs opacity-75">
-                            ({group.records.length}件)
-                          </span>
-                        </div>
-                      </div>
-                      
-                      {/* グループ内のレコード */}
-                      <div className="bg-white">
-                        {group.records.map((record, recordIndex) => (
-                          <div 
-                            key={record.id} 
-                            className={`p-3 border-b border-gray-100 last:border-b-0 ${recordIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+              return (
+                <div>
+                  {/* 紺珠伝の場合：モードタブを表示 */}
+                  {isModeGame && (
+                    <div className="flex border-b border-gray-200 mb-4">
+                      <button
+                        onClick={() => setActiveModeTab('pointdevice')}
+                        className={`flex-1 py-3 px-4 text-center font-medium transition-all ${
+                          activeModeTab === 'pointdevice'
+                            ? 'border-b-2 border-blue-500 text-blue-600 bg-blue-50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        完全無欠モード
+                      </button>
+                      <button
+                        onClick={() => setActiveModeTab('legacy')}
+                        className={`flex-1 py-3 px-4 text-center font-medium transition-all ${
+                          activeModeTab === 'legacy'
+                            ? 'border-b-2 border-orange-500 text-orange-600 bg-orange-50'
+                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        レガシーモード
+                      </button>
+                    </div>
+                  )}
+
+                  {/* 難易度タブ */}
+                  <div className="mb-4">
+                    <div className="border-b border-gray-200">
+                      <nav className="-mb-px flex space-x-4 overflow-x-auto">
+                        {getAvailableDifficulties().map(difficulty => (
+                          <button
+                            key={difficulty}
+                            onClick={() => setActiveRecordTab(difficulty)}
+                            className={`whitespace-nowrap py-2 px-3 border-b-2 font-medium text-sm rounded-t-md transition-all ${getDifficultyTabColors(difficulty)}`}
                           >
-                            <div className="flex items-center justify-between">
-                              <div className="flex items-center space-x-4">
-                                <span className="font-medium text-gray-900">{record.character_name}</span>
-                              </div>
-                              <div className="flex items-center space-x-2 text-sm">
-                                {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
-                                {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコン</span>}
-                                {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
-                                {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
-                                {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_1_GAMES.includes(game ? getSeriesNumber(game) : 0) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
-                                {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_2_GAMES.includes(game ? getSeriesNumber(game) : 0) && record.is_special_clear_2 && <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_2')}</span>}
-                                {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
+                            {difficulty}
+                          </button>
+                        ))}
+                      </nav>
+                    </div>
+                  </div>
+
+                  {/* 現在のタブのクリア記録を表示 */}
+                  {(() => {
+                    const currentRecords = getCurrentTabRecords();
+
+                    if (currentRecords.length === 0) {
+                      return (
+                        <div className="text-center py-8 bg-gray-50 rounded-lg">
+                          <p className="text-gray-500">
+                            {activeRecordTab} の記録はまだ登録されていません
+                          </p>
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="border border-gray-200 rounded-lg overflow-hidden">
+                        {/* ヘッダー */}
+                        <div className={`px-4 py-3 font-medium text-sm ${getDifficultyColorClasses(activeRecordTab)}`}>
+                          <div className="flex items-center space-x-3">
+                            <span>{activeRecordTab}</span>
+                            {isModeGame && (
+                              <span className="text-xs px-2 py-1 bg-white bg-opacity-70 rounded-full">
+                                {activeModeTab === 'legacy' ? 'レガシーモード' : '完全無欠モード'}
+                              </span>
+                            )}
+                            <span className="text-xs opacity-75">
+                              ({currentRecords.length}件)
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* レコード一覧 */}
+                        <div className="bg-white">
+                          {currentRecords.map((record, recordIndex) => (
+                            <div
+                              key={record.id}
+                              className={`p-3 border-b border-gray-100 last:border-b-0 ${recordIndex % 2 === 0 ? 'bg-white' : 'bg-gray-50'}`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center space-x-4">
+                                  <span className="font-medium text-gray-900">{record.character_name}</span>
+                                </div>
+                                <div className="flex items-center space-x-2 text-sm">
+                                  {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
+                                  {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコン</span>}
+                                  {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
+                                  {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
+                                  {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_1_GAMES.includes(seriesNumber) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
+                                  {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_2_GAMES.includes(seriesNumber) && record.is_special_clear_2 && <span className="px-2 py-1 bg-pink-100 text-pink-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_2')}</span>}
+                                  {record.is_full_spell_card && <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full">フルスペカ</span>}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ));
-                })()}
-              </div>
-              ) : (
-                <div className="text-center py-8">
-                  <div className="text-gray-400 text-6xl mb-4">🎯</div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    まだクリア記録が登録されていません
-                  </h3>
-                  <p className="text-gray-600 mb-4">
-                    「クリア記録登録」ボタンからクリア記録を登録しましょう。
-                  </p>
+                    );
+                  })()}
                 </div>
               );
             })()}
