@@ -185,7 +185,7 @@ export const getClearConditionsForGameType = (gameType: string, gameId: number |
  */
 export const CLEAR_CONDITION_LABELS = {
   [CLEAR_CONDITIONS.CLEARED]: 'クリア',
-  [CLEAR_CONDITIONS.NO_CONTINUE]: 'ノーコンティニュー',
+  [CLEAR_CONDITIONS.NO_CONTINUE]: 'ノーコン',
   [CLEAR_CONDITIONS.NO_BOMB]: 'ノーボム',
   [CLEAR_CONDITIONS.NO_MISS]: 'ノーミス',
   [CLEAR_CONDITIONS.FULL_SPELL_CARD]: 'フルスペカ',

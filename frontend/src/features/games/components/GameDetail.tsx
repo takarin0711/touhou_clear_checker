@@ -336,7 +336,7 @@ const GameDetail: React.FC<GameDetailProps> = ({ game, onBack }) => {
                               </div>
                               <div className="flex items-center space-x-2 text-sm">
                                 {record.is_cleared && <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full">クリア</span>}
-                                {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコンティニュー</span>}
+                                {record.is_no_continue_clear && <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full">ノーコン</span>}
                                 {record.is_no_miss_clear && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">ノーミス</span>}
                                 {record.is_no_bomb_clear && <span className="px-2 py-1 bg-purple-100 text-purple-800 rounded-full">ノーボム</span>}
                                 {SPECIAL_CLEAR_SERIES_NUMBERS.SPECIAL_CLEAR_1_GAMES.includes(game ? getSeriesNumber(game) : 0) && record.is_special_clear_1 && <span className="px-2 py-1 bg-cyan-100 text-cyan-800 rounded-full">{getSpecialClearLabel(game?.id, 'special_clear_1')}</span>}
