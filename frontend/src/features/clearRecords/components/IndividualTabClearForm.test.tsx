@@ -30,6 +30,24 @@ const fairyWarsGame = {
   game_type: 'spin_off_stg'
 };
 
+// 錦上京（特殊クリア条件1を持つゲーム）
+const kinjokyoGame = {
+  id: 16,
+  title: '東方錦上京',
+  series_number: 20.0,
+  release_year: 2025,
+  game_type: 'main_series'
+};
+
+// 鬼形獣（特殊クリア条件1と2を持つゲーム）
+const kikeijuGame = {
+  id: 13,
+  title: '東方鬼形獣',
+  series_number: 17.0,
+  release_year: 2019,
+  game_type: 'main_series'
+};
+
 // 通常のキャラクター（東方紅魔郷）
 const normalCharacters = [
   { id: 1, game_id: 1, character_name: '霊夢A', sort_order: 1 },
@@ -47,6 +65,22 @@ const fairyWarsCharacters = [
   { id: 25, game_id: 8, character_name: 'チルノ（Route C1）', sort_order: 5 },
   { id: 26, game_id: 8, character_name: 'チルノ（Route C2）', sort_order: 6 },
   { id: 27, game_id: 8, character_name: 'チルノ（Extra）', sort_order: 7 },
+];
+
+// 錦上京のキャラクター（霊夢・魔理沙×8異変石）
+const kinjokyoCharacters = [
+  { id: 101, game_id: 16, character_name: '霊夢（スカーレットデビル）', sort_order: 1 },
+  { id: 102, game_id: 16, character_name: '霊夢（クリーチャーレッド）', sort_order: 2 },
+  { id: 103, game_id: 16, character_name: '魔理沙（スカーレットデビル）', sort_order: 9 },
+  { id: 104, game_id: 16, character_name: '魔理沙（クリーチャーレッド）', sort_order: 10 },
+];
+
+// 鬼形獣のキャラクター（霊夢・魔理沙・妖夢×3アニマル）
+const kikeijuCharacters = [
+  { id: 81, game_id: 13, character_name: '霊夢（オオカミ）', sort_order: 1 },
+  { id: 82, game_id: 13, character_name: '霊夢（カワウソ）', sort_order: 2 },
+  { id: 83, game_id: 13, character_name: '魔理沙（オオカミ）', sort_order: 4 },
+  { id: 84, game_id: 13, character_name: '妖夢（オオカミ）', sort_order: 7 },
 ];
 
 const defaultMockClearRecords = {
@@ -233,15 +267,15 @@ describe('IndividualTabClearForm', () => {
 
     it('閉じるボタンが機能する', () => {
       render(<IndividualTabClearForm game={normalGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
-      
+
       fireEvent.click(screen.getByText('閉じる'));
-      
+
       expect(mockOnClose).toHaveBeenCalledTimes(1);
     });
 
     it('難易度タブが正しく表示される', () => {
       render(<IndividualTabClearForm game={normalGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
-      
+
       expect(screen.getByText('Easy')).toBeInTheDocument();
       expect(screen.getByText('Normal')).toBeInTheDocument();
       expect(screen.getByText('Hard')).toBeInTheDocument();
@@ -256,8 +290,116 @@ describe('IndividualTabClearForm', () => {
       });
 
       render(<IndividualTabClearForm game={normalGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
-      
+
       expect(screen.getByText('機体情報を読み込み中...')).toBeInTheDocument();
+    });
+  });
+
+  describe('特殊クリア条件の表示', () => {
+    describe('錦上京（特殊クリア条件1のみ）', () => {
+      beforeEach(() => {
+        mockedUseGameCharacters.mockReturnValue({
+          ...defaultMockGameCharacters,
+          characters: kinjokyoCharacters,
+        });
+      });
+
+      it('ノー霊撃列ヘッダーが表示される', () => {
+        render(<IndividualTabClearForm game={kinjokyoGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('ノー霊撃')).toBeInTheDocument();
+      });
+
+      it('基本クリア条件列が表示される', () => {
+        render(<IndividualTabClearForm game={kinjokyoGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('クリア')).toBeInTheDocument();
+        expect(screen.getByText('ノーコン')).toBeInTheDocument();
+        expect(screen.getByText('ノーミス')).toBeInTheDocument();
+        expect(screen.getByText('ノーボム')).toBeInTheDocument();
+        expect(screen.getByText('フルスペカ')).toBeInTheDocument();
+      });
+
+      it('特殊クリア条件2の列は表示されない', () => {
+        render(<IndividualTabClearForm game={kinjokyoGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        // 鬼形獣の「ノー霊撃」は特殊条件2なので、錦上京では表示されるべきは「ノー霊撃」（特殊条件1）のみ
+        const noReigekiHeaders = screen.getAllByText('ノー霊撃');
+        expect(noReigekiHeaders).toHaveLength(1); // ヘッダーのみ
+      });
+
+      it('機体別条件登録と表示される', () => {
+        render(<IndividualTabClearForm game={kinjokyoGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('機体別条件登録')).toBeInTheDocument();
+      });
+    });
+
+    describe('鬼形獣（特殊クリア条件1と2）', () => {
+      beforeEach(() => {
+        mockedUseGameCharacters.mockReturnValue({
+          ...defaultMockGameCharacters,
+          characters: kikeijuCharacters,
+        });
+      });
+
+      it('ノー暴走列ヘッダーが表示される', () => {
+        render(<IndividualTabClearForm game={kikeijuGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('ノー暴走')).toBeInTheDocument();
+      });
+
+      it('ノー霊撃列ヘッダーが表示される', () => {
+        render(<IndividualTabClearForm game={kikeijuGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('ノー霊撃')).toBeInTheDocument();
+      });
+
+      it('両方の特殊条件が表示される', () => {
+        render(<IndividualTabClearForm game={kikeijuGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        // ノー暴走（special_clear_1）
+        expect(screen.getByText('ノー暴走')).toBeInTheDocument();
+        // ノー霊撃（special_clear_2）
+        expect(screen.getByText('ノー霊撃')).toBeInTheDocument();
+      });
+
+      it('基本クリア条件列も表示される', () => {
+        render(<IndividualTabClearForm game={kikeijuGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('クリア')).toBeInTheDocument();
+        expect(screen.getByText('ノーコン')).toBeInTheDocument();
+        expect(screen.getByText('ノーミス')).toBeInTheDocument();
+        expect(screen.getByText('ノーボム')).toBeInTheDocument();
+        expect(screen.getByText('フルスペカ')).toBeInTheDocument();
+      });
+    });
+
+    describe('通常ゲーム（特殊クリア条件なし）', () => {
+      beforeEach(() => {
+        mockedUseGameCharacters.mockReturnValue({
+          ...defaultMockGameCharacters,
+          characters: normalCharacters,
+        });
+      });
+
+      it('特殊クリア条件列は表示されない', () => {
+        render(<IndividualTabClearForm game={normalGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.queryByText('ノー霊撃')).not.toBeInTheDocument();
+        expect(screen.queryByText('ノー暴走')).not.toBeInTheDocument();
+        expect(screen.queryByText('ノーアイス')).not.toBeInTheDocument();
+      });
+
+      it('基本クリア条件列のみ表示される', () => {
+        render(<IndividualTabClearForm game={normalGame} onClose={mockOnClose} onSuccess={mockOnSuccess} />);
+
+        expect(screen.getByText('クリア')).toBeInTheDocument();
+        expect(screen.getByText('ノーコン')).toBeInTheDocument();
+        expect(screen.getByText('ノーミス')).toBeInTheDocument();
+        expect(screen.getByText('ノーボム')).toBeInTheDocument();
+        expect(screen.getByText('フルスペカ')).toBeInTheDocument();
+      });
     });
   });
 });

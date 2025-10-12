@@ -146,13 +146,13 @@ export const CLEAR_CONDITIONS_ARRAY_VERSUS = [
  */
 export const getClearConditionsForGameType = (gameType: string, gameId: number | null = null): string[] => {
   let conditions: string[] = [];
-  
+
   if (gameType === 'versus') {
     conditions = CLEAR_CONDITIONS_ARRAY_VERSUS;
   } else {
     conditions = CLEAR_CONDITIONS_ARRAY;
   }
-  
+
   // 特殊クリア条件を持つゲーム
   if (gameId === 2) {
     // 妖々夢：ノー結界
@@ -175,8 +175,11 @@ export const getClearConditionsForGameType = (gameType: string, gameId: number |
   } else if (gameId === 14) {
     // 虹龍洞：ノーカード
     conditions = [...conditions, CLEAR_CONDITIONS.SPECIAL_CLEAR_1];
+  } else if (gameId === 16) {
+    // 錦上京：ノー霊撃
+    conditions = [...conditions, CLEAR_CONDITIONS.SPECIAL_CLEAR_1];
   }
-  
+
   return conditions;
 };
 
@@ -220,6 +223,9 @@ export const getSpecialClearLabel = (gameId: number, specialType: string): strin
     },
     14: { // 虹龍洞
       special_clear_1: 'ノーカード'
+    },
+    16: { // 錦上京
+      special_clear_1: 'ノー霊撃'
     }
   };
 
@@ -266,6 +272,9 @@ export const getSpecialClearDescription = (gameId: number, specialType: string):
     },
     14: { // 虹龍洞
       special_clear_1: 'アビリティカードを使用せずにクリア'
+    },
+    16: { // 錦上京
+      special_clear_1: '霊撃を使用せずにクリア'
     }
   };
 

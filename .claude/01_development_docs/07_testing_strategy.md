@@ -106,9 +106,9 @@ python -m pytest tests/unit/repositories/ -v # リポジトリレイヤー（28�
 - **影響**: 機能動作は正常、テストによる品質保証のみ不完全
 
 ### 2. フロントエンド単体テスト（Unit Test）✅実装済み
-**対象**: コンポーネント、フック、APIサービス  
-**目的**: UI/UXとフロントエンドロジックの品質保証  
-**実装状況**: 320+テスト（コンポーネント95 + フック130 + APIサービス95 + ユーティリティ26）
+**対象**: コンポーネント、フック、APIサービス、ユーティリティ
+**目的**: UI/UXとフロントエンドロジックの品質保証
+**実装状況**: 294テスト（コンポーネント95 + フック42 + APIサービス67 + ユーティリティ90）
 
 #### 技術スタック
 - **React Testing Library**: コンポーネントテストライブラリ
@@ -126,18 +126,23 @@ frontend/src/
 │   └── Badge.test.tsx                     # Badgeコンポーネントテスト（16テスト）
 ├── features/
 │   ├── games/components/
-│   │   └── GameCard.test.tsx              # GameCardコンポーネントテスト（17テスト）
+│   │   ├── GameCard.test.tsx              # GameCardコンポーネントテスト（17テスト）
+│   │   └── GameDetail.test.tsx            # GameDetailコンポーネントテスト（31テスト）
 │   ├── auth/components/
 │   │   └── LoginForm.test.tsx             # LoginFormコンポーネントテスト（13テスト）
 │   └── clearRecords/components/
-│       └── IndividualTabClearForm.test.tsx # 妖精大戦争特殊対応テスト（17テスト）
+│       └── IndividualTabClearForm.test.tsx # 特殊対応テスト（31テスト）
 ├── contexts/
 │   └── AuthContext.test.tsx               # 認証コンテキストテスト（19テスト）
 ├── hooks/
 │   ├── useClearRecords.test.ts            # useClearRecordsフックテスト（23テスト）
-│   └── useGames.test.ts                   # useGamesフックテスト（19テスト）
+│   ├── useGames.test.ts                   # useGamesフックテスト（19テスト）
+│   └── useGameCharacters.test.ts          # useGameCharactersフックテスト（追加予定）
 ├── types/
-│   └── difficulty.test.ts                 # 難易度ユーティリティテスト（26テスト）
+│   ├── difficulty.test.ts                 # 難易度ユーティリティテスト（30テスト）
+│   └── clearRecord.test.ts                # 特殊クリア条件ユーティリティテスト（58テスト）
+├── constants/
+│   └── gameFeatureConstants.test.ts       # 特殊クリア条件定数テスト（29テスト）
 └── services/
     ├── gameApi.test.ts                    # ゲームAPI通信テスト（11テスト）
     ├── authApi.test.ts                    # 認証API通信テスト（4テスト）
@@ -150,17 +155,67 @@ frontend/src/
 - **ユーザー視点**: 実際のユーザー操作パターンを重視
 - **型安全テスト**: TypeScriptでの型安全なテストコード
 
-#### 妖精大戦争特殊対応テスト
-**目的**: 妖精大戦争の特殊表示ロジック・表記変更の品質保証
+#### 特殊ゲーム対応テスト（2025年10月拡張）
+**目的**: 妖精大戦争・錦上京・鬼形獣の特殊表示ロジック・特殊クリア条件の品質保証
 
 **主要テストケース**:
-- **ルート別表示**: Easy〜Lunaticタブで Route A1〜C2 のみ表示
-- **Extra表示**: Extraタブで Extra機体のみ表示
-- **表記変更**: 「機体別」→「ルート別」の動的テキスト切り替え
-- **タブ切り替え**: 難易度タブによる表示機体の正確な変更
-- **モック対応**: useClearRecords・useGameCharactersの完全モック
+- **妖精大戦争特殊対応**:
+  - ルート別表示: Easy〜Lunaticタブで Route A1〜C2 のみ表示
+  - Extra表示: Extraタブで Extra機体のみ表示
+  - 表記変更: 「機体別」→「ルート別」の動的テキスト切り替え
+  - タブ切り替え: 難易度タブによる表示機体の正確な変更
 
-**実装場所**: `IndividualTabClearForm.test.tsx`（17テスト）
+- **錦上京特殊クリア条件テスト**:
+  - ノー霊撃列ヘッダー表示確認
+  - 基本クリア条件との共存確認
+  - special_clear_2が表示されないことの確認
+
+- **鬼形獣特殊クリア条件テスト**:
+  - ノー暴走（special_clear_1）表示確認
+  - ノー霊撃（special_clear_2）表示確認
+  - 両方の特殊条件が同時表示されることの確認
+
+**実装場所**: `IndividualTabClearForm.test.tsx`（31テスト）
+
+#### 特殊クリア条件ユーティリティテスト（2025年10月追加）
+**目的**: ゲーム別特殊クリア条件のラベル・説明・条件配列の品質保証
+
+**主要テストケース**:
+- **getSpecialClearLabel関数** (11テスト):
+  - 妖々夢〜錦上京の全特殊条件ラベル検証
+  - 未定義ゲームのフォールバック動作確認
+
+- **getSpecialClearDescription関数** (11テスト):
+  - 妖々夢〜錦上京の全特殊条件説明検証
+  - 未定義ゲームのフォールバック動作確認
+
+- **getClearConditionsForGameType関数** (10テスト):
+  - 通常ゲーム・対戦型ゲームの条件配列検証
+  - 特殊クリア条件を持つ各ゲームの条件配列検証
+  - 錦上京のspecial_clear_1確認
+
+**実装場所**: `types/clearRecord.test.ts`（58テスト）
+
+#### ゲーム機能定数テスト（2025年10月追加）
+**目的**: 特殊クリア条件を持つゲーム定義の品質保証
+
+**主要テストケース**:
+- **SPECIAL_CLEAR_1_GAMES配列** (12テスト):
+  - 配列全体の検証（7.0, 12.0, 12.8, 13.0, 16.0, 17.0, 18.0, 20.0）
+  - 各ゲームの存在確認（錦上京20.0含む）
+  - 配列長が8であることの確認
+  - 不正なゲーム番号の除外確認
+
+- **SPECIAL_CLEAR_2_GAMES配列** (5テスト):
+  - 鬼形獣(17.0)のみ含まれることを確認
+  - 錦上京は含まれないことを確認
+
+- **データ整合性** (9テスト):
+  - 配列のユニーク性
+  - シリーズ番号の妥当性（6.0-20.0）
+  - 重複チェック
+
+**実装場所**: `constants/gameFeatureConstants.test.ts`（29テスト）
 
 #### テスト実行コマンド
 ```bash
