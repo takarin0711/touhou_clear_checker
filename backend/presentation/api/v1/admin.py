@@ -13,8 +13,10 @@ from infrastructure.database.connection import get_db
 from ..dependencies import get_game_service
 from ...schemas.game_schema import GameCreate, GameUpdate, GameResponse
 from ...schemas.user_schema import UserUpdate, UserResponse
+from infrastructure.logging.logger import LoggerFactory
 
 router = APIRouter()
+logger = LoggerFactory.get_logger(__name__)
 
 # ゲーム管理API
 
@@ -26,27 +28,30 @@ async def admin_get_games(
     game_service: GameService = Depends(get_game_service)
 ):
     """管理者専用: ゲーム一覧取得（検索パラメータ対応）"""
-    
+    logger.debug(f"Admin get games request: series_number={series_number}, game_type={game_type}")
+
     # game_typeの文字列をEnumに変換
     parsed_game_type = None
     if game_type:
         try:
             parsed_game_type = GameType(game_type)
         except ValueError:
+            logger.warning(f"Invalid game_type provided: {game_type}")
             raise HTTPException(
-                status_code=400, 
+                status_code=400,
                 detail=f"Invalid game_type: {game_type}. Valid values: {[gt.value for gt in GameType]}"
             )
-    
+
     # フィルタリングされたゲーム一覧を取得
     if series_number is not None or parsed_game_type is not None:
         games = game_service.get_games_filtered(
-            series_number=series_number, 
+            series_number=series_number,
             game_type=parsed_game_type
         )
     else:
         games = game_service.get_all_games()
-    
+
+    logger.info(f"Admin retrieved {len(games)} games")
     return [GameResponse(
         id=game.id,
         title=game.title,
@@ -62,6 +67,7 @@ async def create_game(
     game_service: GameService = Depends(get_game_service)
 ):
     """管理者専用: 新しいゲーム作品を登録"""
+    logger.info(f"Admin create game attempt: title={game_data.title}")
     try:
         create_dto = CreateGameDto(
             title=game_data.title,
@@ -70,6 +76,7 @@ async def create_game(
             game_type=game_data.game_type
         )
         game = game_service.create_game(create_dto)
+        logger.info(f"Admin created game: game_id={game.id}, title={game.title}")
         return GameResponse(
             id=game.id,
             title=game.title,
@@ -78,6 +85,7 @@ async def create_game(
             game_type=game.game_type
         )
     except ValueError as e:
+        logger.warning(f"Admin game creation failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.put("/games/{series_number}", response_model=GameResponse)
@@ -88,12 +96,14 @@ async def update_game_by_series(
     game_service: GameService = Depends(get_game_service)
 ):
     """管理者専用: ゲーム更新（シリーズ番号指定）"""
+    logger.info(f"Admin update game attempt: series_number={series_number}")
     try:
         # シリーズ番号で既存ゲームを検索
         existing_games = game_service.get_games_filtered(series_number=series_number)
         if not existing_games:
+            logger.warning(f"Game not found for update: series_number={series_number}")
             raise HTTPException(status_code=404, detail="Game not found")
-        
+
         existing_game = existing_games[0]  # series_numberはユニークなので最初の要素
         update_dto = UpdateGameDto(
             title=game_data.title,
@@ -103,8 +113,10 @@ async def update_game_by_series(
         )
         game = game_service.update_game(existing_game.id, update_dto)
         if not game:
+            logger.warning(f"Failed to update game: series_number={series_number}")
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Game not found")
-        
+
+        logger.info(f"Admin updated game: game_id={game.id}, title={game.title}")
         return GameResponse(
             id=game.id,
             title=game.title,
@@ -113,6 +125,7 @@ async def update_game_by_series(
             game_type=game.game_type
         )
     except ValueError as e:
+        logger.warning(f"Admin game update failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.delete("/games/{series_number}", status_code=status.HTTP_204_NO_CONTENT)
@@ -122,15 +135,19 @@ async def delete_game_by_series(
     game_service: GameService = Depends(get_game_service)
 ):
     """管理者専用: ゲーム削除（シリーズ番号指定）"""
+    logger.info(f"Admin delete game attempt: series_number={series_number}")
     # シリーズ番号で既存ゲームを検索
     existing_games = game_service.get_games_filtered(series_number=series_number)
     if not existing_games:
+        logger.warning(f"Game not found for delete: series_number={series_number}")
         raise HTTPException(status_code=404, detail="Game not found")
-    
+
     existing_game = existing_games[0]  # series_numberはユニークなので最初の要素
     success = game_service.delete_game(existing_game.id)
     if not success:
+        logger.error(f"Failed to delete game: series_number={series_number}, game_id={existing_game.id}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete game")
+    logger.info(f"Admin deleted game: game_id={existing_game.id}")
 
 # ユーザー管理API
 
@@ -140,10 +157,12 @@ async def admin_get_all_users(
     db: Session = Depends(get_db)
 ):
     """管理者専用: 全ユーザー一覧（管理用）"""
+    logger.debug("Admin get all users request")
     from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
     user_repository = UserRepositoryImpl(db)
     user_service = UserService(user_repository)
     users = user_service.get_all_users()
+    logger.info(f"Admin retrieved {len(users)} users")
     return users
 
 @router.put("/users/{user_id}", response_model=UserResponse)
@@ -154,11 +173,12 @@ async def admin_update_user(
     db: Session = Depends(get_db)
 ):
     """管理者専用: 任意のユーザー情報を更新（管理者権限変更含む）"""
+    logger.info(f"Admin update user attempt: user_id={user_id}")
     try:
         from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
         user_repository = UserRepositoryImpl(db)
         user_service = UserService(user_repository)
-        
+
         update_dto = UpdateUserDto(
             username=user_data.username,
             email=user_data.email,
@@ -167,8 +187,10 @@ async def admin_update_user(
             is_admin=user_data.is_admin  # 管理者は他のユーザーの管理者権限を変更可能
         )
         updated_user = user_service.update_user(user_id, update_dto)
+        logger.info(f"Admin updated user: user_id={user_id}")
         return updated_user
     except ValueError as e:
+        logger.warning(f"Admin user update failed: user_id={user_id}, error={str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -178,10 +200,13 @@ async def admin_delete_user(
     db: Session = Depends(get_db)
 ):
     """管理者専用: 任意のユーザーを削除"""
+    logger.info(f"Admin delete user attempt: user_id={user_id}")
     from infrastructure.database.repositories.user_repository_impl import UserRepositoryImpl
     user_repository = UserRepositoryImpl(db)
     user_service = UserService(user_repository)
-    
+
     success = user_service.delete_user(user_id)
     if not success:
+        logger.warning(f"User not found for delete: user_id={user_id}")
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    logger.info(f"Admin deleted user: user_id={user_id}")

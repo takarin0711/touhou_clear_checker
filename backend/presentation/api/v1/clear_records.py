@@ -8,8 +8,10 @@ from domain.entities.user import User
 from infrastructure.security.auth_middleware import get_current_active_user
 from ..dependencies import get_clear_record_service
 from ...schemas.clear_record_schema import ClearRecordCreate, ClearRecordUpdate, ClearRecordResponse, ClearRecordBatch
+from infrastructure.logging.logger import LoggerFactory
 
 router = APIRouter()
+logger = LoggerFactory.get_logger(__name__)
 
 
 def _to_response(record) -> ClearRecordResponse:
@@ -41,10 +43,15 @@ async def get_my_clear_records(
     clear_record_service: ClearRecordService = Depends(get_clear_record_service)
 ):
     """現在のユーザーのクリア記録一覧取得"""
+    logger.debug(f"Get clear records: user_id={current_user.id}, game_id={game_id}")
+
     if game_id:
         records = await clear_record_service.get_user_game_clear_records(current_user.id, game_id)
+        logger.info(f"Retrieved {len(records)} clear records for user_id={current_user.id}, game_id={game_id}")
     else:
         records = await clear_record_service.get_user_clear_records(current_user.id)
+        logger.info(f"Retrieved {len(records)} clear records for user_id={current_user.id}")
+
     return [_to_response(record) for record in records]
 
 
