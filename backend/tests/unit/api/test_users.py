@@ -66,18 +66,24 @@ class TestUsersAPI:
             password="password123"
         )
         self.mock_user_service.create_user.return_value = self.sample_user_dto
-        
+
+        # Mock Request
+        mock_request = Mock()
+        mock_request.client = Mock()
+        mock_request.client.host = "127.0.0.1"
+
         with patch('infrastructure.security.jwt_handler.JWTHandler') as mock_jwt_class:
             mock_jwt = Mock()
             mock_jwt_class.return_value = mock_jwt
             mock_jwt.create_access_token.return_value = "new_access_token"
-            
+
             # Act
             result = register_user(
                 user_data=user_data,
+                request=mock_request,
                 user_service=self.mock_user_service
             )
-            
+
             # Assert
             assert result.access_token == "new_access_token"
             assert result.token_type == "bearer"
@@ -95,14 +101,20 @@ class TestUsersAPI:
             password="password123"
         )
         self.mock_user_service.create_user.side_effect = ValueError("Username already exists")
-        
+
+        # Mock Request
+        mock_request = Mock()
+        mock_request.client = Mock()
+        mock_request.client.host = "127.0.0.1"
+
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
             register_user(
                 user_data=user_data,
+                request=mock_request,
                 user_service=self.mock_user_service
             )
-        
+
         assert exc_info.value.status_code == 400
         assert exc_info.value.detail == "Username already exists"
     
@@ -264,13 +276,19 @@ class TestUsersAPI:
         # Arrange
         verification_data = EmailVerificationRequest(token="valid_token")
         self.mock_user_service.verify_email.return_value = None  # 成功時はNone
-        
+
+        # Mock Request
+        mock_request = Mock()
+        mock_request.client = Mock()
+        mock_request.client.host = "127.0.0.1"
+
         # Act
         result = verify_email(
             verification_data=verification_data,
+            request=mock_request,
             user_service=self.mock_user_service
         )
-        
+
         # Assert
         assert result.message == "Email address verified successfully"
         self.mock_user_service.verify_email.assert_called_once_with("valid_token")
@@ -280,14 +298,20 @@ class TestUsersAPI:
         # Arrange
         verification_data = EmailVerificationRequest(token="invalid_token")
         self.mock_user_service.verify_email.side_effect = ValueError("Invalid token")
-        
+
+        # Mock Request
+        mock_request = Mock()
+        mock_request.client = Mock()
+        mock_request.client.host = "127.0.0.1"
+
         # Act & Assert
         with pytest.raises(HTTPException) as exc_info:
             verify_email(
                 verification_data=verification_data,
+                request=mock_request,
                 user_service=self.mock_user_service
             )
-        
+
         assert exc_info.value.status_code == 400
         assert exc_info.value.detail == "Invalid token"
     

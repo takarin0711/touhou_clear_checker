@@ -7,7 +7,11 @@ from infrastructure.security.jwt_handler import JWTHandler
 from infrastructure.security.token_generator import TokenGenerator
 from application.services.email_service import EmailService, EmailSender, MockEmailSender
 from infrastructure.email.smtp_email_sender import SMTPEmailSender
+from infrastructure.logging.logger import LoggerFactory
 import os
+
+
+logger = LoggerFactory.get_logger(__name__)
 
 
 class UserService:
@@ -27,19 +31,23 @@ class UserService:
             self.email_service = EmailService(mock_sender)
 
     def create_user(self, create_dto: CreateUserDto) -> UserResponseDto:
+        logger.debug(f"Creating user: username={create_dto.username}")
+
         existing_user = self.user_repository.get_by_username(create_dto.username)
         if existing_user:
+            logger.warning(f"Username already exists: {create_dto.username}")
             raise ValueError("Username already exists")
-        
+
         existing_email = self.user_repository.get_by_email(create_dto.email)
         if existing_email:
+            logger.warning(f"Email already exists: {create_dto.email}")
             raise ValueError("Email already exists")
 
         hashed_password = self.password_hasher.hash_password(create_dto.password)
-        
+
         # メール認証用トークン生成
         verification_token, expires_at = TokenGenerator.generate_token_with_expiry(24)
-        
+
         user = User(
             id=None,
             username=create_dto.username,
@@ -50,31 +58,47 @@ class UserService:
             verification_token=verification_token,
             verification_token_expires_at=expires_at
         )
-        
+
         created_user = self.user_repository.create(user)
-        
+        logger.info(f"User created: user_id={created_user.id}, username={created_user.username}")
+
         # 認証メール送信
-        self.email_service.send_verification_email(
-            to_email=created_user.email,
-            username=created_user.username,
-            verification_token=verification_token
-        )
-        
+        try:
+            self.email_service.send_verification_email(
+                to_email=created_user.email,
+                username=created_user.username,
+                verification_token=verification_token
+            )
+            logger.info(f"Verification email sent to: {created_user.email}")
+        except Exception as e:
+            logger.error(f"Failed to send verification email: {str(e)}")
+            # メール送信失敗はユーザー作成を阻害しない
+
         return self._to_response_dto(created_user)
 
     def authenticate_user(self, login_dto: LoginRequestDto) -> TokenResponseDto:
+        logger.debug(f"Authenticating user: username={login_dto.username}")
+
         user = self.user_repository.get_by_username(login_dto.username)
-        if not user or not self.password_hasher.verify_password(login_dto.password, user.hashed_password):
+        if not user:
+            logger.warning(f"User not found: {login_dto.username}")
             raise ValueError("Invalid username or password")
-        
+
+        if not self.password_hasher.verify_password(login_dto.password, user.hashed_password):
+            logger.warning(f"Invalid password for user: {login_dto.username}")
+            raise ValueError("Invalid username or password")
+
         if not user.is_active:
+            logger.warning(f"Inactive user attempted login: {login_dto.username}")
             raise ValueError("User account is disabled")
-        
+
         # メール認証チェック
         if not user.email_verified:
+            logger.warning(f"Unverified email attempted login: {login_dto.username}")
             raise ValueError("Email address not verified. Please check your email and verify your account.")
-        
+
         access_token = self.jwt_handler.create_access_token(data={"sub": user.username})
+        logger.debug(f"Access token created for user: {login_dto.username}")
         return TokenResponseDto(access_token=access_token, token_type="bearer")
 
     def get_user_by_id(self, user_id: int) -> Optional[UserResponseDto]:

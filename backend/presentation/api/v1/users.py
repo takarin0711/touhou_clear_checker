@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from typing import List
@@ -10,8 +10,11 @@ from application.services.user_service import UserService
 from application.dtos.user_dto import CreateUserDto, UpdateUserDto, LoginRequestDto
 from presentation.schemas.user_schema import UserCreate, UserUpdate, UserResponse, LoginRequest, TokenResponse, EmailVerificationRequest, ResendVerificationRequest, MessageResponse
 from domain.entities.user import User
+from infrastructure.logging.logger import LoggerFactory, security_logger
+from infrastructure.logging.constants import LoggingConstants
 
 router = APIRouter()
+logger = LoggerFactory.get_logger(__name__)
 
 
 def get_user_service(db: Session = Depends(get_db)) -> UserService:
@@ -22,22 +25,37 @@ def get_user_service(db: Session = Depends(get_db)) -> UserService:
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def register_user(
     user_data: UserCreate,
+    request: Request,
     user_service: UserService = Depends(get_user_service)
 ):
     """ユーザー登録（トークン付きレスポンス）"""
     try:
+        logger.info(f"User registration attempt: username={user_data.username}")
+
         create_dto = CreateUserDto(
             username=user_data.username,
             email=user_data.email,
             password=user_data.password
         )
         user_response = user_service.create_user(create_dto)
-        
+
         # JWT トークンを生成
         from infrastructure.security.jwt_handler import JWTHandler
         jwt_handler = JWTHandler()
         access_token = jwt_handler.create_access_token(data={"sub": user_response.username})
-        
+
+        # セキュリティログ記録
+        security_logger.log_security_event(
+            event_type=LoggingConstants.EVENT_TYPE_REGISTRATION,
+            user_id=user_response.id,
+            username=user_response.username,
+            ip_address=request.client.host if request.client else None,
+            status_code=status.HTTP_201_CREATED,
+            message=f"User registered successfully: {user_response.username}"
+        )
+
+        logger.info(f"User registered successfully: user_id={user_response.id}")
+
         return TokenResponse(
             access_token=access_token,
             token_type="bearer",
@@ -53,27 +71,44 @@ def register_user(
             )
         )
     except ValueError as e:
+        logger.warning(f"User registration failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.post("/login", response_model=TokenResponse)
 def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
+    request: Request = None,
     user_service: UserService = Depends(get_user_service)
 ):
     """ログイン（OAuth2 Form形式）"""
     try:
+        logger.info(f"Login attempt: username={form_data.username}")
+
         login_dto = LoginRequestDto(
             username=form_data.username,
             password=form_data.password
         )
         token_dto = user_service.authenticate_user(login_dto)
-        
+
         # ユーザー情報を取得
         user_response = user_service.get_user_by_username(form_data.username)
         if not user_response:
+            logger.error(f"User not found after authentication: username={form_data.username}")
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
-        
+
+        # セキュリティログ記録（成功）
+        security_logger.log_security_event(
+            event_type=LoggingConstants.EVENT_TYPE_LOGIN_SUCCESS,
+            user_id=user_response.id,
+            username=user_response.username,
+            ip_address=request.client.host if request and request.client else None,
+            status_code=status.HTTP_200_OK,
+            message=f"User logged in successfully: {user_response.username}"
+        )
+
+        logger.info(f"User logged in successfully: user_id={user_response.id}")
+
         return TokenResponse(
             access_token=token_dto.access_token,
             token_type=token_dto.token_type,
@@ -89,6 +124,16 @@ def login(
             )
         )
     except ValueError as e:
+        # セキュリティログ記録（失敗）
+        security_logger.log_security_event(
+            event_type=LoggingConstants.EVENT_TYPE_LOGIN_FAILURE,
+            username=form_data.username,
+            ip_address=request.client.host if request and request.client else None,
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            message=f"Login failed for user: {form_data.username}"
+        )
+
+        logger.warning(f"Login failed: username={form_data.username}, error={str(e)}")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(e))
 
 
@@ -146,13 +191,26 @@ def delete_current_user(
 @router.post("/verify-email", response_model=MessageResponse)
 def verify_email(
     verification_data: EmailVerificationRequest,
+    request: Request,
     user_service: UserService = Depends(get_user_service)
 ):
     """メールアドレス認証"""
     try:
+        logger.info("Email verification attempt")
         user_service.verify_email(verification_data.token)
+
+        # セキュリティログ記録
+        security_logger.log_security_event(
+            event_type=LoggingConstants.EVENT_TYPE_EMAIL_VERIFICATION,
+            ip_address=request.client.host if request.client else None,
+            status_code=status.HTTP_200_OK,
+            message="Email verified successfully"
+        )
+
+        logger.info("Email verified successfully")
         return MessageResponse(message="Email address verified successfully")
     except ValueError as e:
+        logger.warning(f"Email verification failed: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 

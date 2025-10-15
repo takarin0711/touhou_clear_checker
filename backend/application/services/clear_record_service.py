@@ -5,11 +5,14 @@ from typing import List, Optional
 from datetime import date, datetime
 from domain.entities.clear_record import ClearRecord
 from domain.repositories.clear_record_repository import ClearRecordRepository
+from infrastructure.logging.logger import LoggerFactory
+
+logger = LoggerFactory.get_logger(__name__)
 
 
 class ClearRecordService:
     """クリア記録サービス"""
-    
+
     def __init__(self, clear_record_repository: ClearRecordRepository):
         self.clear_record_repository = clear_record_repository
     
@@ -27,6 +30,8 @@ class ClearRecordService:
     
     async def create_clear_record(self, user_id: int, clear_record_data: dict) -> ClearRecord:
         """クリア記録を作成"""
+        logger.info(f"Creating clear record: user_id={user_id}, game_id={clear_record_data.get('game_id')}")
+
         clear_record = ClearRecord(
             user_id=user_id,
             game_id=clear_record_data.get('game_id'),
@@ -43,7 +48,9 @@ class ClearRecordService:
             is_special_clear_3=clear_record_data.get('is_special_clear_3', False),
             cleared_at=clear_record_data.get('cleared_at')
         )
-        return await self.clear_record_repository.create(clear_record)
+        created_record = await self.clear_record_repository.create(clear_record)
+        logger.info(f"Clear record created: record_id={created_record.id}")
+        return created_record
     
     async def update_clear_record(self, record_id: int, user_id: int, update_data: dict) -> Optional[ClearRecord]:
         """クリア記録を更新"""
