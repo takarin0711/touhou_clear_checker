@@ -35,6 +35,9 @@ class SensitiveDataSanitizer:
         "ssn",
         "private_key",
         "privatekey",
+        "email",
+        "email_address",
+        "mail",
     ]
 
     # 機密情報パターン（正規表現）
@@ -45,6 +48,8 @@ class SensitiveDataSanitizer:
         re.compile(r"Bearer\s+[A-Za-z0-9_\-\.]{20,}", re.IGNORECASE),
         # API キー形式（32文字以上の英数字）
         re.compile(r"\b[A-Za-z0-9]{32,}\b"),
+        # メールアドレス形式
+        re.compile(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b"),
     ]
 
     @classmethod

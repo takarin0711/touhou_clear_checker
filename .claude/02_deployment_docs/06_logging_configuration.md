@@ -33,17 +33,19 @@ infrastructure/
   - `extra`: 追加情報（任意）
 
 ### 2. 機密情報マスキング
-**自動マスキング対象**:
+**自動マスキング対象（キー名）**:
 - パスワード (`password`, `passwd`, `pwd`)
 - トークン (`token`, `access_token`, `refresh_token`, `jwt`)
 - APIキー (`api_key`, `apikey`, `secret`)
 - 認証情報 (`authorization`, `auth`)
+- メールアドレス (`email`, `email_address`, `mail`)
 - その他機密情報 (`private_key`, `session_id`, `credit_card`等)
 
-**パターンマッチング**:
+**パターンマッチング（値の内容）**:
 - JWT トークン形式: `eyJ...`
 - Bearer トークン: `Bearer ...`
-- 32文字以上の英数字文字列
+- API キー形式: 32文字以上の英数字文字列
+- メールアドレス形式: `user@example.com`
 
 ### 3. ログローテーション
 - **最大ファイルサイズ**: 10MB
@@ -306,16 +308,28 @@ logger.info(f"User logged in successfully: user_id={user.id}")
 
 ### 3. 機密情報の扱い
 ```python
-# ❌ 悪い例（パスワードが直接ログ出力される）
-logger.debug(f"User credentials: {username}, {password}")
+# ❌ 悪い例（機密情報が直接ログ出力される）
+logger.debug(f"User credentials: {username}, {password}, {email}")
 
-# ✅ 良い例（パスワードをログに含めない）
+# ✅ 良い例（機密情報をログに含めない）
 logger.debug(f"Authenticating user: {username}")
 
-# ✅ 良い例（自動マスキング）
+# ✅ 良い例（自動マスキング - キー名による検出）
 # extraに機密情報を含めても自動的にマスキングされる
-logger.info("User data", extra={"extra": {"password": "secret123"}})
-# 出力: {"password": "***REDACTED***"}
+logger.info("User data", extra={"extra": {
+    "username": "john",
+    "password": "secret123",      # マスキングされる
+    "email": "john@example.com"   # マスキングされる
+}})
+# 出力: {
+#   "username": "john",
+#   "password": "***REDACTED***",
+#   "email": "***REDACTED***"
+# }
+
+# ✅ 良い例（自動マスキング - パターンマッチング）
+logger.info("Registration attempt: user=john, email=john@example.com")
+# 出力: "Registration attempt: user=john, email=***REDACTED***"
 ```
 
 ### 4. エラーログの記録
@@ -379,17 +393,18 @@ python -m pytest tests/unit/logging/ -v
 
 ### テスト内容
 - ✅ ログフォーマット（JSON/テキスト）
-- ✅ 機密情報マスキング（パスワード、トークン、APIキー）
+- ✅ 機密情報マスキング（パスワード、トークン、APIキー、メールアドレス）
 - ✅ ログローテーション
 - ✅ セキュリティログ記録
 - ✅ リクエストコンテキスト管理
 - ✅ リクエストトレーシングミドルウェア
-- ✅ カスタム例外クラス（NEW!）
-- ✅ 例外ハンドラーミドルウェア（NEW!）
+- ✅ カスタム例外クラス
+- ✅ 例外ハンドラーミドルウェア
 
 ### テスト結果
-- **66個のテスト** ✅ 全成功（+28個追加）
-- **実行時間**: 0.42秒
+- **68個のテスト** ✅ 全成功（ロギング関連）
+- **246個のテスト** ✅ 全成功（全体）
+- **実行時間**: 0.56秒
 
 ## リクエストトレーシングの活用例
 

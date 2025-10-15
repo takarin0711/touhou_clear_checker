@@ -19,7 +19,7 @@ class TestSensitiveDataSanitizer:
 
         assert result["username"] == "testuser"
         assert result["password"] == SensitiveDataSanitizer.MASK_STRING
-        assert result["email"] == "test@example.com"
+        assert result["email"] == SensitiveDataSanitizer.MASK_STRING  # メールアドレスもマスキング対象
 
     def test_sanitize_dict_with_token(self):
         """トークンキーが正しくマスキングされること"""
@@ -119,10 +119,12 @@ class TestSensitiveDataSanitizer:
         assert SensitiveDataSanitizer._is_sensitive_key("api_key")
         assert SensitiveDataSanitizer._is_sensitive_key("SECRET_KEY")
         assert SensitiveDataSanitizer._is_sensitive_key("jwt_token")
+        assert SensitiveDataSanitizer._is_sensitive_key("email")
+        assert SensitiveDataSanitizer._is_sensitive_key("email_address")
+        assert SensitiveDataSanitizer._is_sensitive_key("user_email")
 
         # 通常のキー
         assert not SensitiveDataSanitizer._is_sensitive_key("username")
-        assert not SensitiveDataSanitizer._is_sensitive_key("email")
         assert not SensitiveDataSanitizer._is_sensitive_key("user_id")
         assert not SensitiveDataSanitizer._is_sensitive_key("timestamp")
 
@@ -138,6 +140,22 @@ class TestSensitiveDataSanitizer:
         assert result["Password"] == SensitiveDataSanitizer.MASK_STRING
         assert result["API_KEY"] == SensitiveDataSanitizer.MASK_STRING
         assert result["AccessToken"] == SensitiveDataSanitizer.MASK_STRING
+
+    def test_sanitize_value_with_email_address(self):
+        """メールアドレスが正しくマスキングされること"""
+        email = "test.user+tag@example.com"
+        result = SensitiveDataSanitizer.sanitize_value(email)
+
+        assert result == SensitiveDataSanitizer.MASK_STRING
+
+    def test_sanitize_string_with_email_in_text(self):
+        """テキスト中のメールアドレスが正しくマスキングされること"""
+        text = "User registration: email=john.doe@example.com, username=johndoe"
+        result = SensitiveDataSanitizer.sanitize_string(text)
+
+        assert SensitiveDataSanitizer.MASK_STRING in result
+        assert "john.doe@example.com" not in result
+        assert "username=johndoe" in result  # メール以外は残る
 
     def test_sanitize_dict_does_not_modify_original(self):
         """元の辞書が変更されないこと（新しいオブジェクトを返す）"""
