@@ -108,7 +108,8 @@ touhou_clear_checker/
 │   │   └── value_objects/  # 値オブジェクト
 │   ├── infrastructure/     # インフラ層
 │   │   ├── database/       # データベース
-│   │   └── security/       # セキュリティ
+│   │   ├── security/       # セキュリティ
+│   │   └── logging/        # ロギング（構造化ログ・サニタイズ）
 │   ├── presentation/       # プレゼンテーション層
 │   │   ├── api/v1/        # APIエンドポイント
 │   │   └── schemas/        # リクエスト/レスポンススキーマ
@@ -129,7 +130,11 @@ touhou_clear_checker/
 │   │   ├── hooks/          # カスタムフック（.ts）
 │   │   ├── services/       # API通信サービス（.ts）
 │   │   ├── types/          # TypeScript型定義（.ts）
-│   │   └── contexts/       # React Context（.tsx）
+│   │   ├── contexts/       # React Context（.tsx）
+│   │   └── utils/
+│   │       ├── logging/    # ロギング（構造化ログ・サニタイズ）
+│   │       ├── errorHandler.ts  # エラーハンドリングユーティリティ
+│   │       └── __tests__/  # ユーティリティのテスト
 │   ├── package.json
 │   └── tsconfig.json       # TypeScript設定
 ├── .claude/                # 設計書・開発ドキュメント
@@ -139,16 +144,17 @@ touhou_clear_checker/
 
 ## テスト構成
 ### バックエンド単体テスト（実装済み）
-- **計111個のテスト**が正常動作
+- **計126個のテスト**が正常動作
 - **サービスレイヤー**: 74テスト（ゲーム・ユーザー・クリア記録・ゲーム機体・メール送信のビジネスロジック）
 - **リポジトリレイヤー**: 28テスト（データアクセスの基本操作）
 - **APIレイヤー**: 14テスト（エンドポイントのテスト）
+- **ロギング**: 15テスト（構造化ログ・例外ハンドリング・サニタイザー）
 - **技術スタック**: pytest + pytest-mock
 - **特徴**: 完全モック化により外部依存なし、高速実行（0.22秒）
 
 ### フロントエンド単体テスト（実装済み）
-- **計18個のテストファイル**、**294個のテスト**が正常動作
-- **共通コンポーネント**: Button、Input、Badge（UI操作・スタイリング）
+- **計23個のテストファイル**、**366個のテスト**が正常動作
+- **共通コンポーネント**: Button、Input、Badge、ErrorBoundary、ToastContainer（UI操作・スタイリング・エラー表示）
 - **ゲーム機能**: GameCard、GameDetail、gameApi、useGames（ゲーム管理・表示・詳細）
 - **認証機能**: LoginForm、AuthContext、authApi（認証状態・フォーム）
 - **クリア記録**: clearRecordApi、useClearRecords、IndividualTabClearForm（記録管理・API・UI）
@@ -158,8 +164,10 @@ touhou_clear_checker/
 - **ゲーム機能定数**: gameFeatureConstants.ts（特殊クリア条件を持つゲーム定義）
 - **妖精大戦争特殊対応**: ルート別表示・タブ切り替え・表記変更のテスト
 - **錦上京・鬼形獣特殊対応**: ノー霊撃・ノー暴走の特殊クリア条件表示テスト
+- **ロギング**: 41テスト（構造化ログ・メールマスキング・セキュリティサニタイザー）
+- **エラーハンドリング**: 31テスト（errorHandler 17個・ErrorBoundary 5個・ToastContext 9個）
 - **技術スタック**: React Testing Library + Jest
-- **特徴**: TypeScript型安全性、UI/UX動作検証、API通信テスト
+- **特徴**: TypeScript型安全性、UI/UX動作検証、API通信テスト、エラー復旧テスト
 
 ### 統合テスト（未実装）
 - APIエンドポイントの統合テスト
@@ -180,6 +188,7 @@ touhou_clear_checker/
 - **ゲーム系**: Game, GameFilter, GameListResponse, GameCharacter, GameCharacterListResponse
 - **クリア記録系**: ClearRecord, ClearRecordFormData, IndividualConditionData
 - **共通コンポーネント**: ButtonProps, InputProps, BadgeProps
+- **エラーハンドリング系**: AppError, ErrorType, ErrorSeverity, ApiErrorResponse, ErrorDisplayInfo, Toast, ToastContextType
 
 ### TypeScript設定
 - **tsconfig.json**: 厳密な型チェック有効
@@ -204,6 +213,7 @@ touhou_clear_checker/
 - **XSS対策**: React標準エスケープ機能、dangerouslySetInnerHTML未使用
 - **TypeScript型安全性**: 37個のinterface定義による実行時エラー防止
 - **HTTPS**: 本番環境ではHTTPS必須（開発環境はHTTP可）
+- **ログセキュリティ**: 機密情報の自動マスキング（パスワード・トークン・メールアドレス等）
 
 ### セキュリティ設定
 - **シークレットキー**: 本番環境では環境変数から取得（`JWT_SECRET_KEY`）
@@ -215,6 +225,135 @@ touhou_clear_checker/
 - **CSP（Content Security Policy）**: XSS攻撃の追加防御
 - **レート制限**: API呼び出し頻度制限
 - **ログ監視**: 異常なアクセスパターンの検出
+
+## ロギング仕様（2025年10月実装）
+
+### バックエンド（Python）
+- **構造化ロギング**: JSON形式、タイムスタンプ・ログレベル・メッセージ・コンテキスト
+- **環境変数制御**: `LOG_LEVEL`（DEBUG/INFO/WARNING/ERROR/CRITICAL）、デフォルトはINFO
+- **機密情報マスキング**: パスワード・トークン・APIキー・メールアドレスを自動マスキング
+- **ファイル構成**:
+  - `infrastructure/logging/logger.py` - 構造化ロガー実装
+  - `infrastructure/logging/log_config.py` - ログ設定
+  - `infrastructure/logging/sanitizer.py` - セキュリティサニタイザー
+  - `infrastructure/logging/exception_handler.py` - 例外ハンドラー
+- **テスト**: 15個のテストで全機能を検証
+
+### フロントエンド（TypeScript）
+- **構造化ロギング**: タイムスタンプ・ログレベル・メッセージ・コンテキスト
+- **環境変数制御**: `REACT_APP_LOG_LEVEL`（DEBUG/INFO/WARN/ERROR/OFF）
+- **機密情報マスキング**: パスワード・トークン・APIキー・メールアドレス（正規表現パターンマッチング）
+- **API専用メソッド**: `logApiCall()`, `logApiSuccess()`, `logApiError()`
+- **ファイル構成**:
+  - `utils/logging/logger.ts` - 構造化ロガー実装
+  - `utils/logging/logConfig.ts` - ログ設定
+  - `utils/logging/sanitizer.ts` - セキュリティサニタイザー
+- **テスト**: 41個のテストで全機能を検証（メール・JWT・Bearerトークン対応）
+
+### 使用方法
+```python
+# バックエンド
+from infrastructure.logging.logger import get_logger
+logger = get_logger(__name__)
+logger.info("User login", extra={"user_id": 1})
+logger.error("Login failed", exc_info=True)
+```
+
+```typescript
+// フロントエンド
+import { createLogger } from '../utils/logging/logger';
+const logger = createLogger('ComponentName');
+logger.info('User action', { userId: 1 });
+logger.logApiCall('GET', '/api/users', { page: 1 });
+```
+
+### マスキング対象
+- **キーベース**: password, token, api_key, secret, email, session, cookie等
+- **パターンベース**: メールアドレス、JWT、Bearerトークン、APIキー（32文字以上）
+- **出力例**: `test@example.com` → `***MASKED***`（FE）、`***REDACTED***`（BE）
+
+## エラーハンドリング仕様（2025年10月実装）
+
+### フロントエンド（TypeScript + React）
+
+#### Error Boundary
+- **目的**: Reactコンポーネントツリー内のエラーをキャッチし、適切なフォールバックUIを表示
+- **実装**: `components/ErrorBoundary.tsx`
+- **機能**:
+  - コンポーネントエラーの自動キャッチ
+  - デフォルトフォールバックUI（エラーメッセージ・再試行ボタン・ホームへ戻るボタン）
+  - カスタムフォールバックUIのサポート
+  - 開発環境での詳細エラー情報表示
+  - エラーログの自動記録
+- **テスト**: 5個のテストで全機能を検証
+
+#### Toast通知システム
+- **目的**: アプリケーション全体で統一的な通知を表示
+- **実装**: `contexts/ToastContext.tsx` + `components/ToastContainer.tsx`
+- **機能**:
+  - Context APIによるグローバル通知管理
+  - 重大度別スタイリング（info/warning/error/critical）
+  - 自動削除（デフォルト5秒、カスタマイズ可能）
+  - 複数通知の同時表示
+  - 手動削除のサポート
+- **テスト**: 9個のテストで全機能を検証
+
+#### エラーユーティリティ
+- **実装**: `utils/errorHandler.ts`
+- **機能**:
+  - APIエラーの統一的なパース（`parseApiError`）
+  - HTTPステータスコードのエラータイプへのマッピング
+  - エラー表示情報の生成（`getErrorDisplayInfo`）
+  - エラー詳細のフォーマット（`formatErrorDetails`）
+  - ネットワークエラー・タイムアウト・認証エラー等の分類
+- **テスト**: 17個のテストで全機能を検証
+
+#### 型定義
+- **実装**: `types/error.ts`
+- **主要型**:
+  - `ErrorType`: エラー分類（NETWORK_ERROR, API_ERROR, AUTHENTICATION_ERROR等）
+  - `ErrorSeverity`: 重大度（INFO, WARNING, ERROR, CRITICAL）
+  - `AppError`: アプリケーション内部エラー型
+  - `ApiErrorResponse`: バックエンドAPIエラーレスポンス型
+  - `ErrorDisplayInfo`: ユーザー向け表示情報型
+
+### 使用例
+
+```typescript
+// Error Boundaryの使用
+import ErrorBoundary from './components/ErrorBoundary';
+
+<ErrorBoundary>
+  <YourComponent />
+</ErrorBoundary>
+
+// Toast通知の使用
+import { useToast } from './contexts/ToastContext';
+
+function YourComponent() {
+  const { showSuccess, showError } = useToast();
+
+  const handleSave = async () => {
+    try {
+      await saveData();
+      showSuccess('保存しました');
+    } catch (error) {
+      showError('保存に失敗しました');
+    }
+  };
+}
+
+// エラーハンドリングユーティリティの使用
+import { parseApiError, getErrorDisplayInfo } from './utils/errorHandler';
+
+try {
+  await apiCall();
+} catch (error) {
+  const appError = parseApiError(error);
+  const displayInfo = getErrorDisplayInfo(appError);
+  console.error(displayInfo.title, displayInfo.message);
+}
+```
 
 ## データベース管理
 
