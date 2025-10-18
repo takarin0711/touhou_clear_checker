@@ -472,10 +472,232 @@ raise ValidationException(
 - `AuthenticationException`, `AuthorizationException`: **WARNING**レベル
 - `DatabaseException`, `ExternalServiceException`: **ERROR**レベル
 
+## フロントエンドロギング（2025年10月18日追加）
+
+### 概要
+フロントエンド（React + TypeScript）にも構造化ロギング機能を実装し、バックエンドと同様のセキュリティレベルを実現。
+
+### アーキテクチャ
+```
+frontend/src/utils/logging/
+├── logConfig.ts      # ログ設定（環境変数制御）
+├── logger.ts         # 構造化ロガー実装
+└── sanitizer.ts      # セキュリティサニタイザー
+```
+
+### 主要機能
+
+#### 1. 構造化ログ出力
+- **タイムスタンプ**: ISO 8601形式（UTC）
+- **ログレベル**: DEBUG, INFO, WARN, ERROR, OFF
+- **コンテキスト情報**: オブジェクト形式で追加情報を記録
+- **カラーコード**: 開発環境のみ色分け表示
+
+#### 2. 環境変数制御
+```bash
+# .env または .env.local
+REACT_APP_LOG_LEVEL=DEBUG   # 開発環境
+REACT_APP_LOG_LEVEL=WARN    # 本番環境
+REACT_APP_LOG_LEVEL=OFF     # ログ無効化
+```
+
+#### 3. 機密情報マスキング
+
+**キー名ベースマスキング**:
+```typescript
+const SENSITIVE_KEYS = [
+  'password', 'passwd', 'pwd',
+  'token', 'api_key', 'secret',
+  'email', 'email_address', 'mail',
+  'session', 'cookie', 'csrf',
+  'private_key', 'credit_card'
+];
+```
+
+**正規表現パターンマスキング**:
+- **メールアドレス**: `user@example.com` → `***MASKED***`
+- **JWT トークン**: `eyJ...` → `***MASKED***`
+- **Bearer トークン**: `Bearer abc123...` → `***MASKED***`
+- **API キー**: 32文字以上の英数字文字列 → `***MASKED***`
+
+#### 4. API専用ログメソッド
+```typescript
+logger.logApiCall('POST', '/api/users', { page: 1 });
+logger.logApiSuccess('POST', '/api/users', 200, responseData);
+logger.logApiError('POST', '/api/users', error);
+```
+
+### 使用方法
+
+#### 基本的なログ出力
+```typescript
+import { createLogger } from '../utils/logging/logger';
+
+const logger = createLogger('ComponentName');
+
+// ログレベル別の出力
+logger.debug('Detailed debug information', { userId: 1 });
+logger.info('General information');
+logger.warn('Warning message', { context: 'data' });
+logger.error('Error occurred', error, { userId: 1 });
+```
+
+#### API通信でのログ
+```typescript
+import { createLogger } from '../utils/logging/logger';
+
+const logger = createLogger('AuthAPI');
+
+export const authApi = {
+  login: async (credentials) => {
+    try {
+      logger.logApiCall('POST', '/users/login', { username: credentials.username });
+      const response = await api.post('/users/login', credentials);
+      logger.logApiSuccess('POST', '/users/login', response.status);
+      return response.data;
+    } catch (error) {
+      logger.logApiError('POST', '/users/login', error);
+      throw error;
+    }
+  }
+};
+```
+
+#### コンポーネントでのログ
+```typescript
+import { createLogger } from '../utils/logging/logger';
+
+const logger = createLogger('LoginForm');
+
+const LoginForm = () => {
+  const handleSubmit = async (data) => {
+    logger.info('Login attempt', { username: data.username });
+
+    try {
+      await login(data);
+      logger.info('Login successful');
+    } catch (error) {
+      logger.error('Login failed', error);
+    }
+  };
+};
+```
+
+### セキュリティサニタイズ例
+
+#### 入力データ
+```typescript
+const loginData = {
+  username: 'testuser',
+  password: 'secret123',
+  email: 'test@example.com'
+};
+
+logger.info('User login', loginData);
+```
+
+#### 出力結果
+```
+[2025-10-18T07:00:00.000Z] [INFO ] [AuthAPI] User login
+{
+  username: 'testuser',
+  password: '***MASKED***',
+  email: '***MASKED***'
+}
+```
+
+#### 文字列内メールアドレス
+```typescript
+logger.info('User test@example.com has registered');
+// 出力: User ***MASKED*** has registered
+```
+
+### テスト
+
+#### 単体テスト実行
+```bash
+cd frontend
+npm test -- --testPathPattern="utils/logging" --watchAll=false
+```
+
+#### テスト内容
+- ✅ ログ設定（環境変数・ログレベル判定）: 9テスト
+- ✅ 構造化ロガー（タイムスタンプ・レベル・API専用メソッド）: 13テスト
+- ✅ セキュリティサニタイザー（マスキング・パターンマッチング）: 19テスト
+
+#### テスト結果
+- **41個のテスト** ✅ 全成功（ロギング関連）
+- **335個のテスト** ✅ 全成功（フロントエンド全体）
+- **実行時間**: 2.2秒
+
+### ログ出力例
+
+#### 開発環境（カラー表示付き）
+```
+[36m[2025-10-18T07:00:00.123Z] [DEBUG] [GameAPI] API Call: GET /api/games[0m { method: 'GET', url: '/api/games' }
+[32m[2025-10-18T07:00:00.456Z] [INFO ] [GameAPI] API Success: GET /api/games[0m { status: 200 }
+[31m[2025-10-18T07:00:01.789Z] [ERROR] [AuthAPI] API Error: POST /users/login[0m { message: 'Invalid credentials' }
+```
+
+#### 本番環境（カラー無し）
+```
+[2025-10-18T07:00:00.123Z] [WARN ] [GameAPI] Rate limit approaching { remaining: 10 }
+[2025-10-18T07:00:01.456Z] [ERROR] [AuthAPI] Authentication failed { error: 'Unauthorized' }
+```
+
+### ベストプラクティス
+
+#### 1. ロガーインスタンスの作成
+- コンポーネント/サービスごとに名前付きロガーを作成
+- 同じファイル内では1つのロガーインスタンスを共有
+
+```typescript
+// ✅ 推奨
+const logger = createLogger('GameService');
+
+// ❌ 非推奨（毎回新しいインスタンスを作成）
+function someFunction() {
+  const logger = createLogger('GameService');
+}
+```
+
+#### 2. ログレベルの使い分け
+- **DEBUG**: 詳細なデバッグ情報（開発時のみ）
+- **INFO**: 一般的な情報（ユーザー操作、API成功）
+- **WARN**: 警告（エラーではないが注意が必要）
+- **ERROR**: エラー（例外発生、API失敗）
+
+#### 3. 機密情報の扱い
+- パスワード・トークンは自動マスキングされるが、明示的に除外することを推奨
+- ユーザー識別にはID（数値）を使用、メールアドレスは避ける
+
+```typescript
+// ✅ 推奨
+logger.info('User action', { userId: 123 });
+
+// ⚠️ 注意（自動マスキングされるが非推奨）
+logger.info('User action', { email: 'user@example.com' });
+```
+
+### トラブルシューティング
+
+#### ログが出力されない
+- **原因**: `REACT_APP_LOG_LEVEL`が`OFF`または高すぎる
+- **解決策**: `.env`で`REACT_APP_LOG_LEVEL=DEBUG`を設定
+
+#### 機密情報がマスキングされない
+- **原因**: キー名がSENSITIVE_KEYSに含まれていない
+- **解決策**: `sanitizer.ts`のSENSITIVE_KEYSに追加
+
+#### ブラウザコンソールが見づらい
+- **原因**: カラーコード表示の問題
+- **解決策**: `logConfig.ts`で`enableColor: false`に変更
+
 ## まとめ
 
 このロギング基盤により、以下が実現されます：
 
+### バックエンド（Python）
 1. **セキュリティ**: パスワード等の機密情報を自動マスキング
 2. **可観測性**: 構造化ログによる問題の迅速な特定
 3. **監査**: セキュリティイベントの完全な記録
@@ -484,5 +706,15 @@ raise ValidationException(
 6. **リクエストトレーシング**: 一意のIDで全リクエストを追跡可能
 7. **パフォーマンス監視**: レスポンスタイムの自動測定
 8. **コンテキスト伝播**: ユーザー情報を全ログに自動付与
-9. **例外ハンドリング**: カスタム例外による自動ログ記録（NEW!）
-10. **エラーレスポンス**: 統一されたエラーレスポンス形式（NEW!）
+9. **例外ハンドリング**: カスタム例外による自動ログ記録
+10. **エラーレスポンス**: 統一されたエラーレスポンス形式
+
+### フロントエンド（TypeScript）
+1. **セキュリティ**: パスワード・トークン・メールアドレスを自動マスキング
+2. **構造化ログ**: タイムスタンプ・ログレベル・コンテキスト情報
+3. **環境別制御**: 開発/本番でログレベルを切り替え
+4. **API専用メソッド**: API通信の成功/失敗を一貫して記録
+5. **開発体験**: カラーコード表示による視認性向上
+6. **型安全性**: TypeScriptによる型チェック
+7. **テスト完備**: 41個のテストで全機能を検証
+8. **パターンマッチング**: 正規表現による柔軟な機密情報検出
