@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional, List
 from datetime import datetime
 from domain.constants.validation_constants import ValidationConstants
@@ -23,18 +23,16 @@ class GameCharacterUpdate(GameCharacterBase):
 
 class GameCharacterResponse(GameCharacterBase):
     """ゲーム機体レスポンススキーマ"""
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     game_id: int
     created_at: Optional[datetime] = None
-    
-    class Config:
-        from_attributes = True
 
 
 class GameCharacterListResponse(BaseModel):
     """ゲーム機体一覧レスポンススキーマ"""
+    model_config = ConfigDict(from_attributes=True)
+
     game_characters: List[GameCharacterResponse]
     total_count: int = 0
-    
-    class Config:
-        from_attributes = True

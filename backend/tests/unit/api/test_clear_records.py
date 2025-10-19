@@ -197,7 +197,7 @@ class TestClearRecordsAPI:
         
         assert result.id == 2
         assert result.character_name == "魔理沙"
-        self.mock_service.create_clear_record.assert_called_once_with(1, self.sample_create_schema.dict())
+        self.mock_service.create_clear_record.assert_called_once_with(1, self.sample_create_schema.model_dump())
         
     @pytest.mark.asyncio
     async def test_update_clear_record_success(self):
@@ -223,7 +223,7 @@ class TestClearRecordsAPI:
         
         assert result.id == 1
         assert result.is_no_continue_clear is True
-        self.mock_service.update_clear_record.assert_called_once_with(1, 1, self.sample_update_schema.dict())
+        self.mock_service.update_clear_record.assert_called_once_with(1, 1, self.sample_update_schema.model_dump())
         
     @pytest.mark.asyncio
     async def test_update_clear_record_not_found(self):
@@ -293,7 +293,7 @@ class TestClearRecordsAPI:
         
         assert result.id == 2
         assert result.character_name == "魔理沙"
-        self.mock_service.upsert_clear_record.assert_called_once_with(1, self.sample_create_schema.dict())
+        self.mock_service.upsert_clear_record.assert_called_once_with(1, self.sample_create_schema.model_dump())
         
     @pytest.mark.asyncio
     async def test_batch_create_or_update_records(self):

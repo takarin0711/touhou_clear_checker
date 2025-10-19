@@ -9,13 +9,19 @@
 
 ## 技術スタック
 - **フロントエンド**: React 18.2.0, TypeScript 5.9.2, axios
-- **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54, Pydantic 2.11.9, PyMySQL 1.1.1
+- **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54 (2.0互換モード), Pydantic 2.11.9, PyMySQL 1.1.1
 - **認証**: JWT (python-jose), Argon2 (argon2-cffi), passlib
 - **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性, UTF-8エンコーディング対応
 - **データベース**: SQLite（開発環境）, MySQL 8.0（本番環境）
 - **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
 - **コンテナ**: Docker + Docker Compose（SQLite/MySQL環境選択可能）
+
+### ライブラリ互換性対応（2025年10月完了）
+- **Pydantic v2対応**: `.dict()` → `.model_dump()`、`class Config` → `ConfigDict` 移行完了
+- **SQLAlchemy 2.0準拠**: `future=True` 設定により2.0互換モードで動作
+- **datetime modernization**: `datetime.utcnow()` → `datetime.now(UTC)` へ移行完了
+- **非推奨警告**: 0件（全て解消済み）
 
 ## バックエンドアーキテクチャ（DDD/クリーンアーキテクチャ）
 ```
@@ -225,10 +231,10 @@ const authState = {
 - クリア記録管理API
 - 管理者専用API
 
-✅ **テスト**（2025年1月大幅拡充）
-- 単体テスト（178テスト、API81 + サービス74 + リポジトリ28）
+✅ **テスト**（2025年10月更新）
+- 単体テスト（246テスト、全成功）
 - pytest + 完全モック化 + 100%成功率
-- 高速実行（0.28秒）+ APIレイヤー完全カバレッジ
+- 高速実行（0.40秒）+ 非推奨警告0件
 
 ### フロントエンド
 ✅ **認証システム**

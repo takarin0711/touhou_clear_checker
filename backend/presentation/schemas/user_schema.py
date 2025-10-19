@@ -1,52 +1,45 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 from typing import Optional
 
 
 class UserCreate(BaseModel):
-    username: str
-    email: str
-    password: str
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "username": "testuser",
                 "email": "test@example.com",
                 "password": "password123"
             }
         }
+    )
+
+    username: str
+    email: str
+    password: str
 
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    email: Optional[str] = None
-    password: Optional[str] = None
-    is_active: Optional[bool] = None
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "username": "updated_username",
                 "email": "updated@example.com",
                 "is_active": True
             }
         }
+    )
+
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    is_active: Optional[bool] = None
 
 
 class UserResponse(BaseModel):
-    id: int
-    username: str
-    email: str
-    is_active: bool
-    is_admin: bool
-    email_verified: bool
-    created_at: datetime
-    updated_at: datetime
-
-    class Config:
-        from_attributes = True
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "id": 1,
                 "username": "testuser",
@@ -58,28 +51,35 @@ class UserResponse(BaseModel):
                 "updated_at": "2023-01-01T00:00:00"
             }
         }
+    )
+
+    id: int
+    username: str
+    email: str
+    is_active: bool
+    is_admin: bool
+    email_verified: bool
+    created_at: datetime
+    updated_at: datetime
 
 
 class LoginRequest(BaseModel):
-    username: str
-    password: str
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "username": "testuser",
                 "password": "password123"
             }
         }
+    )
+
+    username: str
+    password: str
 
 
 class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str
-    user: UserResponse
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
                 "token_type": "bearer",
@@ -94,36 +94,44 @@ class TokenResponse(BaseModel):
                 }
             }
         }
+    )
+
+    access_token: str
+    token_type: str
+    user: UserResponse
 
 
 class EmailVerificationRequest(BaseModel):
-    token: str
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "token": "abc123def456ghi789jkl012mno345pqr678stu901vwx234yzA567BCD890EFG123"
             }
         }
+    )
+
+    token: str
 
 
 class ResendVerificationRequest(BaseModel):
-    email: str
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "email": "test@example.com"
             }
         }
+    )
+
+    email: str
 
 
 class MessageResponse(BaseModel):
-    message: str
-
-    class Config:
-        json_schema_extra = {
+    model_config = ConfigDict(
+        json_schema_extra={
             "example": {
                 "message": "Operation completed successfully"
             }
         }
+    )
+
+    message: str

@@ -1,6 +1,6 @@
 import secrets
 import string
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Tuple
 
 from .constants import SecurityConstants
@@ -20,10 +20,10 @@ class TokenGenerator:
     def generate_token_with_expiry(hours: int = SecurityConstants.EMAIL_TOKEN_EXPIRE_HOURS) -> Tuple[str, datetime]:
         """トークンと有効期限をセットで生成"""
         token = TokenGenerator.generate_verification_token()
-        expires_at = datetime.utcnow() + timedelta(hours=hours)
+        expires_at = datetime.now(UTC) + timedelta(hours=hours)
         return token, expires_at
     
     @staticmethod
     def is_token_expired(expires_at: datetime) -> bool:
         """トークンが期限切れかチェック"""
-        return datetime.utcnow() > expires_at
+        return datetime.now(UTC) > expires_at

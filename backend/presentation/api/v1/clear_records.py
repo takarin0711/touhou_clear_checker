@@ -80,7 +80,7 @@ async def create_clear_record(
     clear_record_service: ClearRecordService = Depends(get_clear_record_service)
 ):
     """クリア記録を作成"""
-    record = await clear_record_service.create_clear_record(current_user.id, record_data.dict())
+    record = await clear_record_service.create_clear_record(current_user.id, record_data.model_dump())
     return _to_response(record)
 
 
@@ -92,7 +92,7 @@ async def update_clear_record(
     clear_record_service: ClearRecordService = Depends(get_clear_record_service)
 ):
     """クリア記録を更新"""
-    record = await clear_record_service.update_clear_record(record_id, current_user.id, update_data.dict())
+    record = await clear_record_service.update_clear_record(record_id, current_user.id, update_data.model_dump())
     if not record:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Clear record not found")
     return _to_response(record)
@@ -117,7 +117,7 @@ async def upsert_clear_record(
     clear_record_service: ClearRecordService = Depends(get_clear_record_service)
 ):
     """クリア記録をUpsert（作成または更新）"""
-    record = await clear_record_service.upsert_clear_record(current_user.id, record_data.dict())
+    record = await clear_record_service.upsert_clear_record(current_user.id, record_data.model_dump())
     return _to_response(record)
 
 
@@ -128,6 +128,6 @@ async def batch_create_or_update_records(
     clear_record_service: ClearRecordService = Depends(get_clear_record_service)
 ):
     """複数のクリア記録を一括作成/更新"""
-    records_data = [record.dict() for record in batch_data.records]
+    records_data = [record.model_dump() for record in batch_data.records]
     records = await clear_record_service.batch_upsert_clear_records(current_user.id, records_data)
     return [_to_response(record) for record in records]

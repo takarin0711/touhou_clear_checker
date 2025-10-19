@@ -1,7 +1,7 @@
 """
 クリア記録のPydanticスキーマ
 """
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import List, Optional
 from datetime import date, datetime
 
@@ -36,12 +36,11 @@ class ClearRecordUpdate(BaseModel):
     cleared_at: Optional[date] = None
 
 class ClearRecordResponse(ClearRecordBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     created_at: Optional[datetime]
     last_updated_at: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
 
 class ClearRecordBatch(BaseModel):
     records: List[ClearRecordCreate]

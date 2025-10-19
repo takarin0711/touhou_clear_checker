@@ -16,6 +16,30 @@ ValueError: 'not' is not a valid parameter name
 - Pydantic V2対応コード修正（schema_extra → json_schema_extra）
 - 互換性問題を解決し、Python 3.13で正常動作確認済み
 
+### 1-2. ライブラリ非推奨警告の解消（2025年10月完了）
+**問題**: Pydantic v2、SQLAlchemy 2.0、datetime関連の非推奨警告（計25件）
+
+**解決済み対応**（2025年10月19日実施）:
+
+#### Pydantic v2完全移行
+- `.dict()` → `.model_dump()` へ置換（7箇所）
+- `class Config` → `ConfigDict` へ移行（12クラス）
+- Pydantic v2警告23件を完全解消
+
+#### SQLAlchemy 2.0互換モード対応
+- `future=True` オプション追加
+- SQLAlchemy 1.4環境で2.0互換モードを有効化
+- 将来のSQLAlchemy 2.0へのスムーズな移行準備完了
+
+#### datetime modernization
+- `datetime.utcnow()` → `datetime.now(UTC)` へ置換（2箇所）
+- Python 3.11+の推奨パターンへ移行
+
+**効果**:
+- 非推奨警告: 25件 → 0件
+- テスト結果: 246個全成功（0.40秒）
+- 将来のライブラリアップグレード時の互換性問題を事前に解消
+
 ### 2. 日付処理（解決済み）
 **問題**: タイムゾーン差による日付の前日表示
 
