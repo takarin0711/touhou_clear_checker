@@ -391,7 +391,7 @@ python scripts/initialize_database.py --admin-only
 - **メイン**: MySQL 8.0（本番・開発環境）
 - **サブ**: SQLite3（軽量開発環境）
 - **ゲーム数**: 16作品（東方紅魔郷〜東方錦上京）
-- **機体数**: 114種類（全作品の機体を網羅、妖精大戦争の特殊構造対応済み）
+- **機体数**: 139種類（全作品の機体を網羅、妖精大戦争の特殊構造対応済み）
 - **テーブル**: users, games, game_characters, clear_records, game_memos
 - **初期ユーザー**: adminユーザー（管理者権限、認証済み）
 - **文字エンコーディング**: UTF-8 (utf8mb4) 完全対応
