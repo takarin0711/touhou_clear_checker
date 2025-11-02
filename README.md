@@ -62,8 +62,8 @@ docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/
 # SQLite環境
 docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file env/.env.sqlite run --rm backend python scripts/initialize_database.py --fresh
 
-# MySQL環境（移行スクリプト推奨）
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/migrate_sqlite_to_mysql.py
+# MySQL環境
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --fresh
 ```
 
 ## 📚 詳細ドキュメント
