@@ -26,18 +26,16 @@
 ## 開発環境
 - フロントエンド：React 18.2.0, TypeScript 5.9.2, axios
 - バックエンド：FastAPI 0.117.1, uvicorn, SQLAlchemy
-- データベース：SQLite (開発)、MySQL 8.0 (本番対応)
+- データベース：MySQL 8.0
 - パッケージマネージャー：npm (frontend), pip (backend)
 - **Python 3.13対応済み**: FastAPI 0.117.1, Pydantic 2.11.9で互換性問題解決
 - **TypeScript化完了**: 2025年1月にフロントエンドを完全TypeScript化、型安全性と保守性が向上
 - **Docker対応済み**: 開発環境のコンテナ化完了、本番デプロイ準備完了
-- **MySQL対応完了**: 2025年9月にMySQL Docker環境構築、SQLite互換性維持
+- **MySQL対応完了**: 2025年9月にMySQL Docker環境構築完了
 
 ### 開発環境の選択肢
-1. **ネイティブ環境** (従来): Python 3.13 + venv313, Node.js + npm + SQLite
-2. **Docker SQLite環境**: コンテナ化された軽量開発環境
-3. **Docker MySQL環境**: 本番環境に近い開発環境
-4. **併用**: 開発はSQLite、本番デプロイはMySQL
+1. **Docker環境** (推奨): MySQL + Docker Compose
+2. **ネイティブ環境**: Python 3.13 + venv313, Node.js + npm, MySQL
 
 ## よく使用するコマンド
 
@@ -47,8 +45,7 @@
 - テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
 - 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
 - 全テスト実行: `cd backend && source venv313/bin/activate && python -m pytest -v`
-- **MySQLデータベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --fresh`
-- **SQLiteデータベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database.py --fresh`
+- **データベース初期化**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --fresh`
 - **adminユーザーのみ作成**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --admin-only`
 - **データベース確認**: `cd backend && source venv313/bin/activate && python scripts/initialize_database_mysql.py --verify`
 - **adminログイン情報**: ユーザー名 `admin`、パスワードは `secrets/.admin_password` ファイルを参照（権限600で保護）
@@ -62,28 +59,19 @@
 
 ### Docker開発環境
 
-#### SQLite環境（軽量開発用）
-- **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up --build`
-- **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml --env-file .env.sqlite up -d --build`
-- **停止**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml down`
-- **データベース初期化**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml run --rm backend python scripts/initialize_database.py --fresh`
-- **adminユーザーのみ作成**: `docker compose -f docker-compose.yml -f docker-compose.sqlite.yml run --rm backend python scripts/initialize_database.py --admin-only`
-
-#### MySQL環境（本番環境相当）
-- **環境変数設定**: `.env.mysql.example`を`.env.mysql`にコピーしてパスワード設定
-- **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build`
-- **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up -d --build`
+#### 起動・停止
+- **環境変数設定**: `env/.env.mysql.example`を`env/.env.mysql`にコピーしてパスワード設定
+- **全体起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up --build`
+- **バックグラウンド起動**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up -d --build`
 - **停止**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml down`
-- **MySQL完全初期化**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql exec backend python scripts/initialize_database_mysql.py --fresh`
-- **adminログイン情報**: ユーザー名 `admin`、パスワードは `secrets/.admin_password` ファイルを参照（権限600で保護）
-- **adminユーザーのみ作成**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml exec backend python scripts/initialize_database_mysql.py --admin-only`
-- **MySQL初期化のみ**: `docker compose --profile mysql run --rm mysql-init`
-- **SQLite→MySQL移行**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml exec backend python scripts/migrate_sqlite_to_mysql.py`
-- **MySQL接続**: `localhost:3306` (接続情報は`.env.mysql`で設定)
-- **MySQL文字化け対策済み**: UTF-8 (utf8mb4) 完全対応
 
-#### レガシー環境（非推奨）
-- **旧Docker起動**: `docker compose up --build` ※設定ファイル指定なし（動作不安定）
+#### データベース管理
+- **完全初期化**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --fresh`
+- **adminユーザーのみ作成**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --admin-only`
+- **データベース確認**: `docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --verify`
+- **adminログイン情報**: ユーザー名 `admin`、パスワードは `secrets/.admin_password` ファイルを参照（権限600で保護）
+- **MySQL接続**: `localhost:3306` (接続情報は`env/.env.mysql`で設定)
+- **MySQL文字化け対策済み**: UTF-8 (utf8mb4) 完全対応
 
 #### 共通操作
 - **ログ確認**: `docker compose logs -f [service名]`
@@ -374,22 +362,8 @@ python scripts/initialize_database_mysql.py --admin-only
 python scripts/initialize_database_mysql.py --help
 ```
 
-**サブ**: `initialize_database.py`（SQLite環境用）
-
-```bash
-# SQLite完全初期化（既存DB削除 → テーブル作成 → 全データ投入 → adminユーザー作成）
-python scripts/initialize_database.py --fresh
-
-# SQLite現在のDB状態確認
-python scripts/initialize_database.py --verify
-
-# adminユーザーのみ作成
-python scripts/initialize_database.py --admin-only
-```
-
 ### データベース構成
-- **メイン**: MySQL 8.0（本番・開発環境）
-- **サブ**: SQLite3（軽量開発環境）
+- **データベース**: MySQL 8.0
 - **ゲーム数**: 16作品（東方紅魔郷〜東方錦上京）
 - **機体数**: 139種類（全作品の機体を網羅、妖精大戦争の特殊構造対応済み）
 - **テーブル**: users, games, game_characters, clear_records, game_memos
@@ -415,9 +389,8 @@ python scripts/initialize_database.py --admin-only
   - 30個のテストケースで動作保証
 - **効果**: 新作追加・データ再構築時の影響を回避、堅牢な設計を実現
 
-### スクリプト整理状況
-- **メイン**: `initialize_database_mysql.py` - MySQL環境用統合スクリプト（adminユーザー作成機能内蔵）
-- **サブ**: `initialize_database.py` - SQLite環境用統合スクリプト（adminユーザー作成機能内蔵）
+### スクリプト構成
+- **メイン**: `initialize_database_mysql.py` - データベース初期化スクリプト（adminユーザー作成機能内蔵）
 - **管理用**: `create_admin_user.py` - adminユーザー専用管理スクリプト（対話的作成可能）
 - **廃止**: `deprecated_scripts/` - 旧スクリプト群を移動済み
 

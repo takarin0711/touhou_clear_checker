@@ -2,9 +2,7 @@
 
 ## システム構成
 ```
-[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: SQLite/MySQL]
-                                                                            ↑
-                                                                   環境変数による切り替え
+[フロントエンド: React] <--HTTP--> [バックエンド: FastAPI] <---> [データベース: MySQL 8.0]
 ```
 
 ## 技術スタック
@@ -12,10 +10,10 @@
 - **バックエンド**: FastAPI 0.117.1, uvicorn, SQLAlchemy 1.4.54 (2.0互換モード), Pydantic 2.11.9, PyMySQL 1.1.1
 - **認証**: JWT (python-jose), Argon2 (argon2-cffi), passlib
 - **セキュリティ**: XSS対策, SQLインジェクション対策, TypeScript型安全性, UTF-8エンコーディング対応
-- **データベース**: SQLite（開発環境）, MySQL 8.0（本番環境）
+- **データベース**: MySQL 8.0
 - **テスト**: pytest 8.3.4, pytest-mock, pytest-asyncio
 - **Python**: 3.13.5
-- **コンテナ**: Docker + Docker Compose（SQLite/MySQL環境選択可能）
+- **コンテナ**: Docker + Docker Compose
 
 ### ライブラリ互換性対応（2025年10月完了）
 - **Pydantic v2対応**: `.dict()` → `.model_dump()`、`class Config` → `ConfigDict` 移行完了
@@ -71,7 +69,7 @@ backend/
 │   │   └── network_constants.py # ネットワーク・CORS設定定数
 │   ├── database/         # データベース関連
 │   │   ├── __init__.py
-│   │   ├── connection.py # SQLite接続設定
+│   │   ├── connection.py # MySQL接続設定
 │   │   ├── models/       # SQLAlchemyモデル
 │   │   │   ├── __init__.py
 │   │   │   ├── user_model.py      # ユーザーモデル
@@ -265,12 +263,14 @@ const authState = {
 Docker Compose Environment
 ├── backend (Python 3.13)
 │   ├── FastAPI Application (Port: 8000)
-│   ├── SQLite Database (Volume Mounted)
 │   └── Hot Reload Enabled
 ├── frontend (Node.js 18)
 │   ├── React + TypeScript (Port: 3000)
 │   ├── Development Server
 │   └── Hot Reload Enabled
+├── mysql (MySQL 8.0)
+│   ├── Database Server (Port: 3306)
+│   └── Volume: mysql_data
 └── Network: touhou-network
     └── Internal Communication
 ```

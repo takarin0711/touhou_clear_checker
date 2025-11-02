@@ -9,7 +9,7 @@
 - **Infrastructure層**: SMTPEmailSender（SMTP技術実装）、MockEmailSender（開発用モック）
 - **バックエンド**: FastAPI + SQLAlchemy + レイヤード設計
 - **フロントエンド**: React + TypeScript + カスタムURL処理
-- **データベース**: SQLite (usersテーブル拡張)
+- **データベース**: MySQL 8.0 (usersテーブル拡張)
 - **認証方式**: 64文字の安全なトークン + 24時間有効期限
 
 ### 環境別動作

@@ -1,14 +1,12 @@
 # データベース設計
 
-## データベース環境対応
+## データベース環境
 
-### 対応データベース
-- **SQLite**: 開発環境用（軽量・高速）
-- **MySQL 8.0**: 本番環境用（スケーラブル・高性能）
+### データベース
+- **MySQL 8.0**: 開発・本番環境
 
-### 環境切り替え
-- 環境変数 `DATABASE_URL` で切り替え
-- SQLite: `sqlite:///./touhou_clear_checker.db`
+### 接続設定
+- 環境変数 `DATABASE_URL` で設定
 - MySQL: `mysql+pymysql://user:password@host:port/database?charset=utf8mb4`
 
 ### MySQL設定
@@ -16,11 +14,6 @@
 - **照合順序**: utf8mb4_unicode_ci
 - **接続ライブラリ**: PyMySQL 1.1.1
 - **文字化け対策**: 接続時charset指定、サーバー設定の統一
-
-### データ移行
-- SQLite → MySQL移行スクリプト: `migrate_sqlite_to_mysql.py`
-- 139機体データの完全移行対応
-- 外部キー制約を考慮した安全な移行
 
 ## 実装済みテーブル構造
 
@@ -567,10 +560,10 @@ PUT /api/v1/clear-records/{id}                       # クリア記録更新
 DELETE /api/v1/clear-records/{id}                    # クリア記録削除
 ```
 
-## データベースファイル
-- **場所**: `/backend/touhou_clear_checker.db`
-- **タイプ**: SQLite3
+## データベース接続
 - **接続設定**: `infrastructure/database/connection.py`
+- **環境変数**: `DATABASE_URL` (env/.env.mysqlで設定)
+- **接続例**: `mysql+pymysql://user:password@mysql:3306/touhou_clear_checker?charset=utf8mb4`
 
 ## マイグレーション
 - **既存**: `scripts/migrate_database.py`（users, games, clear_records）

@@ -17,8 +17,8 @@
 │   ├── 07_testing_strategy.md          # テスト戦略
 │   ├── 08_security_design.md           # セキュリティ設計
 │   ├── 09_email_verification_dev_guide.md # メール認証開発ガイド
-│   ├── 10_mysql_migration_guide.md     # MySQL移行ガイド
-│   └── 11_constants_management_guide.md # 定数管理ガイドライン
+│   ├── 11_constants_management_guide.md # 定数管理ガイドライン
+│   └── 99_known_issues.md              # 既知の問題・TODO
 ├── 02_deployment_docs/                 # デプロイメント・運用
 │   ├── 01_mysql_setup.md               # MySQL環境設定
 │   └── 02_security_setup.md            # セキュリティ設定
@@ -64,13 +64,11 @@
 
 ### 🛠️ 環境構築時に読むべきドキュメント
 1. [MySQL環境設定](./02_deployment_docs/01_mysql_setup.md)
-2. [MySQL移行ガイド](./01_development_docs/10_mysql_migration_guide.md)
-3. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
+2. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
 
 ### 📊 データベース関連
 1. [データベース設計](./01_development_docs/02_database_design.md)
-2. [MySQL移行ガイド](./01_development_docs/10_mysql_migration_guide.md)
-3. [特殊クリア条件](./01_development_docs/06_special_clear_conditions.md)
+2. [特殊クリア条件](./01_development_docs/06_special_clear_conditions.md)
 
 ### 🔒 セキュリティ関連
 1. [セキュリティ設計](./01_development_docs/08_security_design.md)
@@ -137,9 +135,9 @@
 - **セキュリティ強化**: 環境変数ファイル分離・パスワード管理改善
 
 ### 主要な改善内容
-1. **MySQL環境対応**: SQLite/MySQL切り替え対応
+1. **MySQL環境統一**: 開発・本番環境をMySQLに統一
 2. **セキュリティ設定**: パスワード管理・環境変数分離
-3. **Docker環境**: 開発・本番環境の明確な分離
+3. **Docker環境**: コンテナ化による環境統一
 4. **ドキュメント統合**: 散在していた設定ドキュメントの一元化
 
 ## 貢献ガイドライン
