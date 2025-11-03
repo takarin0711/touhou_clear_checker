@@ -13,8 +13,12 @@ RUN npm install --legacy-peer-deps
 # アプリケーションコードをコピー
 COPY . .
 
+# エントリーポイントスクリプトをコピーして実行権限を付与
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # ポート3000を公開
 EXPOSE 3000
 
-# 開発環境用の起動コマンド（ホットリロード有効）
-CMD ["npm", "start"]
+# エントリーポイントを設定（HTTPS環境変数で起動コマンドを切り替え）
+ENTRYPOINT ["docker-entrypoint.sh"]

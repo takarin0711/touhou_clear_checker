@@ -203,20 +203,106 @@ app.add_middleware(
 
 ### 環境別設定
 **開発環境:**
-- HTTP通信可
+- HTTPS対応完了（mkcert使用、2025年11月実装）
 - LocalStorage使用
 - コンソールログ出力
+- 環境変数でHTTP/HTTPS切り替え可能
 
-**本番環境 (予定):**
-- HTTPS必須
+**本番環境:**
+- HTTPS必須（Let's Encrypt等の正式なCA証明書使用）
 - 環境変数からシークレット取得
 - ログレベル制限
+
+### HTTPS/TLS設定（2025年11月実装）
+
+#### 開発環境（mkcert）
+```bash
+# mkcertインストール
+brew install mkcert
+mkcert -install
+
+# 証明書生成
+cd /path/to/touhou_clear_checker
+mkdir -p certs
+cd certs
+mkcert localhost 127.0.0.1 ::1
+```
+
+**バックエンド設定:**
+```python
+# backend/infrastructure/config/network_constants.py
+class NetworkConstants:
+    SSL_ENABLED = os.getenv("SSL_ENABLED", "false").lower() == "true"
+    SSL_CERT_PATH = os.getenv("SSL_CERT_PATH", "../certs/localhost+2.pem")
+    SSL_KEY_PATH = os.getenv("SSL_KEY_PATH", "../certs/localhost+2-key.pem")
+
+    ALLOWED_ORIGINS = [
+        "http://localhost:3000",
+        "https://localhost:3000",  # HTTPS対応
+        # ...
+    ]
+```
+
+**フロントエンド設定:**
+```typescript
+// frontend/src/constants/apiConstants.ts
+export const API_CONFIG = {
+  BASE_URL: `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1`,
+  // ...
+};
+```
+
+**Docker環境:**
+```yaml
+# docker-compose.yml
+services:
+  backend:
+    environment:
+      - SSL_ENABLED=${SSL_ENABLED:-false}
+      - SSL_CERT_PATH=/app/certs/localhost+2.pem
+      - SSL_KEY_PATH=/app/certs/localhost+2-key.pem
+
+  frontend:
+    environment:
+      - HTTPS=${HTTPS:-false}
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000}
+```
+
+**起動方法:**
+```bash
+# ネイティブ環境
+SSL_ENABLED=true python backend/main.py
+npm run start:https  # フロントエンド
+
+# Docker環境
+# .env.mysqlに SSL_ENABLED=true, HTTPS=true を設定
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up
+```
+
+#### 本番環境（Let's Encrypt推奨）
+```bash
+# Certbotでの証明書取得例
+sudo certbot certonly --standalone -d your-domain.com
+```
+
+**証明書の配置:**
+- `/etc/letsencrypt/live/your-domain.com/fullchain.pem`
+- `/etc/letsencrypt/live/your-domain.com/privkey.pem`
+
+**自動更新設定:**
+```bash
+# crontabに追加
+0 0 1 * * certbot renew --quiet
+```
 
 ### シークレット管理
 ```bash
 # 本番環境での環境変数設定例
 export JWT_SECRET_KEY="production-secret-key-256-bits"
-export DATABASE_URL="postgresql://user:pass@host:port/db"
+export DATABASE_URL="mysql+pymysql://user:pass@host:port/db"
+export SSL_ENABLED=true
+export SSL_CERT_PATH="/etc/letsencrypt/live/your-domain.com/fullchain.pem"
+export SSL_KEY_PATH="/etc/letsencrypt/live/your-domain.com/privkey.pem"
 ```
 
 ## セキュリティ監査結果
@@ -226,6 +312,13 @@ export DATABASE_URL="postgresql://user:pass@host:port/db"
 - Argon2パスワードハッシュ化（最新推奨アルゴリズム）
 - JWT認証 (30分有効期限)
 - 認証状態管理
+- メール認証システム（64文字トークン、24時間有効期限）
+
+✅ **HTTPS/TLS暗号化（2025年11月実装）**
+- 開発環境: mkcertによるローカルSSL証明書
+- 本番環境: Let's Encrypt等のCA証明書対応
+- 環境変数による柔軟なHTTP/HTTPS切り替え
+- CORS設定のHTTPS対応
 
 ✅ **XSS対策**
 - React自動エスケープ

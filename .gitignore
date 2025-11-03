@@ -83,6 +83,13 @@ env/
 !env/.env.mysql.example
 secrets/
 
+# SSL/TLS Certificates (mkcert)
+certs/
+*.pem
+*.key
+*.crt
+*.csr
+
 # Legacy environment files (if any remain)
 .env.mysql
 .env.sqlite

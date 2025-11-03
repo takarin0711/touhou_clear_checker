@@ -38,6 +38,8 @@ services:
       - ./backend:/app
       # secretsディレクトリのマウント
       - ./secrets:/app/secrets
+      # SSL証明書のマウント
+      - ./certs:/app/certs:ro
       # SQLiteデータベースの永続化
       - ./backend/touhou_clear_checker.db:/app/touhou_clear_checker.db
       # venv313は除外（Dockerコンテナ内でPython環境を管理）
@@ -46,6 +48,9 @@ services:
     environment:
       - PYTHONPATH=/app
       - ENVIRONMENT=development
+      - SSL_ENABLED=${SSL_ENABLED:-false}
+      - SSL_CERT_PATH=/app/certs/localhost+2.pem
+      - SSL_KEY_PATH=/app/certs/localhost+2-key.pem
       # デフォルトはSQLite、MySQLに切り替える場合は以下をコメントアウト
       # - DATABASE_URL=${DATABASE_URL}
     # 依存関係はoverride fileで設定
@@ -62,11 +67,16 @@ services:
     volumes:
       # ソースコードのホットリロード用
       - ./frontend:/app
+      # SSL証明書のマウント
+      - ./certs:/app/certs:ro
       # node_modulesは除外（Dockerコンテナ内で管理）
       - /app/node_modules
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_API_URL=${REACT_APP_API_URL:-http://localhost:8000}
       - CHOKIDAR_USEPOLLING=true  # ファイル変更検知の改善
+      - HTTPS=${HTTPS:-false}
+      - SSL_CRT_FILE=./certs/localhost+2.pem
+      - SSL_KEY_FILE=./certs/localhost+2-key.pem
     depends_on:
       - backend
     networks:

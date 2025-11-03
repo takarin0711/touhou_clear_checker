@@ -7,9 +7,9 @@ import { TIME_CONSTANTS } from './timeConstants';
  * API設定の定数
  */
 export const API_CONFIG = {
-  // ベースURL
-  BASE_URL: 'http://localhost:8000/api/v1',
-  
+  // ベースURL（環境変数から取得、デフォルトはHTTP）
+  BASE_URL: `${process.env.REACT_APP_API_URL || 'http://localhost:8000'}/api/v1`,
+
   // タイムアウト設定（ミリ秒）
   TIMEOUT: TIME_CONSTANTS.API_TIMEOUT_MS,
   

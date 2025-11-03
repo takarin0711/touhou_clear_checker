@@ -21,7 +21,9 @@
 │   └── 99_known_issues.md              # 既知の問題・TODO
 ├── 02_deployment_docs/                 # デプロイメント・運用
 │   ├── 01_mysql_setup.md               # MySQL環境設定
-│   └── 02_security_setup.md            # セキュリティ設定
+│   ├── 02_security_setup.md            # セキュリティ設定
+│   ├── 03_https_setup.md               # HTTPS設定ガイド
+│   └── 06_logging_configuration.md     # ロギング設定
 ├── 03_operational_docs/                # 運用・保守
 └── 99_others/                          # その他
     └── 01_character_data_research.md   # 機体データ調査
@@ -64,7 +66,8 @@
 
 ### 🛠️ 環境構築時に読むべきドキュメント
 1. [MySQL環境設定](./02_deployment_docs/01_mysql_setup.md)
-2. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
+2. [HTTPS設定ガイド](./02_deployment_docs/03_https_setup.md)
+3. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
 
 ### 📊 データベース関連
 1. [データベース設計](./01_development_docs/02_database_design.md)
@@ -72,14 +75,25 @@
 
 ### 🔒 セキュリティ関連
 1. [セキュリティ設計](./01_development_docs/08_security_design.md)
-2. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
-3. [メール認証開発ガイド](./01_development_docs/09_email_verification_dev_guide.md)
+2. [HTTPS設定ガイド](./02_deployment_docs/03_https_setup.md)
+3. [セキュリティ設定](./02_deployment_docs/02_security_setup.md)
+4. [メール認証開発ガイド](./01_development_docs/09_email_verification_dev_guide.md)
 
 ### 🧪 テスト関連
 1. [テスト戦略](./01_development_docs/07_testing_strategy.md)
 2. [API設計](./01_development_docs/03_api_design.md)
 
 ## 更新履歴
+
+### 2025年11月3日
+- **HTTPS対応完全実装**: 開発環境・本番環境の両方でHTTPSに対応
+  - 開発環境: mkcertによるローカルSSL証明書対応
+  - バックエンド: 環境変数によるHTTP/HTTPS切り替え
+  - フロントエンド: 環境変数からAPIベースURL取得
+  - Docker環境: SSL証明書マウント・環境変数設定
+- **ドキュメント追加**: [HTTPS設定ガイド](./02_deployment_docs/03_https_setup.md) 作成
+- **セキュリティ設計書更新**: HTTPS/TLS設定セクション追加、実装済み対策に追加
+- **CLAUDE.md更新**: HTTPS設定セクション（起動方法・トラブルシューティング）追加
 
 ### 2025年10月18日
 - **フロントエンドエラーハンドリング完全実装**: React Error Boundary + Toast通知システム構築完了
