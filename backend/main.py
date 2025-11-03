@@ -51,7 +51,50 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    logger.info(
-        f"Starting server on {NetworkConstants.DEFAULT_HOST}:{NetworkConstants.DEFAULT_PORT}"
-    )
-    uvicorn.run(app, host=NetworkConstants.DEFAULT_HOST, port=NetworkConstants.DEFAULT_PORT)
+    import os
+
+    # 開発環境ではホットリロードを有効化
+    is_development = os.getenv("ENVIRONMENT", "production") == "development"
+
+    if NetworkConstants.SSL_ENABLED:
+        logger.info(
+            f"Starting HTTPS server on {NetworkConstants.DEFAULT_HOST}:{NetworkConstants.DEFAULT_PORT}"
+        )
+        if is_development:
+            # 開発環境: reloadにはインポート文字列を使用
+            uvicorn.run(
+                "main:app",
+                host=NetworkConstants.DEFAULT_HOST,
+                port=NetworkConstants.DEFAULT_PORT,
+                ssl_certfile=NetworkConstants.SSL_CERT_PATH,
+                ssl_keyfile=NetworkConstants.SSL_KEY_PATH,
+                reload=True
+            )
+        else:
+            # 本番環境: アプリオブジェクトを直接使用
+            uvicorn.run(
+                app,
+                host=NetworkConstants.DEFAULT_HOST,
+                port=NetworkConstants.DEFAULT_PORT,
+                ssl_certfile=NetworkConstants.SSL_CERT_PATH,
+                ssl_keyfile=NetworkConstants.SSL_KEY_PATH
+            )
+    else:
+        logger.info(
+            f"Starting HTTP server on {NetworkConstants.DEFAULT_HOST}:{NetworkConstants.DEFAULT_PORT}"
+        )
+        if is_development:
+            # 開発環境: reloadにはインポート文字列を使用
+            uvicorn.run(
+                "main:app",
+                host=NetworkConstants.DEFAULT_HOST,
+                port=NetworkConstants.DEFAULT_PORT,
+                reload=True
+            )
+        else:
+            # 本番環境: アプリオブジェクトを直接使用
+            uvicorn.run(
+                app,
+                host=NetworkConstants.DEFAULT_HOST,
+                port=NetworkConstants.DEFAULT_PORT
+            )

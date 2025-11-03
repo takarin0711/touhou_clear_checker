@@ -40,7 +40,8 @@
 ## よく使用するコマンド
 
 ### バックエンド (ネイティブ環境)
-- 開発サーバー: `cd backend && source venv313/bin/activate && python main.py &`
+- 開発サーバー（HTTP）: `cd backend && source venv313/bin/activate && python main.py &`
+- 開発サーバー（HTTPS）: `cd backend && source venv313/bin/activate && SSL_ENABLED=true python main.py &`
 - 依存関係インストール: `cd backend && source venv313/bin/activate && pip install -r requirements.txt`
 - テスト用依存関係: `cd backend && source venv313/bin/activate && pip install -r requirements-dev.txt`
 - 単体テスト実行: `cd backend && source venv313/bin/activate && python -m pytest tests/unit/ -v`
@@ -52,7 +53,8 @@
 - **旧環境**: `source venv39/bin/activate` (Python 3.9、非推奨)
 
 ### フロントエンド (TypeScript + React)
-- 開発サーバー: `cd frontend && npm start`
+- 開発サーバー（HTTP）: `cd frontend && npm start`
+- 開発サーバー（HTTPS）: `cd frontend && npm run start:https`
 - 依存関係インストール: `cd frontend && npm install`
 - ビルド: `cd frontend && npm run build`
 - 単体テスト実行: `cd frontend && npm test`
@@ -200,7 +202,9 @@ touhou_clear_checker/
 ### セキュリティ対策
 - **XSS対策**: React標準エスケープ機能、dangerouslySetInnerHTML未使用
 - **TypeScript型安全性**: 37個のinterface定義による実行時エラー防止
-- **HTTPS**: 本番環境ではHTTPS必須（開発環境はHTTP可）
+- **HTTPS対応**:
+  - 開発環境: mkcertによるローカルSSL証明書（localhost:3000, localhost:8000）
+  - 本番環境: Let's Encryptなど正式なCA証明書使用
 - **ログセキュリティ**: 機密情報の自動マスキング（パスワード・トークン・メールアドレス等）
 
 ### セキュリティ設定
@@ -541,3 +545,115 @@ EmailServiceのアーキテクチャを他のエンティティと統一し、�
 - **併用可能**: ネイティブ環境（venv313）と並行利用
 - **ポート競合回避**: 既存プロセス停止後にDocker起動
 - **段階的移行**: 開発段階での選択的利用が可能
+## HTTPS設定（mkcert対応、2025年11月実装）
+
+### 概要
+開発環境でHTTPSを簡単に有効化できるように、mkcertによるローカルSSL証明書に対応しました。
+
+### mkcertのインストール
+```bash
+# Homebrewでインストール
+brew install mkcert
+
+# ローカルCAをシステムに信頼させる
+mkcert -install
+
+# localhost用のSSL証明書を生成（プロジェクトルートで実行）
+cd /path/to/touhou_clear_checker
+mkdir -p certs
+cd certs
+mkcert localhost 127.0.0.1 ::1
+```
+
+証明書ファイルは以下のように生成されます：
+- `certs/localhost+2.pem` - SSL証明書
+- `certs/localhost+2-key.pem` - 秘密鍵
+
+**注意**: 証明書ファイルは`.gitignore`で除外されています（セキュリティのため）
+
+### ネイティブ環境でのHTTPS起動
+
+#### バックエンド（FastAPI）
+```bash
+cd backend
+source venv313/bin/activate
+SSL_ENABLED=true python main.py
+```
+
+#### フロントエンド（React）
+```bash
+cd frontend
+npm run start:https
+```
+
+#### アクセスURL
+- フロントエンド: https://localhost:3000
+- バックエンド: https://localhost:8000
+
+### Docker環境でのHTTPS起動
+
+#### 環境変数設定
+`.env`または`.env.mysql`ファイルに以下を追加：
+```bash
+SSL_ENABLED=true
+HTTPS=true
+```
+
+#### 起動コマンド
+```bash
+# MySQL環境（HTTPS有効）
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file .env.mysql up --build
+
+# SQLite環境（HTTPS有効）
+docker compose --env-file .env up --build
+```
+
+### 設定ファイル
+
+#### バックエンド設定
+- [backend/infrastructure/config/network_constants.py](backend/infrastructure/config/network_constants.py) - SSL設定
+- 環境変数:
+  - `SSL_ENABLED` - HTTPS有効化フラグ（true/false）
+  - `SSL_CERT_PATH` - SSL証明書のパス
+  - `SSL_KEY_PATH` - 秘密鍵のパス
+
+#### フロントエンド設定
+- [frontend/package.json](frontend/package.json) - `start:https` スクリプト
+- [frontend/.env](frontend/.env) - 環境変数設定
+  - `HTTPS` - HTTPS有効化フラグ（true/false）
+  - `SSL_CRT_FILE` - SSL証明書のパス
+  - `SSL_KEY_FILE` - 秘密鍵のパス
+  - `REACT_APP_API_BASE_URL` - バックエンドAPI URL（HTTPSモード時は`https://localhost:8000`）
+
+#### Docker設定
+- [docker-compose.yml](docker-compose.yml) - certsディレクトリのマウント設定
+- 環境変数でHTTP/HTTPSを切り替え可能
+
+### CORS設定
+HTTPS対応に伴い、以下のオリジンが許可されています：
+- HTTP: `http://localhost:3000`, `http://localhost:3001`, `http://127.0.0.1:3000`
+- HTTPS: `https://localhost:3000`, `https://localhost:3001`, `https://127.0.0.1:3000`
+
+### 本番環境でのHTTPS
+本番環境では、mkcertではなく**正式なCA証明書**を使用してください：
+- **推奨**: Let's Encrypt（無料、自動更新）
+- **有料**: DigiCert, GlobalSign等
+- **クラウド**: AWS Certificate Manager, Google Cloud SSL, Azure証明書
+
+mkcertはあくまで**開発環境専用**です。本番環境では信頼された証明書が必要です。
+
+### トラブルシューティング
+
+#### ブラウザで証明書エラーが出る場合
+1. `mkcert -install`が正しく実行されているか確認
+2. ブラウザを再起動
+3. macOSのキーチェーンで証明書が信頼されているか確認
+
+#### 証明書が見つからないエラー
+1. `certs/`ディレクトリが存在するか確認
+2. `localhost+2.pem`と`localhost+2-key.pem`が生成されているか確認
+3. パスが正しく設定されているか確認（環境変数またはデフォルトパス）
+
+#### Docker環境で証明書が読み込めない
+1. `docker-compose.yml`で`certs/`ディレクトリがマウントされているか確認
+2. コンテナを再起動（`docker compose down && docker compose up`）

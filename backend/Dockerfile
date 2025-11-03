@@ -23,5 +23,5 @@ RUN mkdir -p /app/data && chmod 755 /app/data
 # ポート8000を公開
 EXPOSE 8000
 
-# 開発環境用の起動コマンド（ホットリロード有効）
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# 開発環境用の起動コマンド（ホットリロード有効、SSL設定を反映）
+CMD ["python", "main.py"]
