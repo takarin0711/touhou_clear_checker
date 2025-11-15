@@ -110,10 +110,12 @@ backend/
 │       ├── game_schema.py     # ゲームスキーマ
 │       ├── game_character_schema.py # ゲーム機体スキーマ
 │       └── clear_record_schema.py # クリア記録スキーマ
-├── scripts/              # マイグレーション・ユーティリティ
+├── scripts/              # データベース管理スクリプト
 │   ├── __init__.py
-│   ├── migrate_database.py    # 初期DB作成
-│   └── add_admin_flag.py      # 管理者権限追加
+│   ├── initialize_database_mysql.py  # MySQL統合初期化スクリプト
+│   ├── create_admin_user.py          # adminユーザー管理
+│   ├── email_verification_helper.py  # メール認証ヘルパー
+│   └── simple_mysql_init.py          # シンプル初期化スクリプト
 └── tests/                # テスト
     ├── conftest.py          # テスト共通設定
     ├── pytest.ini          # pytest設定
@@ -229,10 +231,10 @@ const authState = {
 - クリア記録管理API
 - 管理者専用API
 
-✅ **テスト**（2025年10月更新）
-- 単体テスト（246テスト、全成功）
-- pytest + 完全モック化 + 100%成功率
-- 高速実行（0.40秒）+ 非推奨警告0件
+✅ **テスト**（2025年11月更新）
+- 単体テスト（261テスト、19ファイル）
+- pytest + 完全モック化
+- サービス層: 69テスト、リポジトリ層: 28テスト、API層: 86テスト、ロギング層: 78テスト
 
 ### フロントエンド
 ✅ **認証システム**

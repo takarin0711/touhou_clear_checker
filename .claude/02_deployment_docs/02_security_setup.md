@@ -14,7 +14,6 @@
 #### パスワードファイル（機密情報）
 - `secrets/.mysql_root_password` - MySQLルートパスワード
 - `secrets/.mysql_password` - MySQLユーザーパスワード
-- `env/.env.sqlite` - SQLite環境設定
 - `env/.env.mysql` - MySQL環境設定（パスワード除く）
 - これらのディレクトリは **.gitignore に含まれており、Gitで管理されません**
 
@@ -62,7 +61,6 @@ echo "JWT_SECRET_KEY=$(openssl rand -base64 48)" >> env/.env.mysql
 chmod 600 secrets/.mysql_root_password
 chmod 600 secrets/.mysql_password
 chmod 600 env/.env.mysql
-chmod 600 env/.env.sqlite
 
 # ディレクトリ確認
 ls -la secrets/ env/
@@ -76,7 +74,6 @@ secrets/:
 
 env/:
 -rw-------  1 user  group  234 date .env.mysql
--rw-------  1 user  group  156 date .env.sqlite
 ```
 
 ### 本番環境での注意事項

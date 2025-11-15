@@ -23,6 +23,7 @@
 │   ├── 01_mysql_setup.md               # MySQL環境設定
 │   ├── 02_security_setup.md            # セキュリティ設定
 │   ├── 03_https_setup.md               # HTTPS設定ガイド
+│   ├── 04_environment_variables.md     # 環境変数リファレンス
 │   └── 06_logging_configuration.md     # ロギング設定
 ├── 03_operational_docs/                # 運用・保守
 └── 99_others/                          # その他

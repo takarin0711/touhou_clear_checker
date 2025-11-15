@@ -1,111 +1,182 @@
 # MySQL環境セットアップガイド
 
 ## 概要
-このプロジェクトは、SQLiteとMySQLの両方をサポートしています。
-開発環境ではSQLite、本番環境ではMySQLの使用を想定しています。
+このプロジェクトは、データベースとしてMySQL 8.0を使用しています。
+開発環境・本番環境の両方でMySQLを使用します。
+
+## 前提条件
+- Docker & Docker Compose インストール済み
+- または、MySQL 8.0 + Python 3.13 + Node.js インストール済み
 
 ## Docker環境での使用方法
 
-### 1. SQLite環境（デフォルト）
+### 1. 環境変数設定
 ```bash
-# 通常の起動（SQLiteを使用）
-docker compose up --build
+# env/.env.mysql.example をコピー
+cp env/.env.mysql.example env/.env.mysql
+
+# env/.env.mysqlを編集してパスワード等を設定
+# - MYSQL_ROOT_PASSWORD
+# - MYSQL_PASSWORD
+# - DATABASE_URL
+```
+
+### 2. MySQL環境起動
+```bash
+# フォアグラウンド起動
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up --build
 
 # バックグラウンド起動
-docker compose up -d --build
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql up -d --build
 ```
 
-### 2. MySQL環境
+### 3. データベース初期化
 ```bash
-# MySQL環境での起動
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml up --build
+# 完全初期化（既存データ削除 → テーブル作成 → データ投入 → adminユーザー作成）
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --fresh
 
-# バックグラウンド起動
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml up -d --build
+# データベース状態確認
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --verify
+
+# adminユーザーのみ作成
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml --env-file env/.env.mysql exec backend python scripts/initialize_database_mysql.py --admin-only
 ```
 
-### 3. MySQL初期化のみ実行
+### 4. 停止
 ```bash
-# MySQL初期化サービスのみ実行
-docker compose --profile mysql run --rm mysql-init
+docker compose -f docker-compose.yml -f docker-compose.mysql.yml down
 ```
 
-## 環境切り替え
+## ネイティブ環境での使用方法
 
-### SQLite → MySQLへの切り替え
-1. 現在のDocker環境を停止
-   ```bash
-   docker compose down
-   ```
+### 1. MySQL 8.0 インストール
+```bash
+# macOS
+brew install mysql@8.0
 
-2. MySQL環境で起動
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.mysql.yml up --build
-   ```
+# MySQL起動
+brew services start mysql@8.0
 
-### MySQL → SQLiteへの切り替え
-1. MySQL環境を停止
-   ```bash
-   docker compose -f docker-compose.yml -f docker-compose.mysql.yml down
-   ```
+# rootパスワード設定
+mysql_secure_installation
+```
 
-2. SQLite環境で起動
-   ```bash
-   docker compose up --build
-   ```
+### 2. データベース作成
+```bash
+# MySQL接続
+mysql -u root -p
+
+# データベース・ユーザー作成
+CREATE DATABASE touhou_clear_checker CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'touhou_user'@'localhost' IDENTIFIED BY 'your_password';
+GRANT ALL PRIVILEGES ON touhou_clear_checker.* TO 'touhou_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
+### 3. 環境変数設定
+```bash
+# backend/.env または backend/env/.env.mysql に記載
+DATABASE_URL=mysql+pymysql://touhou_user:your_password@localhost:3306/touhou_clear_checker?charset=utf8mb4
+```
+
+### 4. データベース初期化
+```bash
+cd backend
+source venv313/bin/activate
+
+# 完全初期化
+python scripts/initialize_database_mysql.py --fresh
+
+# 状態確認
+python scripts/initialize_database_mysql.py --verify
+```
 
 ## データベース設定
 
-### SQLite設定
-- ファイル: `backend/touhou_clear_checker.db`
-- 永続化: ホストファイルシステムにマウント
-- 接続文字列: `sqlite:///./touhou_clear_checker.db`
+### MySQL接続情報
+- **ホスト**: `mysql`（Docker内）/ `localhost:3306`（ネイティブ環境）
+- **データベース**: `touhou_clear_checker`
+- **ユーザー**: `touhou_user`
+- **パスワード**: `env/.env.mysql`で設定
+- **文字エンコーディング**: UTF-8 (utf8mb4)
+- **照合順序**: utf8mb4_unicode_ci
+- **接続文字列**: `mysql+pymysql://touhou_user:password@host:3306/touhou_clear_checker?charset=utf8mb4`
 
-### MySQL設定
-- ホスト: `mysql`（Docker内）/ `localhost:3306`（ホストから）
-- データベース: `touhou_clear_checker`
-- ユーザー: `touhou_user`
-- パスワード: `touhou_password`
-- 接続文字列: `mysql+pymysql://touhou_user:touhou_password@mysql:3306/touhou_clear_checker`
+### adminユーザー管理
+- **初期ユーザー名**: `admin`
+- **初期メールアドレス**: `admin@touhou-clear-checker.com`
+- **パスワード**: `secrets/.admin_password`ファイルから読み込み（フォールバック: `admin123`）
+- **権限**: 管理者権限（is_admin=True）、メール認証済み（email_verified=True）
+
+詳細は [データベース設計書](../ 01_development_docs/02_database_design.md) を参照
 
 ## トラブルシューティング
 
 ### MySQLが起動しない
-- ポート3306が既に使用されていないか確認
-- MySQLの健康チェックが成功するまで待機
+- **ポート競合**: ポート3306が既に使用されていないか確認
+  ```bash
+  lsof -i :3306
+  ```
+- **健康チェック待機**: MySQLの起動完了まで30秒程度待機
+- **ログ確認**:
+  ```bash
+  docker compose -f docker-compose.yml -f docker-compose.mysql.yml logs mysql
+  ```
+
+### データベース接続エラー
+- **環境変数確認**: `env/.env.mysql`の`DATABASE_URL`が正しいか確認
+- **ユーザー権限確認**:
+  ```bash
+  docker compose exec mysql mysql -u root -p -e "SHOW GRANTS FOR 'touhou_user'@'%';"
+  ```
+- **文字エンコーディング確認**:
+  ```bash
+  docker compose exec mysql mysql -u root -p -e "SHOW VARIABLES LIKE 'character%';"
+  ```
+
+### 文字化け発生
+- **データベース文字セット確認**:
+  ```sql
+  SELECT DEFAULT_CHARACTER_SET_NAME, DEFAULT_COLLATION_NAME
+  FROM information_schema.SCHEMATA
+  WHERE SCHEMA_NAME = 'touhou_clear_checker';
+  ```
+- **再作成**（文字セットが間違っている場合）:
+  ```sql
+  DROP DATABASE touhou_clear_checker;
+  CREATE DATABASE touhou_clear_checker CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+  ```
 
 ### データが見つからない
-- 初期化が正常に完了したか確認
-- ログを確認: `docker compose logs mysql-init`
+- **初期化確認**:
+  ```bash
+  docker compose exec backend python scripts/initialize_database_mysql.py --verify
+  ```
+- **テーブル確認**:
+  ```bash
+  docker compose exec mysql mysql -u touhou_user -p touhou_clear_checker -e "SHOW TABLES;"
+  ```
+- **データ確認**:
+  ```bash
+  docker compose exec mysql mysql -u touhou_user -p touhou_clear_checker -e "SELECT COUNT(*) FROM games;"
+  ```
 
-### 接続エラー
-- MySQL接続情報が正しいか確認
-- ネットワーク設定を確認: `docker network ls`
+## セキュリティ考慮事項
 
-## データマイグレーション
+### パスワード管理
+- **本番環境**: 強力なパスワードを設定（20文字以上推奨）
+- **secrets管理**: `secrets/.admin_password`はgitignoreで除外済み
+- **環境変数**: `.env.mysql`もgitignoreで除外済み
 
-### SQLite → MySQL
-```bash
-# 1. 現在のSQLiteデータのバックアップ
-cp backend/touhou_clear_checker.db backup/
+### ネットワーク設定
+- **Docker内通信**: プライベートネットワーク`touhou-network`で分離
+- **外部アクセス**: localhost:3306のみ公開（開発環境）
+- **本番環境**: ファイアウォールでMySQLポートを適切に制限
 
-# 2. MySQL環境でデータベース初期化
-docker compose -f docker-compose.yml -f docker-compose.mysql.yml run --rm mysql-init
+詳細は [セキュリティ設定](./02_security_setup.md) を参照
 
-# 3. 必要に応じてデータ移行スクリプトを実行
-```
-
-### MySQL → SQLite
-```bash
-# 1. SQLite環境でデータベース初期化
-docker compose run --rm db-init
-
-# 2. 必要に応じてデータ移行スクリプトを実行
-```
-
-## 注意事項
-
-1. **開発環境**: SQLiteの使用を推奨（軽量・高速）
-2. **本番環境**: MySQLの使用を推奨（スケーラビリティ・パフォーマンス）
-3. **データ永続化**: 各環境のボリュームは独立して管理される
-4. **同時実行**: SQLiteとMySQLを同時に実行可能（異なるポート）
+## 参考資料
+- [MySQL 8.0 公式ドキュメント](https://dev.mysql.com/doc/refman/8.0/en/)
+- [SQLAlchemy MySQL方言](https://docs.sqlalchemy.org/en/14/dialects/mysql.html)
+- [PyMySQL ドキュメント](https://pymysql.readthedocs.io/)
